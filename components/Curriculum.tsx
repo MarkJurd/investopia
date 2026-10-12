@@ -2,11 +2,12 @@
 
 /* หลักสูตร: แผงเลขโมดูล + วงแหวน (ค้างซ้าย) เปลี่ยนตามโมดูลที่อ่านอยู่กลางจอ */
 import { useEffect, useRef, useState } from "react";
-import { CONTENT } from "@/lib/content";
+import { useContent } from "@/components/ContentContext";
 
 const RING = 597; // เส้นรอบวงของวงแหวน (2πr, r = 95)
 
 export default function Curriculum() {
+  const CONTENT = useContent();
   const M = CONTENT.curriculum.modules;
   const [active, setActive] = useState(0);
   const listRef = useRef<HTMLDivElement>(null);

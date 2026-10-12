@@ -14,7 +14,9 @@
 
 ## โครงสร้าง
 ```
-lib/content.ts        ⭐ ข้อความทั้งหมดของเว็บ (เจ้าของแก้ไฟล์นี้ไฟล์เดียว)
+lib/content.ts        ⭐ ข้อความภาษาไทย (หน้า /)
+lib/content.en.ts     ⭐ ข้อความภาษาอังกฤษ (หน้า /en) — โครงต้องตรงกับ content.ts ทุกช่อง (TypeScript บังคับ)
+components/HomePage.tsx    หน้าแรก ใช้ร่วมทั้ง 2 ภาษา (รับข้อความเป็น prop) · client components อ่านข้อความผ่าน useContent()
 app/page.tsx          หน้าแรก (Server Component) — ประกอบ section จาก content.ts
 app/layout.tsx        ฟอนต์ Anuphan (next/font) + metadata
 app/globals.css       สี (:root) + สไตล์ทั้งหมด
@@ -33,7 +35,7 @@ components/QABox.tsx       กล่องถามคำถาม (ยังเ
 3. เว็บจริงเปลี่ยนเมื่อ push ขึ้น GitHub (Vercel deploy อัตโนมัติ)
 
 ## กติกาสำหรับ AI
-- **ห้าม hardcode ข้อความใน .tsx** — ทุกข้อความมาจาก `lib/content.ts`
+- **ห้าม hardcode ข้อความใน .tsx** — ทุกข้อความมาจาก `lib/content.ts` (ไทย) และ `lib/content.en.ts` (อังกฤษ) — **แก้ข้อความ/เพิ่มช่องต้องแก้ทั้ง 2 ไฟล์**
 - เพิ่ม section ใหม่: เพิ่มข้อมูลใน content.ts + เพิ่ม JSX ใน page.tsx (หรือ component ใหม่)
 - เคารพ `prefers-reduced-motion` · ต้อง responsive (มือถือ 375px ไม่ล้นจอ)
 - ธีม: น้ำเงิน ~10% + ขาว เรียบ · ฟอนต์ Anuphan
@@ -51,7 +53,7 @@ components/QABox.tsx       กล่องถามคำถาม (ยังเ
    - Redirect URI ใน Google Cloud: https://superb-rabbit-529.convex.site/api/auth/callback/google (dev)
    - ตอนขึ้น production: ต้องตั้ง env ชุดเดียวกันบน prod deployment + SITE_URL = โดเมนจริง + เพิ่ม redirect URI ของ prod
    - แอดมิน = บัญชี Google ที่กำหนด (อีเมลแอดมินห้ามแสดงบนเว็บ)
-3. 🔧 Stripe Checkout + webhook เปิดสิทธิ์ — **โค้ดเสร็จ, สร้างหน้าจ่ายเงินทดสอบได้แล้ว (พร้อมเพย์ + บัตร) · รอ STRIPE_WEBHOOK_SECRET** · ราคาจริงที่ใช้คิดเงินอยู่ใน convex/plans.ts (ต้องตรงกับ lib/content.ts) · webhook: https://superb-rabbit-529.convex.site/stripe/webhook (checkout.session.completed, checkout.session.async_payment_succeeded, charge.refunded) · คืนเงินเต็มจำนวนใน Stripe = ยกเลิกสิทธิ์อัตโนมัติ — แพ็กเกจ (ยืนยันแล้ว): **รายเดือน ฿990/30 วัน · 3 เดือน ฿2,490/90 วัน · รายปี ฿4,990/365 วัน** · จ่ายครั้งเดียวต่อรอบ ไม่ตัดเงินอัตโนมัติ (พร้อมเพย์ + บัตร)
+3. ✅ Stripe Checkout + webhook เปิดสิทธิ์ — **ใช้งานได้แล้ว (เจ้าของซื้อทดสอบรายเดือนสำเร็จ 2026-10-12)** · ตั้ง STRIPE_SECRET_KEY (sk_test) + STRIPE_WEBHOOK_SECRET แล้ว · ราคาจริงที่ใช้คิดเงินอยู่ใน convex/plans.ts (ต้องตรงกับ lib/content.ts) · webhook: https://superb-rabbit-529.convex.site/stripe/webhook (checkout.session.completed, checkout.session.async_payment_succeeded, charge.refunded) · คืนเงินเต็มจำนวนใน Stripe = ยกเลิกสิทธิ์อัตโนมัติ — แพ็กเกจ (ยืนยันแล้ว): **รายเดือน ฿990/30 วัน · 3 เดือน ฿2,490/90 วัน · รายปี ฿4,990/365 วัน** · จ่ายครั้งเดียวต่อรอบ ไม่ตัดเงินอัตโนมัติ (พร้อมเพย์ + บัตร)
    - รายปีเท่านั้น: ตอบคำถามภายใน 24 ชม. (รายเดือน/3 เดือน **ห้ามระบุเวลาตอบ**), ปรึกษา 1:1 = โค้ชด้านการเรียน (ห้ามดูพอร์ต/แนะนำหุ้น), คอร์สใหม่, โบนัสเช็กลิสต์ก่อนกดซื้อ, **Indicator (มูลค่า ฿2,990) เฉพาะ 50 คนแรก** → ระบบต้องนับลำดับผู้ซื้อรายปี
    - ทุกแพ็กเกจ: Live กลุ่มเดือนละครั้ง + ดูย้อนหลังได้ · **รับประกันคืนเงินเต็มจำนวนภายใน 7 วันหลังชำระ** (รับประกันความพอใจ ไม่ใช่กำไร)
    - **VIP ตัวต่อตัว ฿13,990** (ยืนยันแล้ว): เรียน 8 โมดูลแบบ 1:1 (8 × 1.5 ชม.) + ดูวิดีโอได้ + ทุกอย่างในรายปี 1 ปี + Indicator · **จำกัด 3 ที่/เดือน** (อาจเพิ่มเป็น 5 ภายหลัง) · คืนเงินได้ก่อนเริ่มเรียนครั้งแรกเท่านั้น

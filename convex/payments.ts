@@ -63,9 +63,9 @@ export const userEmail = internalQuery({
 
 /* ---------- เริ่มจ่ายเงิน: สร้าง Stripe Checkout แล้วส่ง URL กลับไปให้หน้าเว็บพาไป ---------- */
 export const createCheckout = action({
-  args: { plan: planValidator },
+  args: { plan: planValidator, lang: v.optional(v.union(v.literal("th"), v.literal("en"))) },
   returns: v.object({ url: v.string() }),
-  handler: async (ctx, { plan }): Promise<{ url: string }> => {
+  handler: async (ctx, { plan, lang }): Promise<{ url: string }> => {
     const userId = await getAuthUserId(ctx);
     if (userId === null) throw new Error("NOT_SIGNED_IN");
     if (plan === "vip") {
@@ -77,16 +77,18 @@ export const createCheckout = action({
     if (!secret || !site) throw new Error("PAYMENT_NOT_CONFIGURED");
 
     const p = PLANS[plan];
+    const en = lang === "en";
+    const home = `${site}${en ? "/en" : "/"}`;
     const email: string | null = await ctx.runQuery(internal.payments.userEmail, { userId });
     const form = new URLSearchParams({
       mode: "payment",
-      locale: "th",
+      locale: en ? "en" : "th",
       "line_items[0][quantity]": "1",
       "line_items[0][price_data][currency]": "thb",
       "line_items[0][price_data][unit_amount]": String(p.amount * 100), // สตางค์
-      "line_items[0][price_data][product_data][name]": p.name,
-      success_url: `${site}/?checkout=success`,
-      cancel_url: `${site}/?checkout=cancel#pricing`,
+      "line_items[0][price_data][product_data][name]": en ? p.nameEn : p.name,
+      success_url: `${home}?checkout=success`,
+      cancel_url: `${home}?checkout=cancel#pricing`,
       client_reference_id: userId,
       "metadata[userId]": userId,
       "metadata[plan]": plan,

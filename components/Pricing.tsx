@@ -7,7 +7,7 @@ import { useAction, useConvexAuth, useQuery } from "convex/react";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { api } from "@/convex/_generated/api";
 import type { PlanId } from "@/convex/plans";
-import { CONTENT } from "@/lib/content";
+import { useContent } from "@/components/ContentContext";
 
 const PENDING_KEY = "investopia.pendingPlan"; // จำแพ็กเกจที่กดไว้ระหว่างไปล็อกอิน
 const PLAN_IDS: PlanId[] = ["monthly", "quarterly", "yearly", "vip"];
@@ -21,6 +21,7 @@ function readPending(): PlanId | null {
 }
 
 export default function Pricing() {
+  const CONTENT = useContent();
   const P = CONTENT.pricing, K = CONTENT.checkout;
   const { isAuthenticated } = useConvexAuth();
   const { signIn } = useAuthActions();
@@ -33,19 +34,19 @@ export default function Pricing() {
     setMsg("");
     setBusy(plan);
     try {
-      const { url } = await createCheckout({ plan });
+      const { url } = await createCheckout({ plan, lang: CONTENT.locale.code === "en" ? "en" : "th" });
       window.location.href = url;
     } catch (e) {
       setBusy(null);
       setMsg(String(e).includes("VIP_FULL") ? K.vipFull : K.error);
     }
-  }, [createCheckout, K.vipFull, K.error]);
+  }, [createCheckout, K.vipFull, K.error, CONTENT.locale.code]);
 
   const choose = async (plan: PlanId) => {
     if (isAuthenticated) return pay(plan);
     try { sessionStorage.setItem(PENDING_KEY, plan); } catch { /* ไม่มี storage ก็แค่ต้องกดซ้ำหลังล็อกอิน */ }
     setMsg(K.signInFirst);
-    await signIn("google", { redirectTo: "/#pricing" });
+    await signIn("google", { redirectTo: `${CONTENT.locale.base === "/" ? "" : CONTENT.locale.base}/#pricing` });
   };
 
   // กลับมาจากล็อกอินแล้ว → ไปหน้าจ่ายเงินของแพ็กเกจที่กดไว้ต่อเลย

@@ -83,7 +83,8 @@ header.nav.scrolled .nav-inner{height:60px}
 .hero{padding:76px 0 80px;position:relative;overflow:hidden}
 .hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:56px;align-items:center;position:relative}
 .hero h1{font-size:clamp(32px,5vw,50px);font-weight:700;letter-spacing:-.03em;margin-bottom:22px}
-.hero h1 > span{display:block;white-space:nowrap}
+.hero h1 > span{display:block}
+[lang="th"] .hero h1 > span{white-space:nowrap}
 .hero p.lead{font-size:19px;margin-bottom:32px;max-width:530px}
 .hero-cta{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:30px}
 .hero-points{display:flex;flex-direction:column;gap:12px}
@@ -324,3 +325,8 @@ footer{padding:56px 0 40px;border-top:1px solid var(--line);background:var(--bg-
 .cb-inner{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-top:14px;padding-bottom:14px}
 .cb-inner b{display:block;font-size:15px}
 @media(max-width:560px){.plan-badge{display:none}}
+
+/* ปุ่มสลับภาษา TH / EN */
+.lang-switch{font-size:14px;font-weight:600;color:var(--body);padding:6px 10px;border:1px solid var(--line);border-radius:10px}
+.lang-switch:hover{color:var(--blue);border-color:var(--blue-line)}
+@media(max-width:420px){.nav-cta > .btn-primary{display:none}}

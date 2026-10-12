@@ -2,9 +2,10 @@
 
 /* วิดีโอแนะนำตัว: file > youtubeId (โหลดเมื่อกดเล่น) > กรอบ "เร็วๆ นี้" — ตั้งค่าใน lib/content.ts → hero.video */
 import { useState } from "react";
-import { CONTENT } from "@/lib/content";
+import { useContent } from "@/components/ContentContext";
 
 export default function HeroVideo() {
+  const CONTENT = useContent();
   const V = CONTENT.hero.video;
   const [playing, setPlaying] = useState(false);
   const poster = V.poster ? <img className="vid-poster" src={V.poster} alt="" /> : null;

@@ -4,9 +4,10 @@
 import { useAuthActions } from "@convex-dev/auth/react";
 import { Authenticated, AuthLoading, Unauthenticated, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { CONTENT } from "@/lib/content";
+import { useContent } from "@/components/ContentContext";
 
 function UserMenu() {
+  const CONTENT = useContent();
   const { signOut } = useAuthActions();
   const me = useQuery(api.users.me);
   const member = useQuery(api.payments.myMembership);
@@ -22,12 +23,13 @@ function UserMenu() {
 }
 
 export default function AuthButton() {
+  const CONTENT = useContent();
   const { signIn } = useAuthActions();
   return (
     <>
       <AuthLoading><span className="auth-wait" aria-hidden="true" /></AuthLoading>
       <Unauthenticated>
-        <button className="btn btn-ghost auth-btn" onClick={() => void signIn("google")} aria-label={CONTENT.auth.signIn}>
+        <button className="btn btn-ghost auth-btn" onClick={() => void signIn("google", { redirectTo: CONTENT.locale.base })} aria-label={CONTENT.auth.signIn}>
           <span className="g-logo" aria-hidden="true">G</span>
           <span className="lbl-long">{CONTENT.auth.signIn}</span><span className="lbl-short">{CONTENT.auth.signInShort}</span>
         </button>

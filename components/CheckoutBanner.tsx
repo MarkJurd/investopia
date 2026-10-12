@@ -5,7 +5,7 @@
 import { useState, useSyncExternalStore } from "react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { CONTENT } from "@/lib/content";
+import { useContent } from "@/components/ContentContext";
 
 const noSubscribe = () => () => {};
 function readCheckoutParam(): "success" | "cancel" | null {
@@ -14,6 +14,7 @@ function readCheckoutParam(): "success" | "cancel" | null {
 }
 
 export default function CheckoutBanner() {
+  const CONTENT = useContent();
   const K = CONTENT.checkout;
   const fromUrl = useSyncExternalStore(noSubscribe, readCheckoutParam, () => null);
   const [dismissed, setDismissed] = useState(false);
@@ -34,7 +35,7 @@ export default function CheckoutBanner() {
   } else if (!me) {
     body = <><b>{K.pendingTitle}</b><p>{K.pendingText}</p></>;
   } else {
-    const until = new Date(me.expiresAt).toLocaleDateString("th-TH", { day: "numeric", month: "long", year: "numeric" });
+    const until = new Date(me.expiresAt).toLocaleDateString(CONTENT.locale.dateLocale, { day: "numeric", month: "long", year: "numeric" });
     body = (
       <>
         <b>{K.successTitle}</b>

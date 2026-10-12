@@ -3,10 +3,10 @@ import { v } from "convex/values";
 /* แพ็กเกจที่ขายจริง — ราคา/ระยะเวลาที่ "ระบบใช้คิดเงิน" อยู่ที่นี่ (ฝั่งเซิร์ฟเวอร์)
  * ⚠️ ถ้าเปลี่ยนราคา ต้องแก้ทั้งที่นี่ และข้อความที่แสดงใน lib/content.ts ให้ตรงกัน */
 export const PLANS = {
-  monthly:   { name: "INVESTOPIA รายเดือน",       amount: 990,   days: 30,  rank: 1 },
-  quarterly: { name: "INVESTOPIA 3 เดือน",        amount: 2490,  days: 90,  rank: 2 },
-  yearly:    { name: "INVESTOPIA รายปี",          amount: 4990,  days: 365, rank: 3 },
-  vip:       { name: "INVESTOPIA VIP ตัวต่อตัว",  amount: 13990, days: 365, rank: 4 },
+  monthly:   { name: "INVESTOPIA รายเดือน",       nameEn: "INVESTOPIA Monthly",        amount: 990,   days: 30,  rank: 1 },
+  quarterly: { name: "INVESTOPIA 3 เดือน",        nameEn: "INVESTOPIA 3 Months",       amount: 2490,  days: 90,  rank: 2 },
+  yearly:    { name: "INVESTOPIA รายปี",          nameEn: "INVESTOPIA Yearly",         amount: 4990,  days: 365, rank: 3 },
+  vip:       { name: "INVESTOPIA VIP ตัวต่อตัว",  nameEn: "INVESTOPIA VIP One-on-One", amount: 13990, days: 365, rank: 4 },
 } as const;
 
 export type PlanId = keyof typeof PLANS;

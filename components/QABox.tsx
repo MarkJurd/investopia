@@ -1,8 +1,11 @@
+"use client";
+
 /* กล่องท้าย FAQ — Q&A เปิดเฉพาะสมาชิก (คอมมูนิตี้สมาชิกจะทำในเฟส Q&A ด้วย Convex)
  * คนทั่วไปเห็นแค่ปุ่มชวนสมัคร */
-import { CONTENT } from "@/lib/content";
+import { useContent } from "@/components/ContentContext";
 
 export default function QABox() {
+  const CONTENT = useContent();
   const F = CONTENT.faq;
   return (
     <div style={{ maxWidth: 620, margin: "32px auto 0", background: "#fff", border: "1px solid var(--line)", borderRadius: 16, padding: 26, textAlign: "center" }}>
