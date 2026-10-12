@@ -47,7 +47,7 @@ components/QABox.tsx       กล่องถามคำถาม (ยังเ
 
 ## แผนพัฒนา (ทำทีละเฟส)
 1. ✅ ย้ายเว็บไป Next.js (หน้าตาเหมือนเดิม)
-2. 🔧 Convex + ล็อกอินด้วย Google — **โค้ดเสร็จแล้ว** (convex/auth.ts, auth.config.ts, http.ts, schema.ts, users.ts + components/AuthButton.tsx) · ตั้ง JWT_PRIVATE_KEY/JWKS/SITE_URL บน dev แล้ว · **รอเจ้าของสร้าง Google OAuth client แล้วตั้ง AUTH_GOOGLE_ID / AUTH_GOOGLE_SECRET เอง**
+2. ✅ Convex + ล็อกอินด้วย Google — **ใช้งานได้แล้ว (เจ้าของทดสอบล็อกอินสำเร็จ 2026-10-12)** (convex/auth.ts, auth.config.ts, http.ts, schema.ts, users.ts + components/AuthButton.tsx) · ตั้ง JWT_PRIVATE_KEY/JWKS/SITE_URL บน dev แล้ว · ตั้ง AUTH_GOOGLE_ID / AUTH_GOOGLE_SECRET แล้ว (Google Cloud project: investopia, No organization, Audience: External, ยังอยู่โหมด Testing — ต้องกด Publish ก่อนเปิดขายจริง)
    - Redirect URI ใน Google Cloud: https://superb-rabbit-529.convex.site/api/auth/callback/google (dev)
    - ตอนขึ้น production: ต้องตั้ง env ชุดเดียวกันบน prod deployment + SITE_URL = โดเมนจริง + เพิ่ม redirect URI ของ prod
    - แอดมิน = บัญชี Google ที่กำหนด (อีเมลแอดมินห้ามแสดงบนเว็บ)
