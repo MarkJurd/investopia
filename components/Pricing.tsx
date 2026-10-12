@@ -40,7 +40,11 @@ export default function Pricing() {
           </div>
         ))}
       </div>
-      <p style={{ textAlign: "center", fontSize: 13, color: "var(--muted)", marginTop: 26 }}>{P.note}</p>
+      <div className="guarantee reveal">
+        <span className="g-ic" aria-hidden="true">🛡️</span>
+        <div><div className="g-t">{P.guarantee.title}</div><div className="g-s">{P.guarantee.text}</div></div>
+      </div>
+      <p style={{ textAlign: "center", fontSize: 13, color: "var(--muted)", marginTop: 20 }}>{P.note}</p>
 
       <div className={`modal-overlay${pkg ? " active" : ""}`} onClick={(e) => { if (e.target === e.currentTarget) close(); }}>
         <div className="modal">

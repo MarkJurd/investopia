@@ -206,7 +206,11 @@ button.vid-ph:hover .play{transform:scale(1.08)}
 @media(max-width:640px){.instructor{grid-template-columns:1fr;text-align:center;justify-items:center}}
 
 /* Pricing */
-.price-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px;align-items:stretch;max-width:760px;margin:0 auto}
+.price-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:22px;align-items:stretch;max-width:1060px;margin:0 auto}
+.guarantee{display:flex;gap:16px;align-items:center;max-width:640px;margin:32px auto 0;background:var(--blue-soft);border:1px solid var(--blue-line);border-radius:16px;padding:18px 22px}
+.g-ic{font-size:30px;flex-shrink:0}
+.g-t{font-weight:700;color:var(--ink);font-size:16px}
+.g-s{font-size:14px}
 .price-card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:30px 26px;display:flex;
   flex-direction:column;position:relative;transition:transform .2s, box-shadow .2s}
 .price-card:hover{box-shadow:var(--shadow);transform:translateY(-4px)}
