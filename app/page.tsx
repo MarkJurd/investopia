@@ -65,7 +65,8 @@ export default function Home() {
         <div className="container hero-grid">
           <div>
             <span className="eyebrow">{H.eyebrow}</span>
-            <h1>{H.title.before}<span className="blue"> {H.title.accent}</span><br />{H.title.after}</h1>
+            {/* หัวข้อ 3 บรรทัด: แต่ละบรรทัดไม่ถูกตัดกลางคำ */}
+            <h1><span>{H.title.before}</span><span className="blue">{H.title.accent}</span><span>{H.title.after}</span></h1>
             <p className="lead">{H.lead}</p>
             <div className="hero-cta">
               <a href="#pricing" className="btn btn-primary btn-lg">{H.ctaPrimary}</a>

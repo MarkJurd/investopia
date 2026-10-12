@@ -72,6 +72,7 @@ header.nav.scrolled .nav-inner{height:60px}
 .hero{padding:76px 0 80px;position:relative;overflow:hidden}
 .hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:56px;align-items:center;position:relative}
 .hero h1{font-size:clamp(32px,5vw,50px);font-weight:700;letter-spacing:-.03em;margin-bottom:22px}
+.hero h1 > span{display:block;white-space:nowrap}
 .hero p.lead{font-size:19px;margin-bottom:32px;max-width:530px}
 .hero-cta{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:30px}
 .hero-points{display:flex;flex-direction:column;gap:12px}
@@ -164,8 +165,8 @@ button.vid-ph:hover .play{transform:scale(1.08)}
 .ringwrap circle{fill:none;stroke-width:10}
 .rg-bg{stroke:var(--blue-soft)}
 .rg-fg{stroke:var(--blue);stroke-linecap:round;stroke-dasharray:597;stroke-dashoffset:597;transition:stroke-dashoffset .5s}
-.num{position:absolute;inset:0;display:grid;place-items:center;font-size:84px;font-weight:700;color:var(--ink);letter-spacing:-.03em}
-.num span{display:block;animation:flip .45s}
+.ringwrap .num{position:absolute;inset:0;display:grid;place-items:center;font-size:84px;font-weight:700;color:var(--ink);letter-spacing:-.03em}
+.ringwrap .num span{display:block;animation:flip .45s}
 @keyframes flip{from{transform:translateY(24px) rotateX(70deg);opacity:0}}
 .p-tag{font-size:13px;font-weight:700;color:var(--blue)}
 .p-title{font-weight:600;color:var(--ink);min-height:54px;margin-top:4px}
@@ -192,7 +193,7 @@ button.vid-ph:hover .play{transform:scale(1.08)}
   .panel{top:60px;z-index:5;background:rgba(255,255,255,.94);backdrop-filter:blur(8px);display:flex;align-items:center;
     gap:14px;text-align:left;padding:10px 0;border-bottom:1px solid var(--line)}
   .ringwrap{width:60px;height:60px;margin:0;flex-shrink:0}.ringwrap circle{stroke-width:14}
-  .num{font-size:22px}.p-title{min-height:0;font-size:14px;margin:0}
+  .ringwrap .num{font-size:22px}.p-title{min-height:0;font-size:14px;margin:0}
   .mod.on{transform:none}
 }
 
@@ -206,7 +207,7 @@ button.vid-ph:hover .play{transform:scale(1.08)}
 @media(max-width:640px){.instructor{grid-template-columns:1fr;text-align:center;justify-items:center}}
 
 /* Pricing */
-.price-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:22px;align-items:stretch;max-width:1060px;margin:0 auto}
+.price-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:20px;align-items:stretch}
 .guarantee{display:flex;gap:16px;align-items:center;max-width:640px;margin:32px auto 0;background:var(--blue-soft);border:1px solid var(--blue-line);border-radius:16px;padding:18px 22px}
 .g-ic{font-size:30px;flex-shrink:0}
 .g-t{font-weight:700;color:var(--ink);font-size:16px}
