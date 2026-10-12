@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# เว็บ HTML เก่า + ไฟล์ร่างโลโก้ (เก็บไว้อ้างอิงในเครื่อง ไม่ขึ้น GitHub)
+/_archive/
