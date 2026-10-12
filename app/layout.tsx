@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Anuphan } from "next/font/google";
 import { CONTENT } from "@/lib/content";
+import ConvexClientProvider from "@/components/ConvexClientProvider";
 import "./globals.css";
 
 const anuphan = Anuphan({
@@ -19,7 +20,9 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="th" className={anuphan.variable}>
-      <body>{children}</body>
+      <body>
+        <ConvexClientProvider>{children}</ConvexClientProvider>
+      </body>
     </html>
   );
 }

@@ -5,6 +5,7 @@ import HeroVideo from "@/components/HeroVideo";
 import Curriculum from "@/components/Curriculum";
 import Pricing from "@/components/Pricing";
 import QABox from "@/components/QABox";
+import AuthButton from "@/components/AuthButton";
 
 type Vars = React.CSSProperties & Record<`--${string}`, string>;
 
@@ -47,7 +48,7 @@ export default function Home() {
           <Logo name={C.brand.name} />
           <nav className="nav-links">{C.nav.links.map((l) => <a key={l.href} href={l.href}>{l.text}</a>)}</nav>
           <div className="nav-cta">
-            <a href="#pricing" className="btn btn-ghost">{C.nav.ghost}</a>
+            <AuthButton />
             <a href="#pricing" className="btn btn-primary">{C.nav.primary}</a>
           </div>
         </div>

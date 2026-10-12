@@ -67,6 +67,17 @@ header.nav.scrolled .nav-inner{height:60px}
 .nav-links a:hover{color:var(--blue)}
 .nav-cta{display:flex;gap:12px;align-items:center}
 @media(max-width:880px){.nav-links{display:none}.nav-cta .btn-ghost{display:none}}
+/* ปุ่มล็อกอิน + เมนูผู้ใช้ */
+.btn-sm{padding:8px 14px;font-size:14px}
+.g-logo{width:20px;height:20px;border-radius:50%;background:#fff;border:1px solid var(--line);display:grid;place-items:center;
+  font-size:12px;font-weight:700;color:var(--blue)}
+.lbl-short{display:none}
+.auth-wait{display:inline-block;width:120px}
+.user-menu{display:flex;align-items:center;gap:10px}
+.user-avatar{width:34px;height:34px;border-radius:50%;object-fit:cover;border:2px solid var(--blue-soft)}
+.user-name{font-weight:600;color:var(--ink);font-size:15px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media(max-width:880px){.nav-cta .auth-btn,.nav-cta .user-menu .btn-ghost{display:inline-flex}}
+@media(max-width:560px){.lbl-long,.user-name{display:none}.lbl-short{display:inline}.nav-cta{gap:8px}.nav-cta .btn{padding:10px 14px;font-size:14px}.logo{font-size:17px}}
 
 /* Hero */
 .hero{padding:76px 0 80px;position:relative;overflow:hidden}

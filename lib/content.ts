@@ -31,8 +31,15 @@ export const CONTENT = {
       { text: "ราคา",          href: "#pricing" },
       { text: "ถาม-ตอบ",       href: "#faq" }
     ],
-    ghost: "ดูคอร์ส",
     primary: "เริ่มเรียน"
+  },
+
+  // ปุ่มล็อกอิน (ล็อกอินด้วย Google เท่านั้น)
+  auth: {
+    signIn: "เข้าสู่ระบบด้วย Google",
+    signInShort: "เข้าสู่ระบบ",
+    signOut: "ออกจากระบบ",
+    member: "สมาชิก"                     // ใช้แทนชื่อ ถ้าบัญชี Google ไม่มีชื่อ
   },
 
   hero: {
