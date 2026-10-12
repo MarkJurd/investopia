@@ -330,3 +330,23 @@ footer{padding:56px 0 40px;border-top:1px solid var(--line);background:var(--bg-
 .lang-switch{font-size:14px;font-weight:600;color:var(--body);padding:6px 10px;border:1px solid var(--line);border-radius:10px}
 .lang-switch:hover{color:var(--blue);border-color:var(--blue-line)}
 @media(max-width:420px){.nav-cta > .btn-primary{display:none}}
+
+/* แถบเมนูแบบกะทัดรัด: ไม่ตัดคำ ปุ่มขนาดพอดี */
+.logo,.nav-links a,.nav-cta .btn,.lang-switch{white-space:nowrap}
+.nav-links{gap:24px}
+.nav-cta{gap:10px}
+.nav-cta .btn{padding:9px 18px;font-size:15px;border-radius:10px}
+.nav-cta .btn-primary{box-shadow:0 4px 12px rgba(37,99,235,.2)}
+@media(max-width:1100px){.nav-links{gap:18px;font-size:14px}.nav-cta .lbl-long{display:none}.nav-cta .lbl-short{display:inline}}
+@media(max-width:960px){.nav-links{display:none}}
+/* รูปโปรไฟล์ + เมนูเล็ก */
+.user-menu{position:relative}
+.avatar-btn{position:relative;background:none;border:0;padding:0;cursor:pointer;border-radius:50%;display:block}
+.avatar-btn:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.user-avatar{width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid var(--blue-soft);display:block}
+.user-initial{display:grid;place-items:center;background:var(--blue);color:#fff;font-weight:700;font-size:15px}
+.member-dot{position:absolute;right:-1px;bottom:-1px;width:12px;height:12px;border-radius:50%;background:#F5C842;border:2px solid #fff}
+.user-pop{position:absolute;right:0;top:calc(100% + 10px);min-width:220px;background:#fff;border:1px solid var(--line);
+  border-radius:14px;box-shadow:var(--shadow-lg);padding:14px;display:flex;flex-direction:column;gap:10px;align-items:flex-start;z-index:70}
+.up-name{font-weight:600;color:var(--ink);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.user-pop .plan-badge{display:inline-block}
