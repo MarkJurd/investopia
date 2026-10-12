@@ -6,6 +6,7 @@ import Curriculum from "@/components/Curriculum";
 import Pricing from "@/components/Pricing";
 import QABox from "@/components/QABox";
 import AuthButton from "@/components/AuthButton";
+import CheckoutBanner from "@/components/CheckoutBanner";
 
 type Vars = React.CSSProperties & Record<`--${string}`, string>;
 
@@ -42,6 +43,7 @@ export default function Home() {
     <>
       <div id="scrollBar" />
       {C.prototypeBanner && <div className="protobar">{C.prototypeBanner}</div>}
+      <CheckoutBanner />
 
       <header className="nav" id="nav">
         <div className="container nav-inner">

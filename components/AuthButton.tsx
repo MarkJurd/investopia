@@ -9,11 +9,13 @@ import { CONTENT } from "@/lib/content";
 function UserMenu() {
   const { signOut } = useAuthActions();
   const me = useQuery(api.users.me);
+  const member = useQuery(api.payments.myMembership);
   const A = CONTENT.auth;
   return (
     <div className="user-menu">
       {me?.image && <img src={me.image} alt="" className="user-avatar" referrerPolicy="no-referrer" />}
       <span className="user-name">{me?.name ?? A.member}</span>
+      {member && <span className="plan-badge">{CONTENT.planLabels[member.plan]}</span>}
       <button className="btn btn-ghost btn-sm" onClick={() => void signOut()}>{A.signOut}</button>
     </div>
   );

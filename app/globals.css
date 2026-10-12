@@ -312,3 +312,15 @@ footer{padding:56px 0 40px;border-top:1px solid var(--line);background:var(--bg-
   *{animation:none!important;transition:none!important}
   .reveal{opacity:1;transform:none}
 }
+
+/* ระบบจ่ายเงิน */
+.price-card .btn:disabled{opacity:.6;cursor:not-allowed;transform:none;box-shadow:none}
+.pay-msg{text-align:center;margin-top:20px;font-size:14px;color:var(--blue);font-weight:500}
+.secure-note{text-align:center;font-size:13px;color:var(--muted);margin-top:16px}
+.plan-badge{font-size:12px;font-weight:600;color:var(--blue);background:var(--blue-soft);border:1px solid var(--blue-line);
+  padding:3px 10px;border-radius:999px;white-space:nowrap}
+.checkout-banner{background:#FFFBEB;border-bottom:1px solid #FDE68A;color:#92400E;font-size:14px}
+.checkout-banner.ok{background:#ECFDF5;border-color:#A7F3D0;color:#065F46}
+.cb-inner{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-top:14px;padding-bottom:14px}
+.cb-inner b{display:block;font-size:15px}
+@media(max-width:560px){.plan-badge{display:none}}
