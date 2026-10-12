@@ -419,7 +419,7 @@ export const CONTENT = {
     ],
     contactTitle: "ติดต่อ",
     contact: [
-      { text: "อีเมล",        href: "#" },
+      { text: "investopia.admin@gmail.com", href: "mailto:investopia.admin@gmail.com" },
       { text: "Facebook",     href: "#" },
       { text: "YouTube",      href: "#" },
       { text: "LINE Official", href: "#" }
