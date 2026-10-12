@@ -89,3 +89,40 @@ Convex agent skills for common tasks can be installed by running
 `npx convex ai-files install`.
 
 <!-- convex-ai-end -->
+
+## 🔁 สถานะล่าสุด + งานถัดไป (อัปเดต 2026-10-12 — อ่านส่วนนี้ก่อนเริ่มงาน)
+**ใช้งานได้แล้ว:** หน้าเว็บไทย `/` + อังกฤษ `/en` · ล็อกอิน Google · จ่ายเงิน Stripe (โหมดทดสอบ) + webhook เปิดสิทธิ์ · แพ็กเกจ 4 แบบ · เมนูผู้ใช้แบบ avatar dropdown
+**ยังไม่ได้ deploy ขึ้นอินเทอร์เน็ต** — ตอนนี้รันในเครื่องเท่านั้น (`npm run dev` → http://localhost:3000)
+
+### วิธีเริ่มงาน (ทุกครั้ง)
+1. เปิดเทอร์มินัลในโฟลเดอร์นี้ → `npm run dev` (ต้องเปิดค้างไว้ เว็บถึงจะเข้าได้)
+2. ถ้าแก้ไฟล์ใน `convex/` → รัน `npx convex dev` ค้างไว้อีกแท็บ (หรือ `npx convex dev --once`)
+3. Windows: ถ้าสั่ง Convex CLI จาก Node script ให้ใช้ `node node_modules/convex/bin/main.js ...` (spawn npx.cmd ตรงๆ ไม่ได้)
+
+### งานเนื้อหา (เจ้าของทำเอง/ใช้ Haiku-Sonnet ก็พอ)
+- [ ] ปรับถ้อยคำใน `lib/content.ts` และ `lib/content.en.ts` (แก้ให้ตรงกันทั้ง 2 ไฟล์) — ให้เจ้าของภาษาตรวจ EN โดยเฉพาะ disclaimer/bio
+- [ ] รูปผู้สอน → `public/me.jpg` + `instructor.photo: "/me.jpg"` (ทั้ง 2 ภาษา)
+- [ ] วิดีโอแนะนำตัว → `hero.video.youtubeId` หรือ `file`
+- [ ] ลิงก์ Facebook / YouTube / LINE ใน footer (ยังเป็น `#`)
+- [ ] ภาพประกอบอื่นๆ (วางใน `public/`)
+
+### เฟส 4: หน้าเรียน (ใช้ Opus) — ยังไม่เริ่ม
+- ต้องตัดสินใจก่อน: ที่เก็บวิดีโอ (แนะนำ Bunny Stream หรือ Mux) + เจ้าของมีวิดีโออัดแล้วหรือยัง
+- หน้า `/learn` เฉพาะสมาชิก (เช็กสิทธิ์ฝั่ง server ด้วย `payments.myMembership` logic ห้ามเช็กแค่ฝั่ง client)
+- แถบความคืบหน้า %, คะแนนแบบฝึกหัด, ranking (ชื่อเล่นที่ผู้เรียนตั้งเอง — PDPA)
+- ระบบจองคิว 1:1 (รายปี 2 ครั้ง / VIP 8 ครั้ง) + ส่ง Indicator ให้คนมีสิทธิ์ (ตอนนี้ต้องส่งเองทางอีเมล)
+- แจ้งเตือนใกล้หมดอายุในเว็บ (สัญญาไว้ใน FAQ แล้ว)
+
+### เฟส 5: Q&A คอมมูนิตี้ real-time (Convex) — เฉพาะสมาชิก, รายปี/VIP ติดป้าย "ตอบใน 24 ชม."
+
+### เฟส 6: เช็กลิสต์ก่อนเปิดขายจริง
+- [ ] หน้า นโยบายความเป็นส่วนตัว (PDPA) + เงื่อนไขการใช้งาน/การคืนเงิน (ให้คนรู้กฎหมายตรวจ)
+- [ ] Convex production deployment + ตั้ง env ทั้งหมดใหม่บน prod (JWT_PRIVATE_KEY, JWKS, SITE_URL=โดเมนจริง, AUTH_GOOGLE_*, STRIPE_*)
+- [ ] Google Cloud: เพิ่ม redirect URI ของ prod + กด Publish app (ออกจากโหมด Testing)
+- [ ] Stripe: ยืนยันตัวตนบัญชีจริง → ใช้ `sk_live_` + สร้าง webhook ของ prod → ตั้ง `STRIPE_WEBHOOK_SECRET` ของ prod
+- [ ] Hosting: Vercel Pro (~$20/เดือน — แพ็กเกจฟรีห้ามใช้เชิงพาณิชย์) หรือ Cloudflare · ผูกโดเมน
+- [ ] ลบ/เปลี่ยน `prototypeBanner` (แถบ "โหมดทดสอบ")
+- [ ] ลบข้อมูลทดสอบใน Convex dev ที่ไม่ใช้ (สมาชิกรายเดือนจากการซื้อทดสอบ 12 ต.ค.)
+
+### ไฟล์/โฟลเดอร์เก่า (ไม่ใช้แล้ว เก็บไว้อ้างอิง)
+- `C:\Users\Mark\investopia` = เว็บ HTML เดิม · `C:\w00d\investopia\Webpage` = โฟลเดอร์ session แรก (มี `.claude/launch.json`)
