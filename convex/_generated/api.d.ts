@@ -16,6 +16,7 @@ import type * as http from "../http.js";
 import type * as learn from "../learn.js";
 import type * as payments from "../payments.js";
 import type * as plans from "../plans.js";
+import type * as telegram from "../telegram.js";
 import type * as users from "../users.js";
 
 import type {
@@ -33,6 +34,7 @@ declare const fullApi: ApiFromModules<{
   learn: typeof learn;
   payments: typeof payments;
   plans: typeof plans;
+  telegram: typeof telegram;
   users: typeof users;
 }>;
 

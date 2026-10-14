@@ -8,6 +8,7 @@ import type { Doc, Id } from "./_generated/dataModel";
 import { ConvexError, v } from "convex/values";
 import { paginationOptsValidator, paginationResultValidator } from "convex/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { internal } from "./_generated/api";
 import { getMembership } from "./payments";
 import { adminUserIds, isAdminUser } from "./admin";
 import { planValidator } from "./plans";
@@ -309,6 +310,7 @@ export const createPost = mutation({
         for (const adminId of await adminUserIds(ctx)) {
           await notify(ctx, { userId: adminId, type: "new_post", actorId: viewer.userId, postId: id, byAdmin: false, preview: text.slice(0, 100) });
         }
+        await ctx.scheduler.runAfter(0, internal.telegram.notifyOwner, { postId: id, kind: "new_post", actorId: viewer.userId, text });
       }
       return id;
     } catch (e) {
@@ -349,6 +351,7 @@ export const deletePost = mutation({
     }
     await removeLikesAndReports(ctx, postId);
     for (const n of await ctx.db.query("notifications").withIndex("by_postId", (q) => q.eq("postId", postId)).take(1000)) await ctx.db.delete("notifications", n._id);
+    for (const t of await ctx.db.query("telegramThreads").withIndex("by_postId", (q) => q.eq("postId", postId)).take(1000)) await ctx.db.delete("telegramThreads", t._id);
     for (const id of p.imageIds) await ctx.storage.delete(id);
     await ctx.db.delete("posts", postId);
     return null;
@@ -379,6 +382,23 @@ export const setHidden = mutation({
 });
 
 /* ---------- คอมเมนต์ ---------- */
+/** เพิ่มคอมเมนต์ + อัปเดตจำนวน + ส่งแจ้งเตือนในเว็บ — ใช้ร่วมกันระหว่างเว็บและบอท Telegram (ผู้เรียกต้องเช็กสิทธิ์/อัตราเอง) */
+export async function insertComment(ctx: MutationCtx, a: { post: Doc<"posts">; authorId: Id<"users">; authorIsAdmin: boolean; text: string }) {
+  const { post, authorId, authorIsAdmin, text } = a;
+  // ผู้ที่เคยคอมเมนต์ในโพสต์นี้เป็นแอดมิน ต้องรู้เมื่อมีคนตอบต่อ (เช่น คำถามต่อเนื่อง)
+  const before = await ctx.db.query("comments").withIndex("by_postId", (q) => q.eq("postId", post._id)).take(300);
+  await ctx.db.insert("comments", { postId: post._id, authorId, body: text, likeCount: 0, reportCount: 0 });
+  await ctx.db.patch("posts", post._id, { commentCount: post.commentCount + 1 });
+
+  const recipients = new Set<Id<"users">>([post.authorId]);
+  if (!authorIsAdmin) {
+    for (const uid of new Set(before.map((c) => c.authorId))) if (await isAdminUser(ctx, uid)) recipients.add(uid);
+  }
+  for (const userId of recipients) {
+    await notify(ctx, { userId, type: "comment", actorId: authorId, postId: post._id, byAdmin: authorIsAdmin, preview: text.slice(0, 100) });
+  }
+}
+
 export const createComment = mutation({
   args: { postId: v.id("posts"), body: v.string() },
   returns: v.null(),
@@ -391,17 +411,9 @@ export const createComment = mutation({
     const recent = await ctx.db.query("comments").withIndex("by_authorId", (q) => q.eq("authorId", viewer.userId)).order("desc").take(COMMENTS_PER_HOUR);
     if (recent.length >= COMMENTS_PER_HOUR && Date.now() - recent[COMMENTS_PER_HOUR - 1]._creationTime < HOUR) throw new ConvexError("RATE_LIMIT");
 
-    // ผู้ที่เคยคอมเมนต์ในโพสต์นี้เป็นแอดมิน ต้องรู้เมื่อมีคนตอบต่อ (เช่น คำถามต่อเนื่อง)
-    const before = await ctx.db.query("comments").withIndex("by_postId", (q) => q.eq("postId", postId)).take(300);
-    await ctx.db.insert("comments", { postId, authorId: viewer.userId, body: text, likeCount: 0, reportCount: 0 });
-    await ctx.db.patch("posts", postId, { commentCount: p.commentCount + 1 });
-
-    const recipients = new Set<Id<"users">>([p.authorId]);
+    await insertComment(ctx, { post: p, authorId: viewer.userId, authorIsAdmin: viewer.admin, text });
     if (!viewer.admin) {
-      for (const uid of new Set(before.map((c) => c.authorId))) if (await isAdminUser(ctx, uid)) recipients.add(uid);
-    }
-    for (const userId of recipients) {
-      await notify(ctx, { userId, type: "comment", actorId: viewer.userId, postId, byAdmin: viewer.admin, preview: text.slice(0, 100) });
+      await ctx.scheduler.runAfter(0, internal.telegram.notifyOwner, { postId, kind: "comment", actorId: viewer.userId, text });
     }
     return null;
   },

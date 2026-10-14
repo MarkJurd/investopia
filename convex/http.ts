@@ -3,11 +3,15 @@ import { httpAction } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { auth } from "./auth";
 import { PLANS, isPlanId } from "./plans";
+import { webhook as telegramWebhook } from "./telegram";
 
 const http = httpRouter();
 
 // เส้นทางที่ Google ส่งผู้ใช้กลับมาหลังล็อกอิน (/api/auth/callback/google)
 auth.addHttpRoutes(http);
+
+/* ---------- Telegram: เจ้าของ reply ข้อความบอท → โพสต์เป็นคอมเมนต์แอดมินบนเว็บ ---------- */
+http.route({ path: "/telegram/webhook", method: "POST", handler: telegramWebhook });
 
 /* ---------- ตรวจลายเซ็นของ Stripe (กันคนปลอมข้อความ "จ่ายแล้ว") ---------- */
 async function verifyStripeSignature(payload: string, header: string | null, secret: string): Promise<boolean> {

@@ -97,6 +97,17 @@ export default defineSchema({
     .index("by_reporterId_and_targetId", ["reporterId", "targetId"])
     .index("by_targetId", ["targetId"]),
 
+  // ข้อความที่บอท Telegram ส่งหาเจ้าของ → โพสต์ไหน (ใช้ตอนเจ้าของ reply ใน Telegram แล้วโพสต์เป็นคอมเมนต์บนเว็บ)
+  telegramThreads: defineTable({
+    telegramMessageId: v.number(),
+    postId: v.id("posts"),
+  })
+    .index("by_telegramMessageId", ["telegramMessageId"])
+    .index("by_postId", ["postId"]),
+
+  // update_id ที่ประมวลผลแล้ว (Telegram อาจส่งซ้ำ)
+  telegramSeen: defineTable({ updateId: v.number() }).index("by_updateId", ["updateId"]),
+
   notifications: defineTable({
     userId: v.id("users"),                       // ผู้รับ
     type: v.union(v.literal("like_post"), v.literal("like_comment"), v.literal("comment"), v.literal("new_post")),

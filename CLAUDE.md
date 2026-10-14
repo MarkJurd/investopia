@@ -31,6 +31,7 @@ lib/course.ts / course.en.ts ⭐ เนื้อหาห้องเรีย�
 convex/learn.ts            ห้องเรียน: overview / setLessonDone / submitQuiz (+ internal resetProgress)
 components/learn/          หน้า /learn: LearnApp (เช็กสิทธิ์/สลับหน้า), Dashboard, LessonView, QuizView, Outline
 app/learn/, app/en/learn/  layout.tsx แสดง LearnApp ตัวเดียว (page.tsx เป็น null) → เปลี่ยนบทไม่ต้องโหลดข้อมูลใหม่
+convex/telegram.ts         บอท Telegram ของเจ้าของ (แจ้งโพสต์ใหม่ + reply ตอบบนเว็บ) · route ใน convex/http.ts
 convex/community.ts        คอมมูนิตี้: โพสต์/คอมเมนต์/ไลก์/แจ้งเตือน/ค้นหา/อัปโหลดรูป (เช็กสิทธิ์สมาชิก+แอดมินทุกฟังก์ชัน) · convex/admin.ts = แอดมินจาก env ADMIN_EMAILS
 components/community/      CommunityApp, Feed, Composer, PostCard, PostDetail, NotificationBell, DisplayNameForm, helpers · components/AppHeader.tsx = เมนูบนร่วมห้องเรียน+คอมมูนิตี้
 app/community/, app/en/community/  layout.tsx แสดง CommunityApp ตัวเดียว (หน้าฟีด + /community/[id] หน้าโพสต์)
@@ -173,13 +174,15 @@ Investing.com Pro **ห้ามเอามาแสดงบนเว็บ** 
 - จำกัด 10 โพสต์/ชม. และ 30 คอมเมนต์/ชม. ต่อคน · ภาพเก็บใน Convex file storage (URL เดาไม่ได้ แต่ใครได้ลิงก์ก็เปิดได้)
 - กติกาห้อง (ข้อความอยู่ใน content.ts → community.rules): ห้ามชี้ชวนซื้อขายหุ้นรายตัว/ไม่ตรวจพอร์ต/ห้ามโฆษณา/ปิดบังข้อมูลส่วนตัวในรูป — เจ้าของปรับถ้อยคำเองได้
 - **ยังไม่ทำ:** @mention · แก้ไขรูปในโพสต์ · แท็ก Indicator (ห้องเฉพาะผู้ได้ Indicator) · แจ้งเตือนทางอีเมล
-- **ขั้นถัดไป (เจ้าของถามแล้ว): Telegram** — (1) บอทส่งแจ้งเตือนโพสต์ใหม่เข้า Telegram ของเจ้าของ (2) เจ้าของ reply ใน Telegram → บอทโพสต์เป็นคอมเมนต์แอดมินบนเว็บ (ทำได้จริง: webhook เข้า convex/http.ts + จำ message_id↔postId + รับเฉพาะ chat id ของเจ้าของ + ตรวจ secret header) · เจ้าของต้องสร้างบอทกับ @BotFather แล้วตั้ง `TELEGRAM_BOT_TOKEN` (ความลับ) + chat id ด้วย `npx convex env set` เอง
+- **Telegram — โค้ดเสร็จแล้ว 2026-10-14 (ทดสอบ webhook 20 เคสผ่าน) แต่ยังไม่เปิดใช้: รอเจ้าของสร้างบอท + ตั้ง env** (ไม่ตั้ง = ระบบเงียบ ไม่กระทบอะไร): `convex/telegram.ts` + route `/telegram/webhook` ใน convex/http.ts · ขาออก: โพสต์ใหม่/สมาชิกตอบต่อ → บอทส่งข้อความหาเจ้าของ (ชื่อ+แพ็กเกจ, ⭐ = รายปี/VIP) · ขาเข้า: เจ้าของ **Reply** ข้อความนั้น → โพสต์เป็นคอมเมนต์แอดมินบนเว็บ + แจ้งผู้ถาม (ใช้บัญชีแอดมินคนแรกที่มีในระบบ) · ความปลอดภัย: ต้องมีหัว secret ตรง TELEGRAM_WEBHOOK_SECRET, รับเฉพาะ chat id ของเจ้าของ (TELEGRAM_CHAT_ID), กันส่งซ้ำด้วย update_id, ตอบเฉพาะข้อความตัวอักษร
+  - ขั้นตอนเจ้าของ: ① @BotFather → /newbot → ได้ token ② สุ่ม secret: `node -e "console.log(require('crypto').randomBytes(24).toString('hex'))"` ③ `npx convex env set TELEGRAM_BOT_TOKEN <TOKEN>` และ `... TELEGRAM_WEBHOOK_SECRET <SECRET>` ④ ลงทะเบียน webhook: `Invoke-RestMethod "https://api.telegram.org/bot<TOKEN>/setWebhook?url=<ที่อยู่ .convex.site>/telegram/webhook&secret_token=<SECRET>"` (dev = https://superb-rabbit-529.convex.site) ⑤ ทักบอทใน Telegram → บอทตอบรหัสแชท → `npx convex env set TELEGRAM_CHAT_ID <เลข>`
+  - ข้อควรระวัง: บอท 1 ตัวมี webhook ได้ที่เดียว → dev กับ prod ใช้บอทคนละตัว (หรือลงทะเบียนใหม่ตอนสลับ) · **ข้อความโพสต์ของสมาชิกถูกส่งผ่านเซิร์ฟเวอร์ Telegram → ต้องระบุในนโยบายความเป็นส่วนตัว (PDPA) ตอนทำเฟส 6** · ตาราง telegramThreads/telegramSeen โตช้า (ตามโพสต์) ยังไม่มีตัวลบอัตโนมัติ
 
 ### บท Indicator (ล็อกเฉพาะผู้ได้ Indicator) — ทำแล้ว 2026-10-14
 บท m3-5 "อินดิเคเตอร์ของผู้สอน (เครื่องมือช่วยอ่านเทรนด์)" ใน lib/course.ts (รายชื่อบทที่ล็อกอยู่ที่ `INDICATOR_ONLY_LESSONS`) · เปิดเฉพาะแอดมิน + สมาชิกที่ `membership.indicatorBonus` (รายปี 50 คนแรก/VIP) · คนอื่นเห็นว่ามีบทนี้ + ข้อความอธิบาย แต่ **server ไม่ส่งเนื้อหา/วิดีโอ และ setLessonDone ถูกปฏิเสธ** · บทที่ล็อกไม่ถูกนับใน % ความคืบหน้า · วิดีโอ: ใส่ videoId ใน course.ts เหมือนบทอื่น
 
 ### เฟส 6: เช็กลิสต์ก่อนเปิดขายจริง
-- [ ] หน้า นโยบายความเป็นส่วนตัว (PDPA) + เงื่อนไขการใช้งาน/การคืนเงิน (ให้คนรู้กฎหมายตรวจ)
+- [ ] หน้า นโยบายความเป็นส่วนตัว (PDPA) + เงื่อนไขการใช้งาน/การคืนเงิน (ให้คนรู้กฎหมายตรวจ) — ต้องกล่าวถึง: ชื่อเล่น/ภาพ/ข้อความในคอมมูนิตี้, Bunny (วิดีโอ), Stripe, Telegram (ถ้าเปิดใช้), Google login
 - [ ] Convex production deployment + ตั้ง env ทั้งหมดใหม่บน prod (JWT_PRIVATE_KEY, JWKS, SITE_URL=โดเมนจริง, AUTH_GOOGLE_*, STRIPE_*)
 - [ ] Google Cloud: เพิ่ม redirect URI ของ prod + กด Publish app (ออกจากโหมด Testing)
 - [ ] Stripe: ยืนยันตัวตนบัญชีจริง → ใช้ `sk_live_` + สร้าง webhook ของ prod → ตั้ง `STRIPE_WEBHOOK_SECRET` ของ prod
