@@ -5,7 +5,7 @@ import { internal } from "./_generated/api";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import {
-  PLANS, planValidator, VIP_SEATS_PER_MONTH, INDICATOR_BONUS_LIMIT, daysToMs, bangkokMonthKey,
+  PLANS, type PlanId, planValidator, VIP_SEATS_PER_MONTH, INDICATOR_BONUS_LIMIT, daysToMs, bangkokMonthKey,
 } from "./plans";
 
 /* ---------- ที่นั่ง VIP ที่เหลือเดือนนี้ ---------- */
@@ -31,6 +31,23 @@ export const vipSeatsLeftInternal = internalQuery({
 });
 
 /* ---------- สิทธิ์ปัจจุบันของผู้ใช้ที่ล็อกอินอยู่ ---------- */
+export type Membership = { plan: PlanId; expiresAt: number; indicatorBonus: boolean };
+
+/** สิทธิ์ที่ใช้ได้ ณ เวลา now (null = ไม่มี/หมดอายุ) — ใช้ร่วมกับห้องเรียน (convex/learn.ts) */
+export async function getMembership(ctx: QueryCtx, userId: Id<"users">, now: number): Promise<Membership | null> {
+  const rows = await ctx.db.query("memberships").withIndex("by_userId", (q) => q.eq("userId", userId)).collect();
+  const live = rows.filter((m) => m.status === "active" && m.startsAt <= now && m.expiresAt > now);
+  if (live.length === 0) return null;
+  // แพ็กเกจที่สูงสุดที่ใช้อยู่ตอนนี้ + วันหมดอายุของแพ็กเกจนั้น (รวมที่ต่ออายุไว้ล่วงหน้า)
+  const top = live.reduce((a, b) => (PLANS[b.plan].rank > PLANS[a.plan].rank ? b : a));
+  const sameLater = rows.filter((m) => m.status === "active" && m.plan === top.plan && m.expiresAt > now);
+  return {
+    plan: top.plan,
+    expiresAt: Math.max(...sameLater.map((m) => m.expiresAt)),
+    indicatorBonus: rows.some((m) => m.status === "active" && m.indicatorBonus),
+  };
+}
+
 export const myMembership = query({
   args: {},
   returns: v.union(
@@ -40,18 +57,7 @@ export const myMembership = query({
   handler: async (ctx) => {
     const userId = await getAuthUserId(ctx);
     if (userId === null) return null;
-    const now = Date.now();
-    const rows = await ctx.db.query("memberships").withIndex("by_userId", (q) => q.eq("userId", userId)).collect();
-    const live = rows.filter((m) => m.status === "active" && m.startsAt <= now && m.expiresAt > now);
-    if (live.length === 0) return null;
-    // แพ็กเกจที่สูงสุดที่ใช้อยู่ตอนนี้ + วันหมดอายุของแพ็กเกจนั้น (รวมที่ต่ออายุไว้ล่วงหน้า)
-    const top = live.reduce((a, b) => (PLANS[b.plan].rank > PLANS[a.plan].rank ? b : a));
-    const sameLater = rows.filter((m) => m.status === "active" && m.plan === top.plan && m.expiresAt > now);
-    return {
-      plan: top.plan,
-      expiresAt: Math.max(...sameLater.map((m) => m.expiresAt)),
-      indicatorBonus: rows.some((m) => m.status === "active" && m.indicatorBonus),
-    };
+    return await getMembership(ctx, userId, Date.now());
   },
 });
 

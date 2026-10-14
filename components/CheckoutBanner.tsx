@@ -6,6 +6,7 @@ import { useState, useSyncExternalStore } from "react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useContent } from "@/components/ContentContext";
+import { learnPath } from "@/components/learn/steps";
 
 const noSubscribe = () => () => {};
 function readCheckoutParam(): "success" | "cancel" | null {
@@ -41,6 +42,7 @@ export default function CheckoutBanner() {
         <b>{K.successTitle}</b>
         <p>{K.successText} {CONTENT.planLabels[me.plan]} {K.until} {until}</p>
         {me.indicatorBonus && <p>{K.indicatorNote}</p>}
+        <a href={learnPath(CONTENT)} className="cb-link">{K.goLearn}</a>
       </>
     );
   }

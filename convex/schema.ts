@@ -25,4 +25,22 @@ export default defineSchema({
     .index("by_paymentIntentId", ["paymentIntentId"])
     .index("by_plan_and_monthKey", ["plan", "monthKey"])
     .index("by_plan_and_indicatorBonus", ["plan", "indicatorBonus"]),
+
+  /* ---------- ห้องเรียน (/learn) — id บทเรียน/โมดูลมาจาก lib/course.ts ---------- */
+  // บทที่ผู้เรียนกด "เรียนจบแล้ว" (1 แถว = 1 บท)
+  lessonProgress: defineTable({
+    userId: v.id("users"),
+    lessonId: v.string(),
+    completedAt: v.number(),
+  }).index("by_userId_and_lessonId", ["userId", "lessonId"]),
+
+  // ผลแบบทดสอบท้ายโมดูล (1 แถว = 1 โมดูล) — เก็บคะแนนดีสุดไว้ตัดสินว่าผ่านหรือยัง
+  quizResults: defineTable({
+    userId: v.id("users"),
+    moduleId: v.string(),
+    total: v.number(),
+    bestCorrect: v.number(),
+    passed: v.boolean(),
+    attempts: v.number(),
+  }).index("by_userId_and_moduleId", ["userId", "moduleId"]),
 });

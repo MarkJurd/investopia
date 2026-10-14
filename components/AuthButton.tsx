@@ -3,10 +3,12 @@
 /* ปุ่มบนเมนู: ยังไม่ล็อกอิน = "เข้าสู่ระบบด้วย Google"
  * ล็อกอินแล้ว = รูปโปรไฟล์ (กดแล้วเปิดเมนูเล็ก: ชื่อ, ป้ายสมาชิก, ออกจากระบบ) — ไม่กินที่บนแถบเมนู */
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { Authenticated, AuthLoading, Unauthenticated, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useContent } from "@/components/ContentContext";
+import { learnPath } from "@/components/learn/steps";
 
 function UserMenu() {
   const CONTENT = useContent();
@@ -40,6 +42,7 @@ function UserMenu() {
         <div className="user-pop" role="menu">
           <div className="up-name">{name}</div>
           {member && <span className="plan-badge">{CONTENT.planLabels[member.plan]}</span>}
+          {member && <Link href={learnPath(CONTENT)} className="btn btn-primary btn-sm btn-block" role="menuitem" onClick={() => setOpen(false)}>{A.classroom}</Link>}
           <button className="btn btn-ghost btn-sm btn-block" role="menuitem" onClick={() => void signOut()}>{A.signOut}</button>
         </div>
       )}
