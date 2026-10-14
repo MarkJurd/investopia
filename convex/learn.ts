@@ -1,14 +1,17 @@
 /* ห้องเรียน (/learn): เนื้อหาบทเรียน · ความคืบหน้า · แบบทดสอบ
  * ทุกฟังก์ชันเช็กสิทธิ์สมาชิกที่นี่ (ฝั่งเซิร์ฟเวอร์) — หน้าเว็บไม่มีทางได้เนื้อหา/เฉลยถ้าไม่ใช่สมาชิก
  * เนื้อหาบทเรียนอยู่ที่ lib/course.ts (ไทย) และ lib/course.en.ts (อังกฤษ) */
-import { internalMutation, mutation, query } from "./_generated/server";
+import { action, internalMutation, internalQuery, mutation, query } from "./_generated/server";
 import type { QueryCtx } from "./_generated/server";
 import type { Id } from "./_generated/dataModel";
+import { internal } from "./_generated/api";
 import { ConvexError, v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { getMembership } from "./payments";
+import { isAdminUser } from "./admin";
 import { planValidator } from "./plans";
-import { COURSE, type Course } from "../lib/course";
+import { signBunnyEmbedUrl } from "./bunny";
+import { COURSE, INDICATOR_ONLY_LESSONS, type Course } from "../lib/course";
 import { COURSE_EN } from "../lib/course.en";
 
 const PASS_PERCENT = 70;        // ผ่านแบบทดสอบเมื่อได้ ≥ 70%
@@ -19,12 +22,12 @@ const QUIZ_MODULE_IDS = new Set(COURSE.modules.filter((m) => m.quiz.length > 0).
 const langValidator = v.union(v.literal("th"), v.literal("en"));
 const courseFor = (lang: "th" | "en"): Course => (lang === "en" ? COURSE_EN : COURSE);
 
-/** ลิงก์เล่นวิดีโอ — ยังไม่ได้เลือกที่เก็บวิดีโอ จึงคืน null (หน้าเว็บแสดงกรอบ "เร็วๆ นี้")
- *  เลือกแล้ว (เช่น Bunny Stream) ให้สร้างลิงก์แบบมีวันหมดอายุที่นี่ — คนที่ไม่ใช่สมาชิกจะไม่มีทางได้ลิงก์ */
-function videoEmbedUrl(videoId: string): string | null {
-  void videoId;
-  return null;
-}
+/* ---------- วิดีโอ (Bunny Stream) ----------
+ * videoId ของแต่ละบทอยู่ใน lib/course.ts (ใช้ของไฟล์ไทยทั้ง 2 ภาษา) · ลิงก์เล่นสร้างตอนเปิดบทเท่านั้น (action videoUrl)
+ * ยังไม่ตั้งค่า Bunny (BUNNY_LIBRARY_ID / BUNNY_TOKEN_KEY) หรือบทไม่มี videoId = ขึ้น "เร็วๆ นี้" */
+const VIDEO_ID_BY_LESSON = new Map(COURSE.modules.flatMap((m) => m.lessons.map((l) => [l.id, l.videoId] as const)));
+const VIDEO_LINK_HOURS = 4;    // ลิงก์เล่นหมดอายุกี่ชั่วโมง (เปิดบทใหม่ = ได้ลิงก์ใหม่)
+const bunnyReady = () => Boolean(process.env.BUNNY_LIBRARY_ID && process.env.BUNNY_TOKEN_KEY);
 
 /* ---------- สิทธิ์ ---------- */
 async function requireMember(ctx: QueryCtx, now: number): Promise<Id<"users">> {
@@ -32,6 +35,11 @@ async function requireMember(ctx: QueryCtx, now: number): Promise<Id<"users">> {
   if (userId === null) throw new ConvexError("NOT_SIGNED_IN");
   if ((await getMembership(ctx, userId, now)) === null) throw new ConvexError("NOT_A_MEMBER");
   return userId;
+}
+
+/** ผู้ที่เห็นบท Indicator ได้: แอดมิน หรือสมาชิกที่ได้รับ Indicator (รายปี 50 คนแรก / VIP) */
+async function canSeeIndicator(ctx: QueryCtx, userId: Id<"users">, indicatorBonus: boolean): Promise<boolean> {
+  return indicatorBonus || (await isAdminUser(ctx, userId));
 }
 
 /* ---------- ข้อมูลความคืบหน้าของผู้เรียน (จำนวนแถวจำกัดตามขนาดคอร์ส) ---------- */
@@ -50,7 +58,8 @@ async function loadProgress(ctx: QueryCtx, userId: Id<"users">) {
 /* ---------- หน้าห้องเรียน: เนื้อหา (ไม่มีเฉลย) + ความคืบหน้าของฉัน ---------- */
 const lessonOut = v.object({
   id: v.string(), title: v.string(), notes: v.string(), minutes: v.number(),
-  embedUrl: v.union(v.string(), v.null()),     // null = ยังไม่มีวิดีโอ → แสดง "เร็วๆ นี้"
+  hasVideo: v.boolean(),                        // false = ยังไม่มีวิดีโอ → แสดง "เร็วๆ นี้"
+  locked: v.boolean(),                          // true = บทนี้สำหรับผู้ที่ได้ Indicator เท่านั้น (ไม่ส่งเนื้อหา)
 });
 const moduleOut = v.object({
   id: v.string(), tag: v.string(), title: v.string(), practice: v.string(),
@@ -84,14 +93,20 @@ export const overview = query({
     if (membership === null) return { status: "noMembership" as const };
 
     const { lessons, quizzes } = await loadProgress(ctx, userId);
+    const videosOn = bunnyReady();
+    const canIndicator = await canSeeIndicator(ctx, userId, membership.indicatorBonus);
     return {
       status: "ok" as const,
       membership: { plan: membership.plan, expiresAt: membership.expiresAt },
       modules: courseFor(lang).modules.map((m) => ({
         id: m.id, tag: m.tag, title: m.title, practice: m.practice,
-        lessons: m.lessons.map((l) => ({
-          id: l.id, title: l.title, notes: l.notes, minutes: l.minutes, embedUrl: videoEmbedUrl(l.videoId),
-        })),
+        lessons: m.lessons.map((l) => {
+          const locked = INDICATOR_ONLY_LESSONS.has(l.id) && !canIndicator;
+          return {
+            id: l.id, title: l.title, notes: locked ? "" : l.notes, minutes: l.minutes, locked,
+            hasVideo: !locked && videosOn && (VIDEO_ID_BY_LESSON.get(l.id) ?? "") !== "",
+          };
+        }),
         quiz: m.quiz.map((q) => ({ q: q.q, choices: q.choices })),  // ไม่ส่งเฉลย/คำอธิบาย
       })),
       doneLessonIds: lessons.map((l) => l.lessonId),
@@ -111,6 +126,10 @@ export const setLessonDone = mutation({
     const now = Date.now();
     const userId = await requireMember(ctx, now);
     if (!LESSON_IDS.has(lessonId)) throw new ConvexError("UNKNOWN_LESSON");
+    if (INDICATOR_ONLY_LESSONS.has(lessonId)) {
+      const m = await getMembership(ctx, userId, now);
+      if (!(await canSeeIndicator(ctx, userId, m?.indicatorBonus ?? false))) throw new ConvexError("LOCKED");
+    }
     const row = await ctx.db
       .query("lessonProgress")
       .withIndex("by_userId_and_lessonId", (q) => q.eq("userId", userId).eq("lessonId", lessonId))
@@ -154,6 +173,35 @@ export const submitQuiz = mutation({
       await ctx.db.insert("quizResults", { userId, moduleId, total, bestCorrect: correct, passed: passes(correct), attempts: 1 });
     }
     return { correct, total, passed: passes(correct) || (prev?.passed ?? false), results };
+  },
+});
+
+/* ---------- ลิงก์เล่นวิดีโอ: เช็กสิทธิ์สมาชิกก่อน แล้วค่อยเซ็นลิงก์ (คนที่ไม่ใช่สมาชิกไม่มีทางได้ลิงก์) ---------- */
+export const videoIdForMember = internalQuery({
+  args: { userId: v.id("users"), lessonId: v.string() },
+  returns: v.union(v.string(), v.null()),
+  handler: async (ctx, { userId, lessonId }) => {
+    const m = await getMembership(ctx, userId, Date.now());
+    if (m === null) return null;
+    if (INDICATOR_ONLY_LESSONS.has(lessonId) && !(await canSeeIndicator(ctx, userId, m.indicatorBonus))) return null;
+    const id = VIDEO_ID_BY_LESSON.get(lessonId) ?? "";
+    return id === "" ? null : id;
+  },
+});
+
+export const videoUrl = action({
+  args: { lessonId: v.string() },
+  returns: v.union(v.string(), v.null()),
+  handler: async (ctx, { lessonId }): Promise<string | null> => {
+    const userId = await getAuthUserId(ctx);
+    if (userId === null) throw new ConvexError("NOT_SIGNED_IN");
+    const libraryId = process.env.BUNNY_LIBRARY_ID;
+    const tokenKey = process.env.BUNNY_TOKEN_KEY;
+    if (!libraryId || !tokenKey) return null;
+    const videoId: string | null = await ctx.runQuery(internal.learn.videoIdForMember, { userId, lessonId });
+    if (videoId === null) return null;
+    const expires = Math.floor(Date.now() / 1000) + VIDEO_LINK_HOURS * 3600;
+    return await signBunnyEmbedUrl(libraryId, tokenKey, videoId, expires);
   },
 });
 

@@ -3,7 +3,7 @@
 /* หน้าแรกของห้องเรียน: วันหมดอายุ · ความคืบหน้า % · เรียนต่อจากที่ค้าง · รายการโมดูล */
 import Link from "next/link";
 import { useContent } from "@/components/ContentContext";
-import { learnPath, pricingPath, type Overview, type Step } from "@/components/learn/steps";
+import { countable, learnPath, pricingPath, type Overview, type Step } from "@/components/learn/steps";
 
 const DAY = 24 * 60 * 60 * 1000;
 const WARN_DAYS = 7;   // เตือนต่ออายุเมื่อเหลือไม่เกินกี่วัน
@@ -23,9 +23,10 @@ function Ring({ percent }: { percent: number }) {
 export default function Dashboard({ data, steps, now }: { data: Overview; steps: Step[]; now: number }) {
   const C = useContent();
   const L = C.learn;
-  const doneCount = steps.filter((s) => s.done).length;
-  const percent = steps.length ? Math.round((doneCount / steps.length) * 100) : 0;
-  const next = steps.find((s) => !s.done);
+  const counted = countable(steps);
+  const doneCount = counted.filter((s) => s.done).length;
+  const percent = counted.length ? Math.round((doneCount / counted.length) * 100) : 0;
+  const next = counted.find((s) => !s.done);
   const daysLeft = Math.ceil((data.membership.expiresAt - now) / DAY);
   const until = new Date(data.membership.expiresAt).toLocaleDateString(C.locale.dateLocale, { day: "numeric", month: "long", year: "numeric" });
 
@@ -51,7 +52,7 @@ export default function Dashboard({ data, steps, now }: { data: Overview; steps:
         <Ring percent={percent} />
         <div className="pc-body">
           <span className="pc-label">{L.progressLabel}</span>
-          <b className="pc-steps">{doneCount} / {steps.length} {L.stepsUnit}</b>
+          <b className="pc-steps">{doneCount} / {counted.length} {L.stepsUnit}</b>
           <div className="pc-bar"><i style={{ width: `${percent}%` }} /></div>
           {next ? (
             <Link href={learnPath(C, next.id)} className="btn btn-primary">
@@ -68,7 +69,7 @@ export default function Dashboard({ data, steps, now }: { data: Overview; steps:
           <h2 className="dash-h2">{L.modulesTitle}</h2>
           <div className="mod-list">
             {data.modules.map((m) => {
-              const own = steps.filter((s) => s.module.id === m.id);
+              const own = counted.filter((s) => s.module.id === m.id);
               const done = own.filter((s) => s.done).length;
               const target = own.find((s) => !s.done) ?? own[0];
               const quiz = own.find((s) => s.kind === "quiz");
@@ -77,7 +78,7 @@ export default function Dashboard({ data, steps, now }: { data: Overview; steps:
                   <span className="mc-tag">{m.tag}</span>
                   <b className="mc-title">{m.title}</b>
                   <span className="mc-meta">
-                    {m.lessons.length} {L.lessonsUnit}
+                    {m.lessons.filter((l) => !l.locked).length} {L.lessonsUnit}
                     {quiz?.kind === "quiz" && quiz.result && <> · {L.bestScore} {quiz.result.bestCorrect}/{quiz.result.total}</>}
                     {quiz?.done && <> · <b className="ok-text">{L.passed}</b></>}
                   </span>

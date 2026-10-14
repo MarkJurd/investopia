@@ -33,6 +33,7 @@ export const CONTENT_EN: typeof CONTENT = {
     signInShort: "Sign in",
     signOut: "Sign out",
     classroom: "Classroom",
+    community: "Community",
     member: "Member"
   },
 
@@ -153,7 +154,8 @@ export const CONTENT_EN: typeof CONTENT = {
         desc: "",
         lessons: [
           { b: "Candlesticks", t: "— each candle's shape shows that period's buying vs. selling pressure and who won" },
-          { b: "Dow Theory", t: "— prices move in waves, driven by ongoing imbalances of buying and selling" }
+          { b: "Dow Theory", t: "— prices move in waves, driven by ongoing imbalances of buying and selling" },
+          { b: "Trendlines", t: "— draw trend lines to see the trend's direction and whether it's still intact" }
         ],
         exercise: { b: "Exercise:", t: " read 10 real candlesticks + draw the trend structure on a real chart" }
       },
@@ -166,7 +168,8 @@ export const CONTENT_EN: typeof CONTENT = {
           { b: "EMA", t: "— a moving average that weights recent prices more, used for trend direction (covers the popular 20/50/100/200)" },
           { b: "MACD basics", t: "— measures momentum with two lines and a histogram" },
           { b: "Using MACD to read and count trends", t: "— the instructor's own method (taught in detail in the videos)" },
-          { b: "Divergence", t: "— price makes a new high but momentum doesn't follow; the trend may be weakening" }
+          { b: "Divergence", t: "— price makes a new high but momentum doesn't follow; the trend may be weakening" },
+          { b: "The instructor's indicator", t: "— a trend-reading tool, with a lesson on how to use it (for members who receive the Indicator with the Yearly or VIP plan)" }
         ],
         exercise: { b: "Exercise:", t: " pick one stock, read its trend with EMA/MACD and log a comparison table against reading it by eye" }
       },
@@ -189,6 +192,7 @@ export const CONTENT_EN: typeof CONTENT = {
         desc: "",
         lessons: [
           { b: "Entry and exit points", t: "— clear levels based on buying/selling pressure + structure, not feelings" },
+          { b: "Multi-timeframe", t: "— reading several timeframes together to build confidence before entering or exiting" },
           { b: "Exits", t: "— set your profit target and stop-loss in advance" },
           { b: "Scaling in/out + position sizing", t: "— split entries and exits, and size each position to your risk" }
         ],
@@ -429,6 +433,8 @@ export const CONTENT_EN: typeof CONTENT = {
     minutesUnit: "min",
     videoSoonTitle: "Coming soon",
     videoSoonText: "We're still recording this lesson — read the summary below for now. The video will play here once it's ready.",
+    videoErrorTitle: "Couldn't load the video",
+    videoRetry: "Try again",
     notesTitle: "Lesson summary",
     markDone: "Mark lesson as done",
     doneLabel: "✓ Done",
@@ -449,6 +455,10 @@ export const CONTENT_EN: typeof CONTENT = {
     wrongBefore: "✗ Not quite — the right answer is",
     bestScore: "Best score",
     notFound: "Lesson not found",
+    lockedTitle: "This lesson is for members who receive the Indicator",
+    lockedText: "The Indicator is a bonus with the Yearly plan (first 50 members) and the VIP plan. If you have it, this lesson opens automatically.",
+    lockedBadge: "Indicator holders only",
+    askLesson: "Ask about this lesson in the community",
     error: "Couldn't save. Please try again."
   },
 
@@ -531,6 +541,99 @@ export const CONTENT_EN: typeof CONTENT = {
     ctaButton: "See the course",
     backHome: "← Home",
     tools: "Tools"
+  },
+
+  community: {
+    title: "Community",
+    loading: "Loading...",
+    signInTitle: "Sign in to join the community",
+    signInText: "The community is for members only — sign in with the Google account you used to buy your plan",
+    noMemberTitle: "This community is for members",
+    noMemberText: "This account has no active plan, or the plan has expired — renew and come right back to the conversation.",
+    seePlans: "See plans",
+    back: "← Back to community",
+
+    rulesTitle: "House rules",
+    rulesShow: "Read the rules",
+    rulesHide: "Hide the rules",
+    rules: [
+      "Ask anything about the lessons and how to read charts",
+      "No recommending or asking for buy/sell advice on individual stocks, and we don't review portfolios",
+      "No ads, investment-pitch links, or sharing other people's personal information",
+      "Images: hide names, account numbers and balances before you post",
+    ],
+
+    nameTitle: "Choose the name shown in the community",
+    nameText: "A nickname is fine, no need for your real name — others will only see this name (your Google profile photo is never shown).",
+    namePh: "Display name (2–20 characters)",
+    nameSave: "Save name",
+    nameInvalid: "Letters, numbers, spaces and _ . - only, 2–20 characters",
+    nameReserved: "That name is reserved for the team. Try another.",
+    nameLine: "Posting as",
+    nameEdit: "Change name",
+
+    composerPh: "Ask or share something with everyone... (no stock tips on individual stocks)",
+    post: "Post",
+    posting: "Posting...",
+    addImage: "Add image",
+    imagesHint: "Up to 3 images · 5 MB each",
+    removeImage: "Remove image",
+    tagLabel: "Topic",
+    tagGeneral: "General",
+    tagLesson: "About a lesson",
+    lessonPick: "Choose a lesson",
+    lessonChip: "Lesson",
+
+    filterAll: "All",
+    searchPh: "Search the community",
+    searchEmpty: "No posts match this search",
+    searchHint: "Type at least 2 characters",
+    pinnedLabel: "Pinned",
+    empty: "No posts yet — be the first to start the conversation",
+    loadMore: "Load more",
+
+    adminBadge: "Instructor",
+    edited: "edited",
+    like: "Like",
+    commentsTitle: "Comments",
+    share: "Copy link",
+    copied: "Link copied",
+    more: "Options",
+    edit: "Edit",
+    delete: "Delete",
+    confirmDelete: "Delete this permanently?",
+    report: "Report",
+    reported: "Reported, thank you",
+    pin: "Pin",
+    unpin: "Unpin",
+    hide: "Hide post",
+    unhide: "Unhide",
+    hiddenLabel: "Hidden",
+    reportsLabel: "Reports",
+    adminOnlyHint: "(admins only)",
+    save: "Save",
+    cancel: "Cancel",
+
+    commentPh: "Write a comment...",
+    send: "Send",
+    noComments: "No comments yet",
+    notFound: "This post wasn't found (it may have been deleted or hidden)",
+
+    notifTitle: "Notifications",
+    notifMarkAll: "Mark all read",
+    notifEmpty: "No notifications yet",
+    notifLikePost: "liked your post",
+    notifLikeComment: "liked your comment",
+    notifComment: "commented on the post",
+    notifAdminReply: "The instructor replied to your post",
+    notifNewPost: "New post",
+    notifUnread: "Unread",
+
+    errGeneric: "That didn't work. Please try again.",
+    errRateLimit: "You're posting too fast — wait a moment and try again",
+    errImage: "Images must be JPG/PNG/WebP and under 5 MB",
+    errTooLong: "That message is too long",
+    errEmpty: "You haven't typed anything yet"
   },
 
   prototypeBanner: "🧪 Test mode — no real money is charged yet (Stripe test cards work)"

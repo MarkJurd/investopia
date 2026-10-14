@@ -3,7 +3,7 @@
 /* สารบัญด้านข้าง (ทุกโมดูล ✓ ที่เรียนจบ) + ปุ่มก่อนหน้า/ถัดไป — ใช้ทั้งหน้าบทเรียนและหน้าแบบทดสอบ */
 import Link from "next/link";
 import { useContent } from "@/components/ContentContext";
-import { learnPath, type Step } from "@/components/learn/steps";
+import { countable, isLocked, learnPath, type Step } from "@/components/learn/steps";
 
 export function Outline({ steps, current }: { steps: Step[]; current: Step }) {
   const C = useContent();
@@ -14,22 +14,23 @@ export function Outline({ steps, current }: { steps: Step[]; current: Step }) {
       <Link href={learnPath(C)} className="lo-back">{L.backToClassroom}</Link>
       {modules.map((m) => {
         const own = steps.filter((s) => s.module.id === m.id);
-        const done = own.filter((s) => s.done).length;
+        const counted = countable(own);
+        const done = counted.filter((s) => s.done).length;
         return (
           <details key={m.id} open={m.id === current.module.id}>
             <summary>
               <span className="lo-tag">{m.tag}</span>
               <span className="lo-title">{m.title}</span>
-              <span className="lo-count">{done}/{own.length}</span>
+              <span className="lo-count">{done}/{counted.length}</span>
             </summary>
             <ol>
               {own.map((s) => (
                 <li key={s.id}>
                   <Link href={learnPath(C, s.id)} className={`lo-step${s.id === current.id ? " on" : ""}${s.done ? " done" : ""}`}
                     aria-current={s.id === current.id ? "page" : undefined}>
-                    <span className="lo-check" aria-hidden="true">{s.done ? "✓" : s.kind === "quiz" ? "?" : ""}</span>
+                    <span className="lo-check" aria-hidden="true">{isLocked(s) ? "🔒" : s.done ? "✓" : s.kind === "quiz" ? "?" : ""}</span>
                     <span className="lo-label">{s.kind === "lesson" ? s.lesson.title : L.quizTitle}</span>
-                    {s.kind === "lesson" && !s.lesson.embedUrl && <span className="lo-soon">{L.comingSoon}</span>}
+                    {s.kind === "lesson" && !s.lesson.locked && !s.lesson.hasVideo && <span className="lo-soon">{L.comingSoon}</span>}
                   </Link>
                 </li>
               ))}

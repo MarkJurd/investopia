@@ -12,6 +12,10 @@ export type Step =
   | { kind: "lesson"; id: string; module: Module; lesson: Lesson; done: boolean }
   | { kind: "quiz"; id: string; module: Module; result: QuizResult | null; done: boolean };
 
+export const isLocked = (s: Step): boolean => s.kind === "lesson" && s.lesson.locked;
+/** ขั้นที่นับในความคืบหน้า (ไม่นับบทที่ล็อกไว้ให้ผู้ได้ Indicator) */
+export const countable = (steps: Step[]): Step[] => steps.filter((s) => !isLocked(s));
+
 export const quizStepId = (moduleId: string) => `${moduleId}-quiz`;
 
 export function buildSteps(data: Overview): Step[] {

@@ -43,4 +43,70 @@ export default defineSchema({
     passed: v.boolean(),
     attempts: v.number(),
   }).index("by_userId_and_moduleId", ["userId", "moduleId"]),
+
+  /* ---------- คอมมูนิตี้ (/community) — เฉพาะสมาชิก + แอดมิน ---------- */
+  // ชื่อที่แสดงในคอมมูนิตี้ (ตั้งเอง ไม่ใช้ชื่อจริงจาก Google)
+  profiles: defineTable({
+    userId: v.id("users"),
+    displayName: v.string(),
+  }).index("by_userId", ["userId"]),
+
+  posts: defineTable({
+    authorId: v.id("users"),
+    body: v.string(),
+    tag: v.union(v.literal("general"), v.literal("lesson")),
+    lessonId: v.optional(v.string()),            // ใช้เมื่อ tag = lesson (id บทเรียนจาก lib/course.ts)
+    imageIds: v.array(v.id("_storage")),
+    likeCount: v.number(),
+    commentCount: v.number(),
+    reportCount: v.number(),
+    pinned: v.boolean(),
+    hidden: v.boolean(),                         // แอดมินซ่อน
+    editedAt: v.optional(v.number()),
+  })
+    .index("by_hidden_and_tag", ["hidden", "tag"])
+    .index("by_tag", ["tag"])
+    .index("by_pinned", ["pinned"])
+    .index("by_authorId", ["authorId"])
+    .searchIndex("search_body", { searchField: "body", filterFields: ["hidden"] }),
+
+  comments: defineTable({
+    postId: v.id("posts"),
+    authorId: v.id("users"),
+    body: v.string(),
+    likeCount: v.number(),
+    reportCount: v.number(),
+    editedAt: v.optional(v.number()),
+  })
+    .index("by_postId", ["postId"])
+    .index("by_authorId", ["authorId"]),
+
+  likes: defineTable({
+    userId: v.id("users"),
+    targetType: v.union(v.literal("post"), v.literal("comment")),
+    targetId: v.string(),                        // id ของโพสต์หรือคอมเมนต์
+  })
+    .index("by_userId_and_targetId", ["userId", "targetId"])
+    .index("by_targetId", ["targetId"]),
+
+  reports: defineTable({
+    reporterId: v.id("users"),
+    targetType: v.union(v.literal("post"), v.literal("comment")),
+    targetId: v.string(),
+  })
+    .index("by_reporterId_and_targetId", ["reporterId", "targetId"])
+    .index("by_targetId", ["targetId"]),
+
+  notifications: defineTable({
+    userId: v.id("users"),                       // ผู้รับ
+    type: v.union(v.literal("like_post"), v.literal("like_comment"), v.literal("comment"), v.literal("new_post")),
+    actorId: v.id("users"),
+    postId: v.id("posts"),
+    byAdmin: v.boolean(),                        // คนทำเป็นแอดมินไหม (ใช้เน้นว่า "ผู้สอนตอบแล้ว")
+    preview: v.string(),
+    read: v.boolean(),
+  })
+    .index("by_userId_and_read", ["userId", "read"])
+    .index("by_userId", ["userId"])
+    .index("by_postId", ["postId"]),
 });

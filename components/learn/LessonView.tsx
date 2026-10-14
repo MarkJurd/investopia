@@ -6,7 +6,10 @@ import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useContent } from "@/components/ContentContext";
 import { Outline, StepNav } from "@/components/learn/Outline";
-import type { Step } from "@/components/learn/steps";
+import LessonVideo from "@/components/learn/LessonVideo";
+import Link from "next/link";
+import { communityPath } from "@/components/community/helpers";
+import { pricingPath, type Step } from "@/components/learn/steps";
 
 export default function LessonView({ steps, index }: { steps: Step[]; index: number }) {
   const C = useContent();
@@ -32,17 +35,17 @@ export default function LessonView({ steps, index }: { steps: Step[]; index: num
   return (
     <div className="learn-grid">
       <article className="learn-content">
-        <div className="learn-video">
-          {lesson.embedUrl
-            ? <iframe src={lesson.embedUrl} title={lesson.title} allow="encrypted-media; picture-in-picture; fullscreen" allowFullScreen />
-            : (
-              <div className="lv-soon">
-                <span className="lv-play" aria-hidden="true">▶</span>
-                <b>{L.videoSoonTitle}</b>
-                <p>{L.videoSoonText}</p>
-              </div>
-            )}
-        </div>
+        {lesson.locked ? (
+          <div className="card locked-card">
+            <span className="lo-soon">🔒 {L.lockedBadge}</span>
+            <h1 className="learn-h1">{lesson.title}</h1>
+            <h2>{L.lockedTitle}</h2>
+            <p>{L.lockedText}</p>
+            <Link href={pricingPath(C)} className="btn btn-primary btn-sm">{L.seePlans}</Link>
+          </div>
+        ) : (
+        <>
+        <LessonVideo key={lesson.id} lessonId={lesson.id} title={lesson.title} hasVideo={lesson.hasVideo} />
 
         <p className="learn-kicker">{module.tag} · {module.title}</p>
         <h1 className="learn-h1">{lesson.title}</h1>
@@ -63,7 +66,11 @@ export default function LessonView({ steps, index }: { steps: Step[]; index: num
             <button className="btn btn-primary" disabled={busy} onClick={() => void toggle(true)}>{L.markDone}</button>
           )}
           {error && <span className="learn-error" role="alert">{L.error}</span>}
+          <Link href={`${communityPath(C)}?ask=${lesson.id}`} className="btn btn-ghost btn-sm">{L.askLesson}</Link>
         </div>
+
+        </>
+        )}
 
         <StepNav steps={steps} index={index} />
       </article>

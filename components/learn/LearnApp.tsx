@@ -10,7 +10,7 @@ import { useConvexAuth, useQuery } from "convex/react";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { api } from "@/convex/_generated/api";
 import { ContentProvider, useContent, type Content } from "@/components/ContentContext";
-import AuthButton from "@/components/AuthButton";
+import AppHeader from "@/components/AppHeader";
 import Dashboard from "@/components/learn/Dashboard";
 import LessonView from "@/components/learn/LessonView";
 import QuizView from "@/components/learn/QuizView";
@@ -19,29 +19,6 @@ import { buildSteps, learnPath, pricingPath } from "@/components/learn/steps";
 function useStepId(): string | undefined {
   const m = usePathname().match(/\/learn\/([^/]+)/);
   return m ? decodeURIComponent(m[1]) : undefined;
-}
-
-function Header() {
-  const C = useContent();
-  const stepId = useStepId();
-  const otherBase = C.locale.switchHref === "/" ? "" : C.locale.switchHref;
-  return (
-    <header className="nav scrolled">
-      <div className="container nav-inner">
-        <div className="learn-brand">
-          <Link href={C.locale.base} className="logo">
-            <img src="/logo.svg" alt="" className="logo-mark" width={32} height={32} />
-            <span>{C.brand.name}</span>
-          </Link>
-          <Link href={learnPath(C)} className="learn-chip">{C.learn.title}</Link>
-        </div>
-        <div className="nav-cta">
-          <a href={`${otherBase}/learn${stepId ? `/${stepId}` : ""}`} className="lang-switch">{C.locale.switchLabel}</a>
-          <AuthButton />
-        </div>
-      </div>
-    </header>
-  );
 }
 
 function Gate({ title, text, action }: { title: string; text: string; action: React.ReactNode }) {
@@ -97,7 +74,7 @@ export default function LearnApp({ C }: { C: Content }) {
   return (
     <ContentProvider value={C}>
       <div lang={C.locale.code} className="learn-page">
-        <Header />
+        <AppHeader active="learn" />
         <main className="container learn-main"><Body /></main>
       </div>
     </ContentProvider>

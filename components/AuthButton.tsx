@@ -9,6 +9,7 @@ import { Authenticated, AuthLoading, Unauthenticated, useQuery } from "convex/re
 import { api } from "@/convex/_generated/api";
 import { useContent } from "@/components/ContentContext";
 import { learnPath } from "@/components/learn/steps";
+import { communityPath } from "@/components/community/helpers";
 
 function UserMenu() {
   const CONTENT = useContent();
@@ -43,6 +44,7 @@ function UserMenu() {
           <div className="up-name">{name}</div>
           {member && <span className="plan-badge">{CONTENT.planLabels[member.plan]}</span>}
           {member && <Link href={learnPath(CONTENT)} className="btn btn-primary btn-sm btn-block" role="menuitem" onClick={() => setOpen(false)}>{A.classroom}</Link>}
+          {member && <Link href={communityPath(CONTENT)} className="btn btn-ghost btn-sm btn-block" role="menuitem" onClick={() => setOpen(false)}>{A.community}</Link>}
           <button className="btn btn-ghost btn-sm btn-block" role="menuitem" onClick={() => void signOut()}>{A.signOut}</button>
         </div>
       )}

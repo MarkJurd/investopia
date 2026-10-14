@@ -7,7 +7,7 @@
  * วิธีแก้:
  *   - แก้ได้: title, notes, minutes, practice, q, choices, explain
  *   - ห้ามแก้ id (ความคืบหน้าของผู้เรียนผูกกับ id) — เพิ่มบทใหม่ได้ ตั้ง id ใหม่ที่ไม่ซ้ำ
- *   - videoId: รหัสวิดีโอจากที่เก็บวิดีโอ (ยังไม่ได้เลือก) — เว้น "" = แสดงกรอบ "วิดีโอกำลังมา"
+ *   - videoId: รหัสวิดีโอ (Video ID/GUID) จาก Bunny Stream — เว้น "" = แสดงกรอบ "เร็วๆ นี้" (ใช้ไฟล์ไทยเป็นหลัก ไฟล์อังกฤษใช้ id เดียวกัน)
  *   - answer: ลำดับข้อที่ถูกใน choices (ข้อแรก = 0, ข้อสอง = 1, ...)
  *   - แก้ไฟล์นี้แล้วต้องแก้ lib/course.en.ts ให้ตรงกัน (id, จำนวนข้อ, answer)
  *   - ไฟล์นี้อยู่ฝั่ง Convex ด้วย → แก้แล้วต้องมี `npx convex dev` รันอยู่ หรือสั่ง `npx convex dev --once`
@@ -69,10 +69,12 @@ export const COURSE = {
       title: "ตัวอักษรและไวยากรณ์ของกราฟ",
       practice: "อ่านแท่งเทียนจริง 10 แท่ง + วาดโครงสร้างเทรนด์บนกราฟจริง",
       lessons: [
-        { id: "m2-1", title: "แท่งเทียน", minutes: 0, videoId: "",
+        { id: "m2-1", title: "แท่งเทียน", minutes: 0, videoId: "7f42b14a-d145-4579-842c-7a0f5a1b441d",
           notes: "รูปทรงแต่ละแท่งคือภาพแรงซื้อ-แรงขายของช่วงเวลานั้น บอกว่าซื้อหรือขายชนะ" },
         { id: "m2-2", title: "Dow Theory", minutes: 0, videoId: "",
           notes: "ราคาเคลื่อนที่เป็นคลื่น จากแรงซื้อ-แรงขายที่ไม่สมดุลต่อเนื่อง" },
+        { id: "m2-3", title: "Trendline", minutes: 0, videoId: "7050a136-ba9f-41b1-ad9f-88d7a87d4b76",
+          notes: "ลากเส้นเชื่อมจุดต่ำ (ขาขึ้น) หรือจุดสูง (ขาลง) เพื่อดูทิศทางเทรนด์ และสังเกตว่าราคายังอยู่เหนือหรือใต้เส้นหรือไม่" },
       ],
       quiz: [
         { q: "แท่งเทียนที่ราคาปิดสูงกว่าราคาเปิด (แท่งเขียว) บอกอะไร?",
@@ -97,6 +99,8 @@ export const COURSE = {
           notes: "วิธีของผู้สอน (สอนละเอียดในวิดีโอ)" },
         { id: "m3-4", title: "Divergence", minutes: 0, videoId: "",
           notes: "ราคาทำจุดสูงใหม่ แต่ momentum ไม่ตาม เทรนด์อาจอ่อนแรง" },
+        { id: "m3-5", title: "อินดิเคเตอร์ของผู้สอน (เครื่องมือช่วยอ่านเทรนด์)", minutes: 0, videoId: "ccaee9ab-2e9a-4af1-a5b1-91f0efc6a707",
+          notes: "วิธีติดตั้งและอ่านค่าจากอินดิเคเตอร์ส่วนตัวของผู้สอนบน TradingView — เป็นเครื่องมือช่วยอ่านเทรนด์ ไม่ใช่สัญญาณซื้อขาย" },
       ],
       quiz: [
         { q: "EMA ต่างจากเส้นค่าเฉลี่ยธรรมดา (SMA) อย่างไร?",
@@ -137,9 +141,11 @@ export const COURSE = {
       lessons: [
         { id: "m5-1", title: "จุดซื้อ/จุดขาย", minutes: 0, videoId: "",
           notes: "ตำแหน่งเข้า-ออกที่ชัดเจนจากแรงซื้อ-แรงขาย + structure ไม่ใช่ความรู้สึก" },
-        { id: "m5-2", title: "ออกไม้ (exit)", minutes: 0, videoId: "",
+        { id: "m5-4", title: "Multi-Timeframe: ยืนยันจุดเข้า-ออก", minutes: 0, videoId: "9d1a77da-13d2-4a80-bd44-9d4525fc27f9",
+          notes: "ดูหลายไทม์เฟรมร่วมกันเพื่อเพิ่มความมั่นใจก่อนเข้า-ออก และเช็กว่ากราฟพร้อมแล้วหรือควรรอก่อน" },
+        { id: "m5-2", title: "ออกไม้ (exit)", minutes: 0, videoId: "048acf84-f0f9-4928-b938-b521bb2c08f2",
           notes: "ตั้งเป้าทำกำไรและจุดตัดขาดทุนล่วงหน้า" },
-        { id: "m5-3", title: "ซอยไม้ + position sizing", minutes: 0, videoId: "",
+        { id: "m5-3", title: "ซอยไม้ + position sizing", minutes: 0, videoId: "901118cd-c049-4466-a22e-dc3effae87c7",
           notes: "แบ่งไม้เข้า-ออก และกำหนดขนาดไม้ให้เหมาะกับความเสี่ยง" },
       ],
       quiz: [
@@ -179,7 +185,7 @@ export const COURSE = {
       title: "ถือยาวหรือสั้น — เลิกถามว่า “กี่เดือน”",
       practice: "ใบงาน “ถือหุ้นตัวนี้นานแค่ไหน” — ตอบ TF → กลยุทธ์ → เงื่อนไขออก → เดือนโดยประมาณ (เขียนท้ายสุด)",
       lessons: [
-        { id: "m7-1", title: "Timeframe = ตัวกำหนดช่วงถือ", minutes: 0, videoId: "",
+        { id: "m7-1", title: "Timeframe = ตัวกำหนดช่วงถือ", minutes: 0, videoId: "49e32096-25c6-4178-a174-0211372ba0c3",
           notes: "ดู TF ที่คุณพอจะดูได้ถี่ ช่วงถือจะออกมาเอง" },
         { id: "m7-2", title: "กฎ “ถือไปจนกว่า...”", minutes: 0, videoId: "",
           notes: "ออกเมื่อเทรนด์พัง / ถึงเป้า / เหตุผลที่ซื้อไม่เหลือ" },
@@ -201,3 +207,6 @@ export const COURSE = {
 };
 
 export type Course = typeof COURSE;
+
+/** บทที่เปิดเฉพาะผู้ที่ได้รับ Indicator (รายปี 50 คนแรก + VIP) และแอดมิน — ตรวจที่ server (convex/learn.ts) */
+export const INDICATOR_ONLY_LESSONS: ReadonlySet<string> = new Set(["m3-5"]);

@@ -5,6 +5,7 @@
  *    Pages get the content through Convex (convex/learn.ts), which strips the answers
  *    and checks membership first.
  *
+ * videoId in this file is ignored — the real video ids live in lib/course.ts (Thai file) and are shared by both languages.
  * Same structure as lib/course.ts: keep every id, the number of questions and each
  * `answer` identical to the Thai file. Edit only the text.
  * Educational content only: no specific stock picks, no profit promises.
@@ -70,6 +71,8 @@ export const COURSE_EN: Course = {
           notes: "Each candle's shape shows buying versus selling pressure for that period and who won." },
         { id: "m2-2", title: "Dow Theory", minutes: 0, videoId: "",
           notes: "Price moves in waves, driven by a sustained imbalance between buyers and sellers." },
+        { id: "m2-3", title: "Trendlines", minutes: 0, videoId: "",
+          notes: "Draw a line through the lows (uptrend) or the highs (downtrend) to see the trend's direction, and watch whether price stays above or below it." },
       ],
       quiz: [
         { q: "What does a candle that closes above its open (a green candle) tell you?",
@@ -94,6 +97,8 @@ export const COURSE_EN: Course = {
           notes: "The instructor's own method (covered in detail in the video)." },
         { id: "m3-4", title: "Divergence", minutes: 0, videoId: "",
           notes: "Price makes a new high but momentum doesn't follow. The trend may be weakening." },
+        { id: "m3-5", title: "The instructor's indicator (trend-reading tool)", minutes: 0, videoId: "",
+          notes: "How to install and read the instructor's own indicator on TradingView. It's a trend-reading tool, not a buy/sell signal." },
       ],
       quiz: [
         { q: "How does an EMA differ from a simple moving average (SMA)?",
@@ -134,6 +139,8 @@ export const COURSE_EN: Course = {
       lessons: [
         { id: "m5-1", title: "Entry and exit points", minutes: 0, videoId: "",
           notes: "Clear entry and exit levels based on buying/selling pressure and structure, not on feelings." },
+        { id: "m5-4", title: "Multi-timeframe: confirming entries and exits", minutes: 0, videoId: "",
+          notes: "Look at several timeframes together to build confidence before entering or exiting, and to check whether the chart is ready or should wait." },
         { id: "m5-2", title: "Exits", minutes: 0, videoId: "",
           notes: "Set your profit target and your stop loss in advance." },
         { id: "m5-3", title: "Scaling + position sizing", minutes: 0, videoId: "",
