@@ -22,6 +22,7 @@ export const CONTENT_EN: typeof CONTENT = {
       { text: "Curriculum", href: "#curriculum" },
       { text: "Instructor", href: "#instructor" },
       { text: "Pricing",    href: "#pricing" },
+      { text: "Dividends",  href: "/en/tools/dividend" },
       { text: "FAQ",        href: "#faq" }
     ],
     primary: "Start learning"
@@ -363,6 +364,7 @@ export const CONTENT_EN: typeof CONTENT = {
       { text: "Curriculum", href: "#curriculum" },
       { text: "Instructor", href: "#instructor" },
       { text: "Plans",      href: "#pricing" },
+      { text: "Dividend calculator", href: "/en/tools/dividend" },
       { text: "FAQ",        href: "#faq" }
     ],
     contactTitle: "Contact",
@@ -448,6 +450,87 @@ export const CONTENT_EN: typeof CONTENT = {
     bestScore: "Best score",
     notFound: "Lesson not found",
     error: "Couldn't save. Please try again."
+  },
+
+  dividend: {
+    metaTitle: "Annual Dividend Calculator",
+    metaDesc: "Choose your allocation across indexes and funds and see roughly how much dividend you'd get per year after tax — free, no sign-in needed.",
+    chip: "Free tool",
+    title: "Calculate the yearly dividend of the portfolio you're planning",
+    lead: "Enter how much you'd put in each index or fund, and see your total after-tax dividend per year, compared with the target you set.",
+    steps: [
+      { n: "1", t: "Enter your amount and target", d: "Optional. Without an amount you'll see results as a % only." },
+      { n: "2", t: "Enter your share in each row", d: "Rightmost box of each row. They should add up to 100%." },
+      { n: "3", t: "Read the summary", d: "After-tax dividend per year and per month, compared with your target." }
+    ],
+    dataAsOf: "Yield data as of",
+    dataNote: "Yields change over time — check the latest figures with the fund issuer before making decisions.",
+
+    inputsTitle: "Your settings",
+    amountLabel: "Amount to invest (THB)",
+    amountHint: "Optional",
+    amountPh: "e.g. 1,000,000",
+    targetLabel: "Target dividend per year (%)",
+    targetHint: "Optional — enter it to compare with the calculated result",
+    targetPh: "e.g. 5",
+    reset: "Clear everything",
+
+    listTitle: "Choose your share in each row",
+    colYield: "Yield",
+    colTax: "Tax",
+    colNet: "After tax",
+    colShare: "Your share (%)",
+    colContrib: "Dividend added to portfolio",
+    shareLabel: "Share of",
+    topInGroup: "Highest after-tax yield in group",
+    groups: {
+      thEquity:     { label: "Thai equities", blurb: "Baskets of Thai stocks. Dividends are paid a few times a year; prices move with the market." },
+      thBond:       { label: "Thai bonds", blurb: "Pay interest in instalments. Generally, a higher yield means more risk from the issuer." },
+      globalEquity: { label: "International dividend equities", blurb: "US and international dividend-stock funds/indexes. Exchange-rate risk applies too." },
+      reit:         { label: "REITs (real estate)", blurb: "Funds that own rental property and usually pass most of the income to holders as dividends." },
+      usBond:       { label: "US & global bonds", blurb: "Pay interest in instalments. Fund prices move with interest rates." },
+      coveredCall:  { label: "Covered call", blurb: "Hold stocks while selling call options for extra income. High payouts, but gains from strong price rises may be capped." }
+    },
+
+    resultTitle: "Your result",
+    allocated: "Allocated",
+    left: "left",
+    over: "over",
+    expectedLabel: "Dividend per year (after tax)",
+    ofPortfolio: "of your whole portfolio",
+    perYear: "per year",
+    perMonth: "per month (average)",
+    baht: "THB",
+    needAmount: "Enter an amount to see it in baht",
+    vsTarget: "Versus your target",
+    reachedMsg: "Target reached ({x}% per year above it)",
+    exactMsg: "Exactly on target",
+    belowMsg: "{x}% per year below your target",
+    warnOver: "Your total is over 100% — reduce it by {x}% before the amounts can be shown.",
+    warnUnder: "{x}% is still unallocated (counted as 0% dividend).",
+    okFull: "Allocation adds up to 100%",
+    mini: "Total",
+
+    cautionTitle: "Before you rely on this result",
+    caution: [
+      "This is a simulation based on the yields on the date shown. Actual dividends may be higher or lower, and nothing guarantees they'll stay this way.",
+      "A high yield does not mean a good investment — it often comes with higher risk, and the fund's price can fall.",
+      "Taxes in the table are approximate rates used for the calculation. Your real tax depends on your situation, and fees and exchange-rate effects are not included.",
+      "This tool doesn't recommend any allocation or fund — the decisions are yours."
+    ],
+
+    learnTitle: "How to read this table",
+    learn: [
+      { t: "Yield", d: "Dividend (or interest) per year ÷ price. A 4% yield means roughly 4 baht per year for every 100 baht invested." },
+      { t: "Tax / after tax", d: "Dividends are taxed before you receive them. For example, a 4% yield with 15% tax leaves 4 × 0.85 = 3.4%." },
+      { t: "Dividend added to portfolio", d: "Your share × the after-tax yield. For example, 20% in a row yielding 4% adds 0.8% to your whole portfolio; add up every row." }
+    ],
+
+    ctaTitle: "Want to understand why prices rise and fall?",
+    ctaText: "Dividends are only half of your return — price moves are the other half. Learn the basics of reading charts and planning your own investments.",
+    ctaButton: "See the course",
+    backHome: "← Home",
+    tools: "Tools"
   },
 
   prototypeBanner: "🧪 Test mode — no real money is charged yet (Stripe test cards work)"

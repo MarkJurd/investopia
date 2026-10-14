@@ -1,0 +1,430 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ข่าวหุ้นวันนี้ — แบบจำลอง</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* แบบจำลองเท่านั้น — ข่าวทั้งหมดในหน้านี้เป็นข่าวสมมติ ใช้ดูหน้าตาเท่านั้น */
+:root{
+  --blue:#2563EB;--blue-dark:#1D4ED8;--blue-soft:#EFF6FF;--blue-line:#DBEAFE;
+  --ink:#0F172A;--body:#475569;--muted:#94A3B8;--line:#E2E8F0;
+  --bg:#FFFFFF;--bg-soft:#F8FAFC;--up:#22C55E;--down:#EF4444;
+  --radius:16px;--shadow:0 1px 2px rgba(15,23,42,.04),0 8px 24px rgba(15,23,42,.06);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Anuphan,system-ui,sans-serif;color:var(--body);background:var(--bg-soft);line-height:1.7;-webkit-font-smoothing:antialiased}
+h1,h2,h3{color:var(--ink);line-height:1.3;font-weight:600}
+a{color:inherit;text-decoration:none}
+.container{max-width:1120px;margin:0 auto;padding:0 24px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font:inherit;font-size:15px;font-weight:600;cursor:pointer;
+  padding:10px 20px;border-radius:10px;border:1px solid transparent}
+.btn-primary{background:var(--blue);color:#fff;box-shadow:0 4px 12px rgba(37,99,235,.2)}
+.btn-ghost{background:#fff;color:var(--ink);border-color:var(--line)}
+.btn-tg{background:#229ED9;color:#fff}
+
+/* แถบควบคุมแบบจำลอง (ไม่ใช่ส่วนของเว็บ) */
+.mock-bar{position:sticky;top:0;z-index:100;background:#111827;color:#E5E7EB;font-size:13px}
+.mock-bar .container{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding-top:8px;padding-bottom:8px}
+.mock-bar b{color:#FDE68A;margin-right:6px}
+.mock-bar button{font:inherit;font-size:13px;background:#1F2937;color:#E5E7EB;border:1px solid #374151;border-radius:8px;padding:5px 12px;cursor:pointer}
+.mock-bar button.on{background:#FDE68A;color:#111827;border-color:#FDE68A;font-weight:600}
+.mock-bar .sep{width:1px;height:20px;background:#374151;margin:0 4px}
+
+/* เมนูเว็บ */
+header.nav{background:rgba(255,255,255,.9);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.nav-inner{display:flex;align-items:center;justify-content:space-between;height:64px;gap:16px}
+.logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:19px;color:var(--ink)}
+.logo i{width:30px;height:30px;border-radius:8px;background:var(--blue);display:grid;place-items:center;color:#fff;font-style:normal;font-size:14px}
+.nav-links{display:flex;gap:24px;font-size:15px;font-weight:500}
+.nav-links a.on{color:var(--blue)}
+.avatar{width:34px;height:34px;border-radius:50%;background:var(--blue);color:#fff;display:grid;place-items:center;font-weight:700}
+@media(max-width:820px){.nav-links{display:none}}
+
+.view{display:none}
+.view.on{display:block}
+main{padding:36px 0 72px}
+.eyebrow{display:inline-block;font-size:13px;font-weight:600;color:var(--blue);background:var(--blue-soft);border:1px solid var(--blue-line);
+  padding:4px 12px;border-radius:999px;margin-bottom:12px}
+.page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:28px}
+.page-head h1{font-size:clamp(28px,4vw,40px)}
+.page-head p{font-size:16px;margin-top:4px}
+.meta{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--muted);align-items:center}
+.tag{font-size:12px;font-weight:600;padding:3px 10px;border-radius:999px;border:1px solid}
+.tag.econ{color:#7C3AED;background:#F5F3FF;border-color:#DDD6FE}
+.tag.corp{color:var(--blue);background:var(--blue-soft);border-color:var(--blue-line)}
+.tag.mkt{color:#B45309;background:#FFFBEB;border-color:#FDE68A}
+
+/* ภาพปกจากเทมเพลต (โค้ดสร้างเอง ไม่ใช้ AI วาด) */
+.cover{position:relative;aspect-ratio:16/9;border-radius:14px;overflow:hidden;background:#fff;
+  background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:28px 28px}
+.cover::after{content:"INVESTOPIA";position:absolute;right:12px;bottom:8px;font-size:10px;font-weight:700;letter-spacing:.08em;color:var(--muted)}
+.cv-note{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) rotate(-1.5deg);width:74%;background:#fff;border:2.5px solid var(--ink);
+  border-radius:14px;box-shadow:6px 6px 0 var(--ink);padding:5% 6%;text-align:center}
+.cv-note b{display:block;color:var(--ink);font-weight:700;line-height:1.25;font-size:clamp(14px,2.2vw,26px)}
+.cv-date{display:inline-block;margin-top:8px;font-size:clamp(9px,1vw,12px);font-weight:600;background:var(--ink);color:#fff;padding:2px 10px;border-radius:999px}
+.cv-tape{position:absolute;top:-10px;left:50%;width:70px;height:18px;transform:translateX(-50%) rotate(3deg);opacity:.85}
+.cv-chip{position:absolute;font-weight:700;font-size:clamp(10px,1.2vw,14px);background:#fff;border:2px solid var(--ink);border-radius:10px;
+  padding:4px 10px;box-shadow:3px 3px 0 var(--ink);color:var(--ink)}
+.cv-candles{position:absolute;display:flex;align-items:flex-end;gap:5px}
+.cv-candles i{display:block;width:9px;border-radius:2px;border:1.5px solid var(--ink)}
+.cover.econ .cv-tape{background:#C4B5FD}.cover.corp .cv-tape{background:#93C5FD}.cover.mkt .cv-tape{background:#FCD34D}
+.cover.econ .cv-note{background:#FAF5FF}.cover.mkt .cv-note{background:#FFFBEB}
+.cover.sm .cv-note{box-shadow:4px 4px 0 var(--ink);border-width:2px}
+
+/* หน้ารวมข่าว */
+.featured{display:grid;grid-template-columns:1.25fr 1fr;gap:28px;background:#fff;border:1px solid var(--line);border-radius:var(--radius);
+  padding:22px;box-shadow:var(--shadow);margin-bottom:40px;cursor:pointer}
+.featured h2{font-size:clamp(22px,2.6vw,30px);margin:10px 0}
+.featured .lead{font-size:16px;margin-bottom:16px}
+.one-liner{background:var(--blue-soft);border:1px solid var(--blue-line);border-radius:12px;padding:12px 14px;font-size:14px;color:var(--ink);margin-bottom:18px}
+.one-liner b{color:var(--blue)}
+.grid-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px}
+.card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;cursor:pointer;transition:transform .15s,box-shadow .15s}
+.card:hover{transform:translateY(-3px);box-shadow:var(--shadow)}
+.card .cover{border-radius:0}
+.card-body{padding:16px 18px 18px}
+.card-body h3{font-size:16px;margin:8px 0 6px;line-height:1.45}
+.card-body p{font-size:14px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:10px}
+.section-title{font-size:20px;margin-bottom:16px}
+.tg-band{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;background:#fff;border:1px solid var(--line);
+  border-radius:var(--radius);padding:20px 24px;margin-top:40px}
+.tg-band b{color:var(--ink);font-size:17px}
+@media(max-width:900px){.featured{grid-template-columns:1fr}.grid-3{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){.grid-3{grid-template-columns:1fr}.container{padding:0 16px}}
+
+/* หน้าอ่านข่าว */
+.article-wrap{display:grid;grid-template-columns:minmax(0,720px) 240px;gap:48px;justify-content:center}
+.back{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:600;background:#fff;border:1px solid var(--line);
+  border-radius:10px;padding:7px 14px;margin-bottom:22px;cursor:pointer}
+article h1{font-size:clamp(26px,3.4vw,36px);margin:10px 0 12px}
+article .lead{font-size:17px;margin-bottom:14px}
+article .cover{margin:22px 0}
+article h2{font-size:20px;margin:30px 0 10px;scroll-margin-top:70px}
+article ul{padding-left:22px}
+article li{margin-bottom:6px}
+article li b{color:var(--ink)}
+.friend{background:linear-gradient(135deg,var(--blue-soft),#fff);border:1px solid var(--blue-line);border-radius:14px;padding:18px 20px;margin:24px 0}
+.friend .lbl{font-size:13px;font-weight:700;color:var(--blue);margin-bottom:6px}
+.friend p{color:var(--ink);font-size:17px;font-weight:500}
+.who{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.who div{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:14px}
+.who b{display:block;color:var(--ink);margin-bottom:2px}
+.who .up{color:#15803D}.who .dn{color:#B91C1C}
+.chart-box{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin:26px 0}
+.chart-box .lbl{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--blue);margin-bottom:4px}
+.chart-box h3{font-size:16px;margin-bottom:10px}
+.chart-box svg{width:100%;height:auto;display:block}
+.chart-box .cap{font-size:14px;margin-top:10px}
+.chart-box .cap b{color:var(--ink)}
+.glossary{display:flex;flex-direction:column;gap:8px}
+.glossary div{font-size:14px;background:var(--bg-soft);border-radius:10px;padding:10px 14px}
+.glossary b{color:var(--ink)}
+.sources{font-size:14px}
+.sources a{color:var(--blue);text-decoration:underline}
+.disclaimer{font-size:12px;color:var(--muted);border-top:1px solid var(--line);margin-top:30px;padding-top:16px}
+.end-cta{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:26px}
+.end-cta > div{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:10px;align-items:flex-start}
+.end-cta b{color:var(--ink)}
+.end-cta p{font-size:14px}
+.toc{position:sticky;top:70px;font-size:14px}
+.toc .t{font-size:13px;font-weight:600;color:var(--muted);margin-bottom:8px}
+.toc a{display:block;padding:5px 0 5px 14px;border-left:2px solid var(--line);cursor:pointer}
+.toc a:first-of-type{border-color:var(--ink);color:var(--ink);font-weight:600}
+.locked{position:relative}
+.gate{display:none}
+body.guest .locked > :not(.gate){filter:blur(6px);user-select:none;pointer-events:none;max-height:320px;overflow:hidden}
+body.guest .gate{display:flex;position:absolute;inset:60px 0 auto;margin:0 auto;max-width:420px;flex-direction:column;align-items:center;text-align:center;gap:10px;
+  background:#fff;border:1px solid var(--line);border-radius:16px;padding:24px;box-shadow:var(--shadow)}
+body.guest .gate b{color:var(--ink);font-size:18px}
+.g{width:20px;height:20px;border-radius:50%;background:#fff;color:var(--blue);display:grid;place-items:center;font-size:12px;font-weight:700}
+@media(max-width:900px){.article-wrap{grid-template-columns:minmax(0,1fr)}.toc{display:none}}
+@media(max-width:600px){.who,.end-cta{grid-template-columns:1fr}}
+
+/* Telegram */
+.tg-wrap{display:grid;grid-template-columns:repeat(2,minmax(0,380px));gap:40px;justify-content:center}
+.tg-wrap h2{font-size:17px;margin-bottom:4px}
+.tg-wrap .sub{font-size:14px;margin-bottom:14px}
+.phone{background:#DCE6EE;border-radius:28px;border:8px solid #111827;overflow:hidden;min-height:560px;display:flex;flex-direction:column;
+  background-image:radial-gradient(rgba(255,255,255,.5) 1px,transparent 1px);background-size:16px 16px}
+.tg-top{background:#fff;padding:10px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid #E5E7EB}
+.tg-top i{width:36px;height:36px;border-radius:50%;background:var(--blue);color:#fff;display:grid;place-items:center;font-style:normal;font-weight:700}
+.tg-top b{display:block;color:var(--ink);font-size:15px;line-height:1.2}
+.tg-top span{font-size:12px;color:var(--muted)}
+.tg-body{padding:14px;display:flex;flex-direction:column;gap:10px;flex:1;justify-content:flex-end}
+.bubble{background:#fff;border-radius:14px 14px 14px 4px;padding:8px;max-width:92%;font-size:14px;color:#111827;box-shadow:0 1px 1px rgba(0,0,0,.08)}
+.bubble .cover{border-radius:10px;margin-bottom:8px}
+.bubble p{padding:0 4px;margin-bottom:6px;line-height:1.55}
+.bubble .time{text-align:right;font-size:11px;color:var(--muted);padding:0 4px}
+.bubble a{color:#2481CC}
+.tg-btns{display:grid;grid-template-columns:1fr 1fr;gap:6px;max-width:92%}
+.tg-btns span{background:rgba(255,255,255,.85);border-radius:10px;text-align:center;font-size:13px;font-weight:600;color:#2481CC;padding:8px}
+.tg-btns span.full{grid-column:1 / -1}
+.sys{align-self:center;font-size:12px;background:rgba(0,0,0,.25);color:#fff;border-radius:999px;padding:3px 12px}
+@media(max-width:860px){.tg-wrap{grid-template-columns:minmax(0,380px)}}
+</style>
+</head>
+<body>
+
+<div class="mock-bar">
+  <div class="container">
+    <b>แบบจำลอง · ข่าวสมมติ</b>
+    <button data-view="list" class="on">① หน้ารวมข่าว</button>
+    <button data-view="article">② หน้าอ่านข่าว</button>
+    <button data-view="tg">③ Telegram</button>
+    <span class="sep"></span>
+    <button id="who" class="">ดูแบบ: ล็อกอินแล้ว</button>
+  </div>
+</div>
+
+<header class="nav">
+  <div class="container nav-inner">
+    <a class="logo"><i>▮▮</i>INVESTOPIA</a>
+    <nav class="nav-links"><a>หลักสูตร</a><a>ห้องเรียน</a><a class="on">ข่าวหุ้นวันนี้</a><a>ราคา</a></nav>
+    <span class="avatar">ม</span>
+  </div>
+</header>
+
+<!-- ① หน้ารวมข่าว -->
+<section class="view on" id="view-list">
+  <main class="container">
+    <div class="page-head">
+      <div>
+        <span class="eyebrow">อัปเดตทุกเช้า 08:00 น. หลังตลาดอเมริกาปิด</span>
+        <h1>ข่าวหุ้นวันนี้</h1>
+        <p>วันละ 1 ข่าวที่ควรรู้จริง ๆ · อ่านจบใน 2 นาที · คุยกับเพื่อนได้</p>
+      </div>
+    </div>
+
+    <div class="featured" data-go="article">
+      <div class="cover econ" data-title="เฟดคงดอกเบี้ย|ยังไม่รีบลด" data-date="12 ต.ค. 2026" data-chips="FED,QQQ"></div>
+      <div>
+        <div class="meta"><span class="tag econ">เศรษฐกิจ</span><span>12 ตุลาคม 2569</span><span>⏱ อ่าน 2 นาที</span></div>
+        <h2>เฟดคงดอกเบี้ยตามคาด แต่บอกว่ายังไม่รีบลด — หุ้นเทคย่อตัวทั้งกระดาน</h2>
+        <p class="lead">ตลาดหวังว่าจะได้ยินคำว่า “ลดเร็ว ๆ นี้” แต่ไม่ได้ยิน นักลงทุนเลยขายหุ้นกลุ่มที่ขึ้นมาแรงก่อน</p>
+        <div class="one-liner"><b>คุยกับเพื่อนแบบนี้ได้เลย:</b> “ดอกเบี้ยยังไม่ลง เงินก็ยังแพง หุ้นที่ราคาขึ้นมาเยอะเลยโดนขายก่อน”</div>
+        <span class="btn btn-primary">อ่านข่าวนี้</span>
+      </div>
+    </div>
+
+    <h2 class="section-title">ข่าวย้อนหลัง</h2>
+    <div class="grid-3" id="past"></div>
+
+    <div class="tg-band">
+      <div><b>ไม่อยากเข้าเว็บทุกวัน?</b><p style="font-size:14px">รับข่าวสรุปทาง Telegram ทุกเช้า 08:00 น. ฟรี</p></div>
+      <span class="btn btn-tg">✈ รับข่าวทาง Telegram</span>
+    </div>
+  </main>
+</section>
+
+<!-- ② หน้าอ่านข่าว -->
+<section class="view" id="view-article">
+  <main class="container">
+    <div class="article-wrap">
+      <article>
+        <span class="back" data-go="list">← ข่าวทั้งหมด</span>
+        <div class="meta"><span class="tag econ">เศรษฐกิจ</span><span>12 ตุลาคม 2569</span><span>⏱ อ่าน 2 นาที</span></div>
+        <h1>เฟดคงดอกเบี้ยตามคาด แต่บอกว่ายังไม่รีบลด — หุ้นเทคย่อตัวทั้งกระดาน</h1>
+        <p class="lead">ตลาดหวังว่าจะได้ยินคำว่า “ลดเร็ว ๆ นี้” แต่ไม่ได้ยิน นักลงทุนเลยขายหุ้นกลุ่มที่ขึ้นมาแรงก่อน</p>
+        <div class="cover econ" data-title="เฟดคงดอกเบี้ย|ยังไม่รีบลด" data-date="12 ต.ค. 2026" data-chips="FED,QQQ"></div>
+
+        <div class="locked">
+          <div class="gate">
+            <b>ล็อกอินเพื่ออ่านต่อ — ฟรี</b>
+            <p style="font-size:14px">แค่ล็อกอินด้วย Google ก็อ่านข่าวทุกวันได้ ไม่ต้องจ่ายเงิน</p>
+            <span class="btn btn-primary"><span class="g">G</span> เข้าสู่ระบบด้วย Google</span>
+          </div>
+          <div>
+            <h2 id="s1">เกิดอะไรขึ้น</h2>
+            <ul>
+              <li>ธนาคารกลางสหรัฐฯ (เฟด) <b>คงดอกเบี้ยไว้เท่าเดิม</b> ตรงกับที่ตลาดคาด</li>
+              <li>แต่ประธานเฟดบอกว่า <b>ยังไม่เห็นเหตุผลที่ต้องรีบลด</b> เพราะเงินเฟ้อยังไม่ลงถึงเป้า</li>
+              <li>ดัชนี Nasdaq ปิดลบราว 2% หุ้นเทคขนาดใหญ่ลงเกือบทุกตัว</li>
+            </ul>
+
+            <h2 id="s2">ทำไมคนพูดถึง</h2>
+            <p>ดอกเบี้ยสูง = เงินกู้แพง บริษัทโตช้าลง และนักลงทุนได้ผลตอบแทนจากเงินฝาก/พันธบัตรสูงอยู่แล้ว
+              หุ้นที่ราคาขึ้นมาเยอะเพราะ “หวังอนาคต” เลยโดนขายก่อน</p>
+
+            <div class="friend">
+              <div class="lbl">💬 คุยกับเพื่อนแบบนี้ได้เลย</div>
+              <p>“ดอกเบี้ยยังไม่ลง เงินก็ยังแพง หุ้นที่ราคาขึ้นมาเยอะเลยโดนขายก่อน”</p>
+            </div>
+
+            <h2 id="s3">กระทบใครบ้าง</h2>
+            <div class="who">
+              <div><b>หุ้นเทค / หุ้นเติบโต</b><span class="dn">▼ โดนกดดันมากสุด</span></div>
+              <div><b>ธนาคาร</b><span class="up">▲ ได้ประโยชน์จากดอกเบี้ยสูง</span></div>
+              <div><b>คนถือเงินดอลลาร์</b><span class="up">▲ ดอลลาร์แข็งขึ้น</span></div>
+              <div><b>คนรอซื้อบ้าน/ผ่อนรถ</b><span class="dn">▼ ดอกเบี้ยเงินกู้ยังสูง</span></div>
+            </div>
+
+            <div class="chart-box" id="s4">
+              <div class="lbl">📊 มองแบบนักเรียน INVESTOPIA · โมดูล 0</div>
+              <h3>ดัชนี Nasdaq 100 — กราฟรายวัน (ข้อมูลสมมติ)</h3>
+              <svg id="chart" viewBox="0 0 680 260" role="img" aria-label="กราฟแท่งเทียนตัวอย่าง"></svg>
+              <p class="cap">วันข่าวออกเป็น <b>แท่งแดงยาว + วอลุ่มสูงกว่าปกติ</b> = แรงขายชนะแรงซื้อชัด ๆ
+                ไม่ใช่แค่ “ไม่มีคนซื้อ” — ตรงกับที่เรียนในโมดูล 0 (แสดงกราฟเฉพาะข่าวที่เห็นผลบนกราฟชัด)</p>
+            </div>
+
+            <h2 id="s5">ศัพท์ในข่าวนี้</h2>
+            <div class="glossary">
+              <div><b>เฟด (Fed)</b> — ธนาคารกลางของสหรัฐฯ เป็นคนกำหนดดอกเบี้ยนโยบาย</div>
+              <div><b>เงินเฟ้อ</b> — ของแพงขึ้นเรื่อย ๆ เฟดใช้ดอกเบี้ยสูงเพื่อให้คนใช้เงินน้อยลง ราคาของจะได้ชะลอ</div>
+            </div>
+
+            <h2>แหล่งข่าว</h2>
+            <p class="sources">• <a href="#">ลิงก์ข่าวต้นฉบับ 1</a> &nbsp; • <a href="#">ลิงก์ข่าวต้นฉบับ 2</a> — ตัวเลขทุกตัวมาจากข่าวต้นฉบับ</p>
+
+            <div class="end-cta">
+              <div><b>✈ รับข่าวแบบนี้ทุกเช้า</b><p>ส่งเข้า Telegram 08:00 น. ฟรี</p><span class="btn btn-tg">เข้าร่วม Telegram</span></div>
+              <div><b>📈 อยากอ่านกราฟเองเป็น?</b><p>เรียนตั้งแต่แรงซื้อ-แรงขาย จนวางแผนเองได้</p><span class="btn btn-primary">ดูหลักสูตร</span></div>
+            </div>
+
+            <p class="disclaimer">สรุปข่าวเพื่อการศึกษาเท่านั้น ไม่ใช่คำแนะนำการลงทุนหรือคำแนะนำให้ซื้อขายหลักทรัพย์ใด ๆ
+              สรุปโดยใช้ AI ช่วยเรียบเรียงจากแหล่งข่าวด้านบน การลงทุนมีความเสี่ยง</p>
+          </div>
+        </div>
+      </article>
+      <aside class="toc">
+        <div class="t">สารบัญ</div>
+        <a>เกิดอะไรขึ้น</a><a>ทำไมคนพูดถึง</a><a>กระทบใครบ้าง</a><a>มองแบบนักเรียน</a><a>ศัพท์ในข่าวนี้</a>
+      </aside>
+    </div>
+  </main>
+</section>
+
+<!-- ③ Telegram -->
+<section class="view" id="view-tg">
+  <main class="container">
+    <div class="tg-wrap">
+      <div>
+        <h2>ช่องข่าวของสมาชิก</h2>
+        <p class="sub">ทุกคนได้ข่าวเดียวกันทุกเช้า 08:00 น. — กดอ่านต่อแล้วเข้าเว็บ</p>
+        <div class="phone">
+          <div class="tg-top"><i>▮▮</i><div><b>INVESTOPIA ข่าวหุ้นวันนี้</b><span>1,248 subscribers</span></div></div>
+          <div class="tg-body">
+            <span class="sys">12 ตุลาคม</span>
+            <div class="bubble">
+              <div class="cover econ sm" data-title="เฟดคงดอกเบี้ย|ยังไม่รีบลด" data-date="12 ต.ค. 2026" data-chips="FED,QQQ"></div>
+              <p><b>📰 เฟดคงดอกเบี้ย แต่ยังไม่รีบลด — หุ้นเทคย่อตัว</b></p>
+              <p>• เฟดคงดอกเบี้ยตามคาด<br>• แต่บอกว่ายังไม่เห็นเหตุผลต้องรีบลด<br>• Nasdaq ปิดลบราว 2%</p>
+              <p>💬 <i>“ดอกเบี้ยยังไม่ลง เงินยังแพง หุ้นที่ขึ้นมาเยอะเลยโดนขายก่อน”</i></p>
+              <p><a>อ่านต่อ 2 นาที →</a></p>
+              <div class="time">08:00 ✓✓</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <h2>ข้อความถึงคุณ (เจ้าของ) ทุกเช้า</h2>
+        <p class="sub">AI ร่างเสร็จ 06:00 น. ส่งให้ดูก่อน — ไม่กดอะไร = เผยแพร่เอง 08:00 น.</p>
+        <div class="phone">
+          <div class="tg-top"><i>🤖</i><div><b>INVESTOPIA Bot</b><span>bot</span></div></div>
+          <div class="tg-body">
+            <span class="sys">วันนี้</span>
+            <div class="bubble">
+              <p><b>📝 ร่างข่าวพรุ่งนี้พร้อมแล้ว</b></p>
+              <p>“เฟดคงดอกเบี้ยตามคาด แต่บอกว่ายังไม่รีบลด — หุ้นเทคย่อตัวทั้งกระดาน”</p>
+              <p>แหล่งข่าว 2 แหล่ง · ตรวจคำต้องห้ามแล้ว ✓<br>จะเผยแพร่อัตโนมัติ <b>08:00 น.</b></p>
+              <div class="time">06:00</div>
+            </div>
+            <div class="tg-btns">
+              <span>👀 ดูตัวเต็ม</span><span>✅ เผยแพร่เลย</span>
+              <span class="full">⛔ ยกเลิกข่าววันนี้</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</section>
+
+<script>
+/* ข่าวย้อนหลัง (สมมติ) */
+const PAST = [
+  ["corp","บริษัทชิปรายใหญ่ประกาศงบ|ขายดีกว่าคาด","11 ต.ค. 2026","NVDA,AMD","บริษัท","งบบริษัทชิปออกดีกว่าคาด แต่ราคาหุ้นกลับย่อ — ทำไม “ดีกว่าคาด” ถึงยังไม่พอ","ตลาดคาดหวังไว้สูงมากแล้ว ตัวเลขที่ดีกว่าคาดนิดเดียวเลยไม่ได้ทำให้คนอยากซื้อเพิ่ม"],
+  ["econ","เงินเฟ้อสหรัฐฯ|ต่ำกว่าคาด","10 ต.ค. 2026","CPI,USD","เศรษฐกิจ","ตัวเลขเงินเฟ้อสหรัฐฯ ออกต่ำกว่าคาดเล็กน้อย ตลาดหุ้นบวกรับข่าว","ของแพงขึ้นช้าลง คนเลยหวังว่าเฟดจะลดดอกเบี้ยได้เร็วขึ้น"],
+  ["mkt","ราคาน้ำมันพุ่ง|กระทบใคร?","9 ต.ค. 2026","OIL,XLE","ตลาด","ราคาน้ำมันพุ่งจากความตึงเครียดในตะวันออกกลาง ใครได้ ใครเสีย","บริษัทพลังงานได้ประโยชน์ สายการบินและบริษัทขนส่งต้นทุนสูงขึ้น"],
+  ["corp","บริษัทเทคใหญ่|ประกาศซื้อหุ้นคืน","8 ต.ค. 2026","AAPL","บริษัท","บริษัทเทคใหญ่ประกาศซื้อหุ้นคืนก้อนโต แปลว่าอะไรกับคนถือหุ้น","บริษัทเอาเงินสดมาซื้อหุ้นตัวเองคืน จำนวนหุ้นในตลาดน้อยลง"],
+  ["econ","ตัวเลขจ้างงาน|แข็งแรงเกินคาด","7 ต.ค. 2026","JOBS,FED","เศรษฐกิจ","ตัวเลขจ้างงานสหรัฐฯ แข็งแรงเกินคาด — ข่าวดีที่ตลาดไม่ค่อยชอบ","เศรษฐกิจดีเกินไป เฟดเลยอาจไม่รีบลดดอกเบี้ย"],
+  ["mkt","ดัชนี S&P 500|ทำจุดสูงสุดใหม่","6 ต.ค. 2026","SPY","ตลาด","S&P 500 ทำจุดสูงสุดใหม่ — จุดสูงสุดใหม่บอกอะไร และไม่ได้บอกอะไร","ราคาขึ้นมาเหนือจุดเดิมทุกจุดในอดีต แต่ไม่ได้แปลว่าจะขึ้นต่อแน่นอน"],
+];
+const TAG = { econ:"econ", corp:"corp", mkt:"mkt" };
+document.getElementById("past").innerHTML = PAST.map(([cls,t,d,chips,tag,title,desc]) => `
+  <div class="card" data-go="article">
+    <div class="cover sm ${cls}" data-title="${t}" data-date="${d}" data-chips="${chips}"></div>
+    <div class="card-body">
+      <div class="meta"><span class="tag ${TAG[cls]}">${tag}</span><span>${d}</span><span>⏱ 2 นาที</span></div>
+      <h3>${title}</h3><p>${desc}</p>
+    </div>
+  </div>`).join("");
+
+/* ภาพปกจากเทมเพลต: หัวข้อ + วันที่ + ชื่อย่อหุ้น + แท่งเทียนตกแต่ง */
+document.querySelectorAll(".cover").forEach((el) => {
+  const [a, b] = el.dataset.title.split("|");
+  const chips = (el.dataset.chips || "").split(",").filter(Boolean);
+  el.innerHTML = `
+    <div class="cv-note"><span class="cv-tape"></span><b>${a}</b><b>${b || ""}</b><span class="cv-date">${el.dataset.date}</span></div>
+    ${chips[0] ? `<span class="cv-chip" style="left:5%;top:9%;transform:rotate(-6deg)">${chips[0]}</span>` : ""}
+    ${chips[1] ? `<span class="cv-chip" style="right:5%;bottom:12%;transform:rotate(5deg)">${chips[1]}</span>` : ""}
+    <div class="cv-candles" style="right:7%;top:10%">${[18,30,22,40].map((h,i)=>`<i style="height:${h}px;background:${i%2?"#22C55E":"#fff"}"></i>`).join("")}</div>
+    <div class="cv-candles" style="left:6%;bottom:12%">${[34,24,28,14].map((h,i)=>`<i style="height:${h}px;background:${i%2?"#fff":"#EF4444"}"></i>`).join("")}</div>`;
+});
+
+/* กราฟแท่งเทียนสมมติ: ขึ้นมาเรื่อย ๆ แล้ววันข่าวเป็นแท่งแดงยาว + วอลุ่มสูง */
+(function drawChart(){
+  const svg = document.getElementById("chart");
+  let seed = 7; const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
+  const N = 34, NEWS = 28; const bars = []; let p = 100;
+  for (let i = 0; i < N; i++) {
+    let o = p, c;
+    if (i === NEWS) c = o * 0.972;
+    else if (i > NEWS) c = o * (1 + (rnd() - 0.55) * 0.012);
+    else c = o * (1 + (rnd() - 0.38) * 0.014);
+    const h = Math.max(o, c) * (1 + rnd() * 0.005), l = Math.min(o, c) * (1 - rnd() * 0.005);
+    const v = i === NEWS ? 2.4 : 0.7 + rnd() * 0.5;
+    bars.push({ o, c, h, l, v }); p = c;
+  }
+  const W = 680, PH = 190, VT = 200, VH = 50, pad = 10, bw = (W - pad * 2) / N;
+  const hi = Math.max(...bars.map(b => b.h)), lo = Math.min(...bars.map(b => b.l));
+  const y = (v) => pad + (hi - v) / (hi - lo) * (PH - pad * 2);
+  let out = `<line x1="0" x2="${W}" y1="${VT - 4}" y2="${VT - 4}" stroke="#E2E8F0"/>`;
+  // EMA
+  let ema = bars[0].c, pts = [];
+  bars.forEach((b, i) => { ema = b.c * (2 / 11) + ema * (1 - 2 / 11); pts.push(`${pad + i * bw + bw / 2},${y(ema)}`); });
+  bars.forEach((b, i) => {
+    const x = pad + i * bw + bw / 2, up = b.c >= b.o, col = up ? "#22C55E" : "#EF4444";
+    out += `<line x1="${x}" x2="${x}" y1="${y(b.h)}" y2="${y(b.l)}" stroke="${col}" stroke-width="1.5"/>`;
+    out += `<rect x="${x - bw * 0.32}" y="${y(Math.max(b.o, b.c))}" width="${bw * 0.64}" height="${Math.max(1.5, Math.abs(y(b.o) - y(b.c)))}" fill="${col}" rx="1"/>`;
+    const vh = b.v / 2.4 * VH;
+    out += `<rect x="${x - bw * 0.32}" y="${VT + VH - vh}" width="${bw * 0.64}" height="${vh}" fill="${i === NEWS ? "#EF4444" : "#CBD5E1"}" rx="1"/>`;
+  });
+  out += `<polyline points="${pts.join(" ")}" fill="none" stroke="#2563EB" stroke-width="2" opacity=".8"/>`;
+  const nx = pad + NEWS * bw + bw / 2;
+  out += `<rect x="${nx - bw * 0.7}" y="4" width="${bw * 1.4}" height="${VT + VH - 4}" fill="#EF4444" opacity=".07" rx="4"/>`;
+  out += `<text x="${nx - 8}" y="16" text-anchor="end" font-size="12" font-weight="600" fill="#B91C1C" font-family="Anuphan">วันข่าวออก ▸</text>`;
+  out += `<text x="${pad}" y="${VT + 12}" font-size="11" fill="#94A3B8" font-family="Anuphan">วอลุ่ม</text>`;
+  svg.innerHTML = out;
+})();
+
+/* สลับหน้า + สลับสถานะล็อกอิน */
+const show = (v) => {
+  document.querySelectorAll(".view").forEach(s => s.classList.toggle("on", s.id === "view-" + v));
+  document.querySelectorAll(".mock-bar [data-view]").forEach(b => b.classList.toggle("on", b.dataset.view === v));
+  window.scrollTo(0, 0);
+};
+document.addEventListener("click", (e) => {
+  const t = e.target.closest("[data-view],[data-go]");
+  if (t) show(t.dataset.view || t.dataset.go);
+});
+document.getElementById("who").addEventListener("click", (e) => {
+  const guest = document.body.classList.toggle("guest");
+  e.target.textContent = guest ? "ดูแบบ: ยังไม่ล็อกอิน" : "ดูแบบ: ล็อกอินแล้ว";
+  e.target.classList.toggle("on", guest);
+});
+</script>
+</body>
+</html>
