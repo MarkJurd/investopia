@@ -5,7 +5,7 @@ import { internal } from "./_generated/api";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import {
-  PLANS, type PlanId, planValidator, VIP_SEATS_PER_MONTH, INDICATOR_BONUS_LIMIT, daysToMs, bangkokMonthKey,
+  PLANS, FOR_SALE, type PlanId, planValidator, VIP_SEATS_PER_MONTH, INDICATOR_BONUS_LIMIT, daysToMs, bangkokMonthKey,
 } from "./plans";
 
 /* ---------- ที่นั่ง VIP ที่เหลือเดือนนี้ ---------- */
@@ -74,6 +74,7 @@ export const createCheckout = action({
   handler: async (ctx, { plan, lang }): Promise<{ url: string }> => {
     const userId = await getAuthUserId(ctx);
     if (userId === null) throw new Error("NOT_SIGNED_IN");
+    if (!FOR_SALE.has(plan)) throw new Error("PLAN_NOT_FOR_SALE");
     if (plan === "vip") {
       const left: number = await ctx.runQuery(internal.payments.vipSeatsLeftInternal, {});
       if (left <= 0) throw new Error("VIP_FULL");

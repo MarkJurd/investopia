@@ -30,10 +30,18 @@ const VIDEO_LINK_HOURS = 4;    // ลิงก์เล่นหมดอาย�
 const bunnyReady = () => Boolean(process.env.BUNNY_LIBRARY_ID && process.env.BUNNY_TOKEN_KEY);
 
 /* ---------- สิทธิ์ ---------- */
+/** สิทธิ์เข้าห้องเรียน: สมาชิกที่ยังไม่หมดอายุ หรือแอดมิน (แอดมินที่ไม่มีแพ็กเกจ = ดูได้ทุกบทเหมือน VIP) */
+async function getAccess(ctx: QueryCtx, userId: Id<"users">, now: number) {
+  const membership = await getMembership(ctx, userId, now);
+  if (membership !== null) return membership;
+  if (await isAdminUser(ctx, userId)) return { plan: "vip" as const, expiresAt: now + 10 * 365 * 24 * 60 * 60 * 1000, indicatorBonus: true };
+  return null;
+}
+
 async function requireMember(ctx: QueryCtx, now: number): Promise<Id<"users">> {
   const userId = await getAuthUserId(ctx);
   if (userId === null) throw new ConvexError("NOT_SIGNED_IN");
-  if ((await getMembership(ctx, userId, now)) === null) throw new ConvexError("NOT_A_MEMBER");
+  if ((await getAccess(ctx, userId, now)) === null) throw new ConvexError("NOT_A_MEMBER");
   return userId;
 }
 
@@ -89,7 +97,7 @@ export const overview = query({
   handler: async (ctx, { lang, now: clientNow }) => {
     const userId = await getAuthUserId(ctx);
     if (userId === null) return { status: "signedOut" as const };
-    const membership = await getMembership(ctx, userId, Math.max(clientNow, Date.now()));
+    const membership = await getAccess(ctx, userId, Math.max(clientNow, Date.now()));
     if (membership === null) return { status: "noMembership" as const };
 
     const { lessons, quizzes } = await loadProgress(ctx, userId);
@@ -127,7 +135,7 @@ export const setLessonDone = mutation({
     const userId = await requireMember(ctx, now);
     if (!LESSON_IDS.has(lessonId)) throw new ConvexError("UNKNOWN_LESSON");
     if (INDICATOR_ONLY_LESSONS.has(lessonId)) {
-      const m = await getMembership(ctx, userId, now);
+      const m = await getAccess(ctx, userId, now);
       if (!(await canSeeIndicator(ctx, userId, m?.indicatorBonus ?? false))) throw new ConvexError("LOCKED");
     }
     const row = await ctx.db
@@ -181,7 +189,7 @@ export const videoIdForMember = internalQuery({
   args: { userId: v.id("users"), lessonId: v.string() },
   returns: v.union(v.string(), v.null()),
   handler: async (ctx, { userId, lessonId }) => {
-    const m = await getMembership(ctx, userId, Date.now());
+    const m = await getAccess(ctx, userId, Date.now());
     if (m === null) return null;
     if (INDICATOR_ONLY_LESSONS.has(lessonId) && !(await canSeeIndicator(ctx, userId, m.indicatorBonus))) return null;
     const id = VIDEO_ID_BY_LESSON.get(lessonId) ?? "";

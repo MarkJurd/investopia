@@ -243,47 +243,11 @@ export const CONTENT_EN: typeof CONTENT = {
     sub: "Every plan includes all the core lessons — they differ in how much support you get.",
     packages: [
       {
-        id: "monthly",
-        name: "Monthly",
-        for: "Try it first, no commitment",
-        num: "990", numSuffix: "/month", numStrike: "",
-        per: "Pay month by month · no auto-renewal",
-        feats: [
-          { text: "Full access to all lessons", off: false },
-          { text: "Q&A in the members' community", off: false },
-          { text: "1 group live session + replays", off: false },
-          { text: "Priority answers within 24 hours", off: true },
-          { text: "Private 1:1 coaching", off: true },
-          { text: "Future new courses", off: true }
-        ],
-        badge: "", badgeType: "best", featured: false,
-        btn: "Choose monthly", btnType: "ghost",
-        priceLabel: "฿990 / 30 days"
-      },
-      {
-        id: "quarterly",
-        name: "3 months",
-        for: "Time to finish the course, with lives to review",
-        num: "2,490", numSuffix: "", numStrike: "",
-        per: "≈ ฿830/month · no auto-renewal",
-        feats: [
-          { text: "Full access to all lessons", off: false },
-          { text: "Q&A in the members' community", off: false },
-          { text: "3 group live sessions + replays", off: false },
-          { text: "Priority answers within 24 hours", off: true },
-          { text: "Private 1:1 coaching", off: true },
-          { text: "Future new courses", off: true }
-        ],
-        badge: "", badgeType: "best", featured: false,
-        btn: "Choose 3 months", btnType: "ghost",
-        priceLabel: "฿2,490 / 90 days"
-      },
-      {
         id: "yearly",
         name: "Yearly",
         for: "Serious about learning, with close support all year",
-        num: "4,990", numSuffix: "/year", numStrike: "11,880",
-        per: "≈ ฿416/month · 58% less than monthly",
+        num: "4,990", numSuffix: "/year", numStrike: "",
+        per: "≈ ฿416/month · one payment, no auto-renewal",
         feats: [
           { text: "Full access to all lessons", off: false },
           { text: "Q&A in the members' community", off: false },
@@ -300,7 +264,7 @@ export const CONTENT_EN: typeof CONTENT = {
       },
       {
         id: "vip",
-        name: "VIP one-on-one",
+        name: "Exclusive VIP 1:1 coaching",
         for: "Learn privately with the instructor — deepest and fastest",
         num: "13,990", numSuffix: "", numStrike: "",
         per: "Only 3 places per month",
@@ -336,7 +300,7 @@ export const CONTENT_EN: typeof CONTENT = {
       { q: "Do you teach EMA or MACD? Which one?",
         a: "Both. EMA covers the popular settings (20/50/100/200) plus the instructor's honest take on how to use them, and MACD covers reading and counting trends — the heart of Module 3." },
       { q: "Will I get new courses?",
-        a: "Yearly members get every new course released while their membership is active (for example, a future course on reading financial statements). Monthly members get this course only." },
+        a: "Members on every plan get every new course released while their membership is active (for example, a future course on reading financial statements)." },
       { q: "Can I get a refund if I'm not happy?",
         a: "Yes — tell us within 7 days of paying for a full refund, no reason needed. (We guarantee your satisfaction with the course, not investment profits.)" },
       { q: "What can we talk about in 1:1 sessions?",

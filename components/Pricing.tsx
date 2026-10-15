@@ -10,7 +10,7 @@ import type { PlanId } from "@/convex/plans";
 import { useContent } from "@/components/ContentContext";
 
 const PENDING_KEY = "investopia.pendingPlan"; // จำแพ็กเกจที่กดไว้ระหว่างไปล็อกอิน
-const PLAN_IDS: PlanId[] = ["monthly", "quarterly", "yearly", "vip"];
+const PLAN_IDS: PlanId[] = ["yearly", "vip"]; // แพ็กเกจที่เปิดขาย (ต้องตรงกับ FOR_SALE ใน convex/plans.ts)
 
 function readPending(): PlanId | null {
   try {

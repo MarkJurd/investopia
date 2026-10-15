@@ -11,6 +11,9 @@ export const PLANS = {
 
 export type PlanId = keyof typeof PLANS;
 
+/** แพ็กเกจที่เปิดขายตอนนี้ — รายเดือน/3 เดือน เลิกขายแล้ว (2026-10-16) แต่ยังเก็บไว้ในระบบเพื่อสมาชิกเดิม */
+export const FOR_SALE: ReadonlySet<PlanId> = new Set<PlanId>(["yearly", "vip"]);
+
 export const planValidator = v.union(
   v.literal("monthly"),
   v.literal("quarterly"),
