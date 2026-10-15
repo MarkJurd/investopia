@@ -253,7 +253,7 @@ export const CONTENT_EN: typeof CONTENT = {
           { text: "Q&A in the members' community", off: false },
           { text: "Monthly group lives + replays", off: false },
           { text: "Priority answers within 24 hours", off: false },
-          { text: "2 private 1:1 coaching sessions (1 hour each)", off: false },
+          { text: "2 group coaching sessions (1 hour each)", off: false },
           { text: "Every new course released while you're a member", off: false },
           { text: "🎁 Pre-purchase checklist", off: false },
           { text: "🎁 First 50 members: the instructor's trend-reading indicator (worth ฿2,990)", off: false }
@@ -285,7 +285,7 @@ export const CONTENT_EN: typeof CONTENT = {
       title: "7-day satisfaction guarantee",
       text: "Not happy for any reason? Tell us within 7 days of paying for a full refund. We guarantee your satisfaction with the course — not investment profits. (VIP refunds are available before your first session.)"
     },
-    note: "Every plan is a one-time payment per period with no auto-renewal — pay by PromptPay or card · 1:1 sessions are learning coaching, not personalised investment advice"
+    note: "Every plan is a one-time payment per period with no auto-renewal — pay by PromptPay or card · Group and 1:1 sessions are learning coaching, not personalised investment advice"
   },
 
   faq: {
@@ -303,7 +303,7 @@ export const CONTENT_EN: typeof CONTENT = {
         a: "Members on every plan get every new course released while their membership is active (for example, a future course on reading financial statements)." },
       { q: "Can I get a refund if I'm not happy?",
         a: "Yes — tell us within 7 days of paying for a full refund, no reason needed. (We guarantee your satisfaction with the course, not investment profits.)" },
-      { q: "What can we talk about in 1:1 sessions?",
+      { q: "What can we talk about in group or 1:1 sessions?",
         a: "They're learning coaching: explaining lessons you're stuck on, reviewing your exercises and the trading plans you write, and ordering your study to suit you — not recommending specific stocks or managing your portfolio." },
       { q: "Will I be charged automatically when it expires?",
         a: "No. Every plan is a one-time payment per period with no auto-renewal. The site reminds you before it expires, and you renew yourself if you want to keep learning." },
