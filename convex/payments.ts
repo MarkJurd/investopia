@@ -2,7 +2,7 @@ import { action, internalMutation, internalQuery, query } from "./_generated/ser
 import type { QueryCtx } from "./_generated/server";
 import type { Id } from "./_generated/dataModel";
 import { internal } from "./_generated/api";
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import {
   PLANS, FOR_SALE, type PlanId, planValidator, VIP_SEATS_PER_MONTH, INDICATOR_BONUS_LIMIT, daysToMs, bangkokMonthKey,
@@ -35,7 +35,7 @@ export type Membership = { plan: PlanId; expiresAt: number; indicatorBonus: bool
 
 /** สิทธิ์ที่ใช้ได้ ณ เวลา now (null = ไม่มี/หมดอายุ) — ใช้ร่วมกับห้องเรียน (convex/learn.ts) */
 export async function getMembership(ctx: QueryCtx, userId: Id<"users">, now: number): Promise<Membership | null> {
-  const rows = await ctx.db.query("memberships").withIndex("by_userId", (q) => q.eq("userId", userId)).collect();
+  const rows = await ctx.db.query("memberships").withIndex("by_userId", (q) => q.eq("userId", userId)).take(500);
   const live = rows.filter((m) => m.status === "active" && m.startsAt <= now && m.expiresAt > now);
   if (live.length === 0) return null;
   // แพ็กเกจที่สูงสุดที่ใช้อยู่ตอนนี้ + วันหมดอายุของแพ็กเกจนั้น (รวมที่ต่ออายุไว้ล่วงหน้า)
@@ -67,11 +67,47 @@ export const userEmail = internalQuery({
   handler: async (ctx, { userId }) => (await ctx.db.get(userId))?.email ?? null,
 });
 
+/* ---------- โค้ดส่วนลด (สร้างในหน้า /admin) ---------- */
+const MIN_PRICE = 20;   // ราคาหลังลดต่ำสุด (บาท) — Stripe ไม่รับยอดต่ำเกินไป
+
+type Quote = { ok: true; code: string | null; listAmount: number; amount: number } | { ok: false; error: string };
+
+async function quote(ctx: QueryCtx, plan: PlanId, rawCode: string | undefined, now: number): Promise<Quote> {
+  const listAmount = PLANS[plan].amount;
+  const code = (rawCode ?? "").trim().toUpperCase();
+  if (!code) return { ok: true, code: null, listAmount, amount: listAmount };
+  const c = await ctx.db.query("coupons").withIndex("by_code", (q) => q.eq("code", code)).first();
+  if (c === null || !c.active) return { ok: false, error: "COUPON_INVALID" };
+  if (c.expiresAt !== null && c.expiresAt <= now) return { ok: false, error: "COUPON_EXPIRED" };
+  if (c.maxUses !== null && c.uses >= c.maxUses) return { ok: false, error: "COUPON_USED_UP" };
+  if (!c.plans.includes(plan)) return { ok: false, error: "COUPON_NOT_FOR_PLAN" };
+  const off = c.kind === "percent" ? Math.round((listAmount * c.value) / 100) : c.value;
+  return { ok: true, code, listAmount, amount: Math.max(MIN_PRICE, listAmount - off) };
+}
+
+const quoteValidator = v.union(
+  v.object({ ok: v.literal(true), code: v.union(v.string(), v.null()), listAmount: v.number(), amount: v.number() }),
+  v.object({ ok: v.literal(false), error: v.string() }),
+);
+
+/** หน้าเว็บใช้ตรวจโค้ดก่อนกดจ่าย (แสดงราคาหลังลด) */
+export const checkCoupon = query({
+  args: { plan: planValidator, code: v.string(), now: v.number() },
+  returns: quoteValidator,
+  handler: async (ctx, { plan, code, now }) => quote(ctx, plan, code, now),
+});
+
+export const quoteInternal = internalQuery({
+  args: { plan: planValidator, code: v.optional(v.string()) },
+  returns: quoteValidator,
+  handler: async (ctx, { plan, code }) => quote(ctx, plan, code, Date.now()),
+});
+
 /* ---------- เริ่มจ่ายเงิน: สร้าง Stripe Checkout แล้วส่ง URL กลับไปให้หน้าเว็บพาไป ---------- */
 export const createCheckout = action({
-  args: { plan: planValidator, lang: v.optional(v.union(v.literal("th"), v.literal("en"))) },
+  args: { plan: planValidator, lang: v.optional(v.union(v.literal("th"), v.literal("en"))), coupon: v.optional(v.string()) },
   returns: v.object({ url: v.string() }),
-  handler: async (ctx, { plan, lang }): Promise<{ url: string }> => {
+  handler: async (ctx, { plan, coupon }): Promise<{ url: string }> => {
     const userId = await getAuthUserId(ctx);
     if (userId === null) throw new Error("NOT_SIGNED_IN");
     if (!FOR_SALE.has(plan)) throw new Error("PLAN_NOT_FOR_SALE");
@@ -83,22 +119,26 @@ export const createCheckout = action({
     const site = process.env.SITE_URL;
     if (!secret || !site) throw new Error("PAYMENT_NOT_CONFIGURED");
 
+    const q: Quote = await ctx.runQuery(internal.payments.quoteInternal, { plan, code: coupon });
+    if (!q.ok) throw new ConvexError(q.error);
     const p = PLANS[plan];
-    const en = lang === "en";
-    const home = `${site}${en ? "/en" : "/"}`;
+    const home = `${site}/`;
     const email: string | null = await ctx.runQuery(internal.payments.userEmail, { userId });
     const form = new URLSearchParams({
       mode: "payment",
-      locale: en ? "en" : "th",
+      locale: "th",
       "line_items[0][quantity]": "1",
       "line_items[0][price_data][currency]": "thb",
-      "line_items[0][price_data][unit_amount]": String(p.amount * 100), // สตางค์
-      "line_items[0][price_data][product_data][name]": en ? p.nameEn : p.name,
+      "line_items[0][price_data][unit_amount]": String(q.amount * 100), // สตางค์ (หลังหักส่วนลดแล้ว)
+      "line_items[0][price_data][product_data][name]": q.code ? `${p.name} (โค้ด ${q.code} ลดจาก ฿${q.listAmount.toLocaleString("en-US")})` : p.name,
       success_url: `${home}?checkout=success`,
       cancel_url: `${home}?checkout=cancel#pricing`,
       client_reference_id: userId,
       "metadata[userId]": userId,
       "metadata[plan]": plan,
+      "metadata[amount]": String(q.amount),          // ยอดที่ต้องได้รับ (webhook ตรวจซ้ำ)
+      "metadata[listAmount]": String(q.listAmount),
+      "metadata[coupon]": q.code ?? "",
       "payment_intent_data[metadata][userId]": userId,
       "payment_intent_data[metadata][plan]": plan,
       expires_at: String(Math.floor(Date.now() / 1000) + 30 * 60), // หน้าจ่ายเงินหมดอายุใน 30 นาที
@@ -126,6 +166,8 @@ export const grantFromCheckout = internalMutation({
     userId: v.string(),
     plan: planValidator,
     amount: v.number(),
+    listAmount: v.optional(v.number()),
+    couponCode: v.optional(v.string()),
     paymentIntentId: v.union(v.string(), v.null()),
   },
   returns: v.null(),
@@ -142,7 +184,7 @@ export const grantFromCheckout = internalMutation({
     }
     const now = Date.now();
     // ต่ออายุแพ็กเกจเดิม = ต่อจากวันหมดอายุเดิม / เปลี่ยนแพ็กเกจ = เริ่มทันที
-    const rows = await ctx.db.query("memberships").withIndex("by_userId", (q) => q.eq("userId", userId)).collect();
+    const rows = await ctx.db.query("memberships").withIndex("by_userId", (q) => q.eq("userId", userId)).take(500);
     const samePlanEnd = Math.max(now, ...rows.filter((m) => m.status === "active" && m.plan === a.plan).map((m) => m.expiresAt));
     const startsAt = samePlanEnd;
 
@@ -155,7 +197,7 @@ export const grantFromCheckout = internalMutation({
       indicatorBonus = given.length < INDICATOR_BONUS_LIMIT;
     }
 
-    await ctx.db.insert("memberships", {
+    const membershipId = await ctx.db.insert("memberships", {
       userId,
       plan: a.plan,
       status: "active",
@@ -166,7 +208,16 @@ export const grantFromCheckout = internalMutation({
       paymentIntentId: a.paymentIntentId,
       indicatorBonus,
       monthKey: bangkokMonthKey(now),
+      source: "stripe",
+      listAmount: a.listAmount ?? PLANS[a.plan].amount,
+      couponCode: a.couponCode,
     });
+    if (a.couponCode) {
+      const code = a.couponCode;
+      const c = await ctx.db.query("coupons").withIndex("by_code", (q) => q.eq("code", code)).first();
+      if (c) await ctx.db.patch("coupons", c._id, { uses: c.uses + 1 });
+    }
+    await ctx.scheduler.runAfter(0, internal.telegram.notifySale, { membershipId });
     return null;
   },
 });

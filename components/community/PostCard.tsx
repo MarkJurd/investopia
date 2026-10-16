@@ -10,9 +10,52 @@ import type { Id } from "@/convex/_generated/dataModel";
 import { useContent } from "@/components/ContentContext";
 import { communityPath, errorText, timeAgo } from "@/components/community/helpers";
 import { learnPath } from "@/components/learn/steps";
+import { formatSize } from "@/components/learn/LessonView";
 
 export type PostView = FunctionReturnType<typeof api.community.post> extends infer T ? Exclude<T, null> : never;
 export type CommentView = FunctionReturnType<typeof api.community.comments>[number];
+
+/** โพล: กดเลือกได้ทันที (กดซ้ำ = ยกเลิก) · เห็นผลหลังโหวต · ไม่บอกว่าใครเลือกอะไร */
+function Poll({ postId, poll }: { postId: Id<"posts">; poll: NonNullable<PostView["poll"]> }) {
+  const C = useContent();
+  const D = C.community;
+  const vote = useMutation(api.community.vote);
+  const [err, setErr] = useState<string | null>(null);
+  const voted = poll.myChoices.length > 0;
+  const showResults = voted || poll.closed;
+  const total = poll.counts.reduce((a, b) => a + b, 0);
+
+  const pick = async (i: number) => {
+    setErr(null);
+    const mine = new Set(poll.myChoices);
+    let next: number[];
+    if (poll.multi) { if (mine.has(i)) mine.delete(i); else mine.add(i); next = [...mine]; }
+    else next = mine.has(i) ? [] : [i];
+    try { await vote({ postId, choices: next }); } catch (e) { setErr(errorText(e, C)); }
+  };
+
+  return (
+    <div className="poll">
+      {poll.options.map((o, i) => {
+        const pct = total ? Math.round((poll.counts[i] / total) * 100) : 0;
+        const mine = poll.myChoices.includes(i);
+        return (
+          <button key={i} className={`poll-opt${mine ? " mine" : ""}`} disabled={poll.closed} onClick={() => void pick(i)} aria-pressed={mine}>
+            {showResults && <i className="poll-bar" style={{ width: `${pct}%` }} />}
+            <span>{mine ? "✓ " : ""}{o}</span>
+            {showResults && <span className="poll-pct">{pct}% · {poll.counts[i]}</span>}
+          </button>
+        );
+      })}
+      <span className="poll-meta">
+        {poll.voters} {D.pollVoters}{poll.multi && ` · ${D.pollMultiHint}`}
+        {poll.closed ? ` · ${D.pollClosed}` : poll.closesAt ? ` · ${D.pollClosesAt} ${new Date(poll.closesAt).toLocaleDateString(C.locale.dateLocale, { day: "numeric", month: "short" })}` : ""}
+        {!showResults && ` · ${D.pollVoteToSee}`}
+      </span>
+      {err && <span className="learn-error" role="alert">{err}</span>}
+    </div>
+  );
+}
 
 export function Avatar({ name, admin }: { name: string; admin: boolean }) {
   return <span className={`c-avatar${admin ? " admin" : ""}`} aria-hidden="true">{[...name][0]?.toUpperCase() ?? "?"}</span>;
@@ -147,6 +190,16 @@ export default function PostCard({ post, isAdmin, detail }: { post: PostView; is
           ))}
         </div>
       )}
+
+      {post.files.length > 0 && (
+        <ul className="post-files">
+          {post.files.map((f, i) => (
+            <li key={i}>{f.url ? <a href={f.url} target="_blank" rel="noopener noreferrer" download={f.name}>📄 {f.name} <small>({formatSize(f.size)})</small></a> : <span>📄 {f.name}</span>}</li>
+          ))}
+        </ul>
+      )}
+
+      {post.poll && <Poll postId={postId} poll={post.poll} />}
 
       <footer className="post-foot">
         <LikeButton liked={post.likedByMe} count={post.likeCount} label={D.like}

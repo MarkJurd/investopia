@@ -3,7 +3,7 @@
 /* หน้าแรกของห้องเรียน: วันหมดอายุ · ความคืบหน้า % · เรียนต่อจากที่ค้าง · รายการโมดูล */
 import Link from "next/link";
 import { useContent } from "@/components/ContentContext";
-import { countable, learnPath, pricingPath, type Overview, type Step } from "@/components/learn/steps";
+import { CERT_STEP, countable, learnPath, pricingPath, type Overview, type Step } from "@/components/learn/steps";
 
 const DAY = 24 * 60 * 60 * 1000;
 const WARN_DAYS = 7;   // เตือนต่ออายุเมื่อเหลือไม่เกินกี่วัน
@@ -27,6 +27,7 @@ export default function Dashboard({ data, steps, now }: { data: Overview; steps:
   const doneCount = counted.filter((s) => s.done).length;
   const percent = counted.length ? Math.round((doneCount / counted.length) * 100) : 0;
   const next = counted.find((s) => !s.done);
+  const newLessons = steps.filter((s) => s.kind === "lesson" && s.lesson.isNew && !s.lesson.locked);
   const daysLeft = Math.ceil((data.membership.expiresAt - now) / DAY);
   const until = new Date(data.membership.expiresAt).toLocaleDateString(C.locale.dateLocale, { day: "numeric", month: "long", year: "numeric" });
 
@@ -62,6 +63,28 @@ export default function Dashboard({ data, steps, now }: { data: Overview; steps:
             <p><b>{L.allDoneTitle}</b> {L.allDoneText}</p>
           )}
         </div>
+      </section>
+
+      {newLessons.length > 0 && (
+        <section className="new-lessons card">
+          <h2 className="dash-h2">{L.newLessonsTitle}</h2>
+          <ul>
+            {newLessons.map((s) => s.kind === "lesson" && (
+              <li key={s.id}>
+                <Link href={learnPath(C, s.id)}><span className="new-badge sm">{L.newBadge}</span> {s.lesson.title} <i>· {s.module.tag}</i></Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      <section className={`cert-card card${next ? "" : " ready"}`}>
+        <span className="cert-ic" aria-hidden="true">🎓</span>
+        <div>
+          <b>{L.certCardTitle}</b>
+          <p>{next ? L.certCardLocked : L.certCardText}</p>
+        </div>
+        {!next && <Link href={learnPath(C, CERT_STEP)} className="btn btn-primary btn-sm">{L.certOpen}</Link>}
       </section>
 
       <div className="dash-grid">

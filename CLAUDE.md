@@ -14,9 +14,12 @@
 
 ## โครงสร้าง
 ```
-lib/content.ts        ⭐ ข้อความภาษาไทย (หน้า /)
-lib/content.en.ts     ⭐ ข้อความภาษาอังกฤษ (หน้า /en) — โครงต้องตรงกับ content.ts ทุกช่อง (TypeScript บังคับ)
-components/HomePage.tsx    หน้าแรก ใช้ร่วมทั้ง 2 ภาษา (รับข้อความเป็น prop) · client components อ่านข้อความผ่าน useContent()
+lib/content.ts        ⭐ ข้อความทั้งเว็บ (ภาษาไทยอย่างเดียว — เอาฉบับอังกฤษออก 2026-10-16, /en/* redirect ไปหน้าไทยใน next.config.ts)
+components/HomePage.tsx    หน้าแรก (รับข้อความเป็น prop) · client components อ่านข้อความผ่าน useContent()
+app/admin/ + components/admin/   ⭐ คอนโซลแอดมิน /admin: แท็บ บทเรียน (CourseTab) / สมาชิก (MembersTab) / ยอดขาย (SalesTab) / โค้ดส่วนลด (CouponsTab)
+convex/course.ts           อ่านเนื้อหาคอร์สจากฐานข้อมูล (courseModules / courseLessons / lessonFiles) — ถ้ายังไม่กด "นำเข้าคอร์ส" ใช้ lib/course.ts แทน
+convex/adminCourse.ts      ฟังก์ชันแท็บบทเรียน (แก้/เรียง/ซ่อน/ไฟล์แนบ/แบบทดสอบ/ป้ายใหม่+แจ้งเตือน/รายชื่อคลิป Bunny) — requireAdmin ทุกฟังก์ชัน
+convex/adminMembers.ts     ให้/ต่อ/ยกเลิกสิทธิ์ด้วยมือ (+ pendingGrants เปิดใช้ตอนล็อกอินครั้งแรก ผ่าน callback ใน convex/auth.ts) · บันทึกยอดขาย + CSV · โค้ดส่วนลด
 app/page.tsx          หน้าแรก (Server Component) — ประกอบ section จาก content.ts
 app/layout.tsx        ฟอนต์ Anuphan (next/font) + metadata
 app/globals.css       สี (:root) + สไตล์ทั้งหมด
@@ -27,7 +30,7 @@ components/HeroVideo.tsx   วิดีโอแนะนำตัว (youtubeId
 components/Curriculum.tsx  หลักสูตร: เลขโมดูล + วงแหวนค้างซ้าย
 components/Pricing.tsx     การ์ดราคา + modal ชำระเงิน (ยังจำลอง)
 components/QABox.tsx       กล่องถามคำถาม (ยังเป็น alert)
-lib/course.ts / course.en.ts ⭐ เนื้อหาห้องเรียน (บทเรียน + แบบทดสอบ + เฉลย) — ห้าม import ในหน้าเว็บ, หน้าเว็บได้ผ่าน Convex
+lib/course.ts              เนื้อหาตั้งต้นของห้องเรียน (ใช้ตอน "นำเข้าคอร์ส" ครั้งแรก) — หลังนำเข้าแล้วแก้ที่ /admin เท่านั้น แก้ไฟล์นี้ไม่มีผล · ห้าม import ในหน้าเว็บ
 convex/learn.ts            ห้องเรียน: overview / setLessonDone / submitQuiz (+ internal resetProgress)
 components/learn/          หน้า /learn: LearnApp (เช็กสิทธิ์/สลับหน้า), Dashboard, LessonView, QuizView, Outline
 app/learn/, app/en/learn/  layout.tsx แสดง LearnApp ตัวเดียว (page.tsx เป็น null) → เปลี่ยนบทไม่ต้องโหลดข้อมูลใหม่
@@ -47,7 +50,8 @@ _mockups/news-mockup.html  แบบจำลองหน้า "ข่าวห
 3. เว็บจริงเปลี่ยนเมื่อ push ขึ้น GitHub (Vercel deploy อัตโนมัติ)
 
 ## กติกาสำหรับ AI
-- **ห้าม hardcode ข้อความใน .tsx** — ทุกข้อความมาจาก `lib/content.ts` (ไทย) และ `lib/content.en.ts` (อังกฤษ) — **แก้ข้อความ/เพิ่มช่องต้องแก้ทั้ง 2 ไฟล์**
+- **ห้าม hardcode ข้อความใน .tsx** — ทุกข้อความมาจาก `lib/content.ts` (เว็บเหลือภาษาไทยอย่างเดียว)
+- **เนื้อหาบทเรียน/วิดีโอ/ไฟล์แนบ/แบบทดสอบ เจ้าของแก้เองที่ /admin** — อย่าแก้ lib/course.ts เพื่อเปลี่ยนเนื้อหา (หลังนำเข้าแล้วไม่มีผล)
 - เพิ่ม section ใหม่: เพิ่มข้อมูลใน content.ts + เพิ่ม JSX ใน page.tsx (หรือ component ใหม่)
 - เคารพ `prefers-reduced-motion` · ต้อง responsive (มือถือ 375px ไม่ล้นจอ)
 - ธีม: น้ำเงิน ~10% + ขาว เรียบ · ฟอนต์ Anuphan
@@ -102,7 +106,18 @@ Convex agent skills for common tasks can be installed by running
 
 <!-- convex-ai-end -->
 
-## 🔁 สถานะล่าสุด + งานถัดไป (อัปเดต 2026-10-12 — อ่านส่วนนี้ก่อนเริ่มงาน)
+## 🆕 อัปเดต 2026-10-16 (อ่านก่อน — ส่วนล่างบางข้อเก่าแล้ว)
+- **ขึ้นเว็บจริงแล้ว:** https://investopia-kappa.vercel.app (Vercel Pro trial) + Convex prod `charming-parrot-860` · build command บน Vercel = `npx convex deploy --cmd "npm run build"` (env `CONVEX_DEPLOY_KEY` สิทธิ์ deploy อย่างเดียว) · push ขึ้น main = deploy ทั้งเว็บและ Convex prod อัตโนมัติ
+- env บน prod ตั้งแล้ว: JWT_PRIVATE_KEY, JWKS, SITE_URL, AUTH_GOOGLE_*, BUNNY_LIBRARY_ID, BUNNY_TOKEN_KEY, ADMIN_EMAILS (สคริปต์ scripts/setup-prod-auth.mjs + copy-env-to-prod.mjs) · **ยังไม่ตั้งบน prod:** STRIPE_* (จ่ายเงินยังไม่ได้บนเว็บจริง), TELEGRAM_* (ต้องสร้างบอทตัวใหม่), BUNNY_API_KEY (ปุ่มเลือกคลิปจาก Bunny)
+- Google redirect URI ของ prod เพิ่มแล้ว · Bunny allowed domain เพิ่มแล้ว
+- **คอนโซลแอดมิน /admin** (ทดสอบหลังบ้านบน dev ผ่านครบ · หน้าจอตอนล็อกอินเจ้าของต้องลองเอง): บทเรียน (นำเข้าคอร์สครั้งแรก → แก้ชื่อ/สรุป/วิดีโอ/นาที, เรียงลำดับ ▲▼, ซ่อน, ย้ายโมดูล, ลบ, ไฟล์แนบ ≤50 MB, แบบทดสอบ, ป้าย "ใหม่" 14 วัน + แจ้งเตือนกระดิ่งผู้เรียน) · สมาชิก (ค้นด้วยอีเมล, ให้/ต่อสิทธิ์ด้วยมือ, อีเมลที่ยังไม่เคยล็อกอิน = รอเปิดตอนล็อกอินครั้งแรก, ยกเลิก, สลับ Indicator) · ยอดขาย (สรุปเดือนนี้/เดือนก่อน/ทั้งหมด + ตาราง + CSV) · โค้ดส่วนลด (% หรือบาท, แพ็กเกจ, จำนวนครั้ง, วันหมดอายุ — ราคาหลังลดต่ำสุด ฿20)
+- **ใน prod ยังไม่ได้กด "นำเข้าคอร์ส"** → ห้องเรียนใช้ lib/course.ts ไปก่อน · บน dev นำเข้าแล้ว
+- ห้องเรียน: ไฟล์แนบใต้คลิป · ป้าย "ใหม่" · การ์ด/หน้าใบประกาศเรียนจบ /learn/certificate (เรียนครบทุกบท + ผ่านแบบทดสอบทุกโมดูล, พิมพ์/บันทึก PDF)
+- คอมมูนิตี้: **โพล** และ **แนบไฟล์** (แอดมินเท่านั้น) · โพลไม่เปิดเผยว่าใครเลือกอะไร, เลือกหลายข้อได้, ตั้งวันปิดได้
+- Telegram: แจ้ง "💰 ขายได้" ทุกครั้งที่จ่ายผ่าน Stripe (ชื่อ/อีเมล/แพ็กเกจ/โค้ด/Indicator/ยอดเดือนนี้) — ทำงานเมื่อตั้ง TELEGRAM_* บน deployment นั้น
+- Webhook Stripe ตรวจยอดจาก metadata.amount ที่ server ใส่ตอนสร้างหน้าจ่ายเงิน (รองรับส่วนลด) และต้องไม่เกินราคาเต็ม
+
+## 🔁 สถานะล่าสุด + งานถัดไป (อัปเดต 2026-10-12 — บางข้อเก่าแล้ว ดูส่วน 🆕 ด้านบน)
 **ใช้งานได้แล้ว:** หน้าเว็บไทย `/` + อังกฤษ `/en` · ล็อกอิน Google · จ่ายเงิน Stripe (โหมดทดสอบ) + webhook เปิดสิทธิ์ · แพ็กเกจ 4 แบบ · เมนูผู้ใช้แบบ avatar dropdown
 **ยังไม่ได้ deploy ขึ้นอินเทอร์เน็ต** — ตอนนี้รันในเครื่องเท่านั้น (`npm run dev` → http://localhost:3000)
 

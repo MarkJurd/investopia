@@ -9,9 +9,12 @@
  */
 
 import type * as admin from "../admin.js";
+import type * as adminCourse from "../adminCourse.js";
+import type * as adminMembers from "../adminMembers.js";
 import type * as auth from "../auth.js";
 import type * as bunny from "../bunny.js";
 import type * as community from "../community.js";
+import type * as course from "../course.js";
 import type * as http from "../http.js";
 import type * as learn from "../learn.js";
 import type * as payments from "../payments.js";
@@ -27,9 +30,12 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   admin: typeof admin;
+  adminCourse: typeof adminCourse;
+  adminMembers: typeof adminMembers;
   auth: typeof auth;
   bunny: typeof bunny;
   community: typeof community;
+  course: typeof course;
   http: typeof http;
   learn: typeof learn;
   payments: typeof payments;

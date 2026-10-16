@@ -17,6 +17,8 @@ export const isLocked = (s: Step): boolean => s.kind === "lesson" && s.lesson.lo
 export const countable = (steps: Step[]): Step[] => steps.filter((s) => !isLocked(s));
 
 export const quizStepId = (moduleId: string) => `${moduleId}-quiz`;
+/** หน้าใบประกาศเรียนจบ: /learn/certificate */
+export const CERT_STEP = "certificate";
 
 export function buildSteps(data: Overview): Step[] {
   const done = new Set(data.doneLessonIds);
@@ -29,7 +31,7 @@ export function buildSteps(data: Overview): Step[] {
   });
 }
 
-/** ลิงก์ในห้องเรียนตามภาษา: ไทย /learn/... · อังกฤษ /en/learn/... */
+/** ลิงก์ในห้องเรียน: /learn/... */
 export function learnPath(C: Content, stepId?: string): string {
   const base = C.locale.base === "/" ? "" : C.locale.base;
   return `${base}/learn${stepId ? `/${stepId}` : ""}`;

@@ -1,6 +1,7 @@
 "use client";
 
-/* กล่องเขียนโพสต์: ข้อความ + หัวข้อ (ทั่วไป / ถามเรื่องบทเรียน) + แนบรูปสูงสุด 3 รูป */
+/* กล่องเขียนโพสต์: ข้อความ + หัวข้อ (ทั่วไป / ถามเรื่องบทเรียน) + แนบรูปสูงสุด 3 รูป
+ * แอดมินเท่านั้น: แนบไฟล์ (≤5 ไฟล์ ≤50 MB) + สร้างโพล */
 import { useEffect, useRef, useState } from "react";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -12,6 +13,8 @@ import { errorText, shrinkImage } from "@/components/community/helpers";
 export type Me = { isAdmin: boolean; displayName: string | null; lessons: { id: string; title: string; moduleTag: string }[] };
 
 const MAX_IMAGES = 3;
+const MAX_DOCS = 5;
+const MAX_DOC_BYTES = 50 * 1024 * 1024;
 
 export default function Composer({ me, askLessonId }: { me: Me; askLessonId?: string }) {
   const C = useContent();
@@ -25,6 +28,11 @@ export default function Composer({ me, askLessonId }: { me: Me; askLessonId?: st
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [editingName, setEditingName] = useState(false);
+  const [docs, setDocs] = useState<File[]>([]);
+  const [pollOn, setPollOn] = useState(false);
+  const [pollOpts, setPollOpts] = useState<string[]>(["", ""]);
+  const [pollMulti, setPollMulti] = useState(false);
+  const [pollClose, setPollClose] = useState("");
   const filesRef = useRef(files);
 
   useEffect(() => { filesRef.current = files; }, [files]);
@@ -60,9 +68,25 @@ export default function Composer({ me, askLessonId }: { me: Me; askLessonId?: st
         if (!res.ok) throw new Error("upload");
         ids.push(((await res.json()) as { storageId: Id<"_storage"> }).storageId);
       }
-      await createPost({ body, tag, lessonId: tag === "lesson" ? lessonId : undefined, imageIds: ids });
+      const docIds: { storageId: Id<"_storage">; name: string }[] = [];
+      for (const d of docs) {
+        const uploadUrl = await makeUrl({});
+        const res = await fetch(uploadUrl, { method: "POST", headers: { "Content-Type": d.type || "application/octet-stream" }, body: d });
+        if (!res.ok) throw new Error("upload");
+        docIds.push({ storageId: ((await res.json()) as { storageId: Id<"_storage"> }).storageId, name: d.name });
+      }
+      const options = pollOpts.map((o) => o.trim()).filter(Boolean);
+      await createPost({
+        body, tag, lessonId: tag === "lesson" ? lessonId : undefined, imageIds: ids,
+        files: docIds.length ? docIds : undefined,
+        poll: pollOn && options.length >= 2
+          ? { options, multi: pollMulti, closesAt: pollClose ? new Date(`${pollClose}T23:59:59+07:00`).getTime() : null }
+          : undefined,
+      });
       files.forEach((f) => URL.revokeObjectURL(f.url));
       setFiles([]);
+      setDocs([]);
+      setPollOn(false); setPollOpts(["", ""]); setPollMulti(false); setPollClose("");
       setBody("");
       if (!askLessonId) { setTag("general"); setLessonId(""); }
     } catch (err) {
@@ -85,8 +109,42 @@ export default function Composer({ me, askLessonId }: { me: Me; askLessonId?: st
           ))}
         </div>
       )}
+      {me.isAdmin && docs.length > 0 && (
+        <ul className="composer-files">
+          {docs.map((d, i) => (
+            <li key={`${d.name}-${i}`}>📄 {d.name} <button type="button" className="link-btn" onClick={() => setDocs((x) => x.filter((_, j) => j !== i))}>{D.removeFile}</button></li>
+          ))}
+        </ul>
+      )}
+      {me.isAdmin && pollOn && (
+        <div className="composer-poll">
+          <b>{D.pollTitle}</b>
+          {pollOpts.map((o, i) => (
+            <input key={i} value={o} maxLength={120} placeholder={`${D.pollOption} ${i + 1}`}
+              onChange={(e) => setPollOpts((x) => x.map((y, j) => (j === i ? e.target.value : y)))} />
+          ))}
+          {pollOpts.length < 10 && <button type="button" className="link-btn" onClick={() => setPollOpts((x) => [...x, ""])}>{D.pollAddOption}</button>}
+          <label><input type="checkbox" checked={pollMulti} onChange={(e) => setPollMulti(e.target.checked)} /> {D.pollMulti}</label>
+          <label>{D.pollCloses} <input type="date" value={pollClose} onChange={(e) => setPollClose(e.target.value)} /></label>
+        </div>
+      )}
       <div className="composer-bar">
         <div className="composer-opts">
+          {me.isAdmin && (
+            <>
+              <label className="file-btn">
+                <input type="file" multiple hidden disabled={docs.length >= MAX_DOCS}
+                  onChange={(e) => {
+                    const picked = [...(e.target.files ?? [])].filter((f) => f.size <= MAX_DOC_BYTES);
+                    if (picked.length < (e.target.files?.length ?? 0)) setError(D.errFile);
+                    setDocs((x) => [...x, ...picked].slice(0, MAX_DOCS));
+                    e.target.value = "";
+                  }} />
+                <span className={`btn btn-ghost btn-sm${docs.length >= MAX_DOCS ? " disabled" : ""}`}>📎 {D.addFile}</span>
+              </label>
+              <button type="button" className={`btn btn-ghost btn-sm${pollOn ? " on" : ""}`} onClick={() => setPollOn((p) => !p)}>📊 {D.addPoll}</button>
+            </>
+          )}
           <label className="file-btn">
             <input type="file" accept="image/jpeg,image/png,image/webp" multiple hidden disabled={files.length >= MAX_IMAGES}
               onChange={(e) => { void addFiles(e.target.files); e.target.value = ""; }} />

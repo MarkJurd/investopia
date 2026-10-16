@@ -11,6 +11,11 @@ import Link from "next/link";
 import { communityPath } from "@/components/community/helpers";
 import { pricingPath, type Step } from "@/components/learn/steps";
 
+export function formatSize(bytes: number): string {
+  if (bytes >= 1024 * 1024) return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+  return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+}
+
 export default function LessonView({ steps, index }: { steps: Step[]; index: number }) {
   const C = useContent();
   const L = C.learn;
@@ -48,13 +53,30 @@ export default function LessonView({ steps, index }: { steps: Step[]; index: num
         <LessonVideo key={lesson.id} lessonId={lesson.id} title={lesson.title} hasVideo={lesson.hasVideo} />
 
         <p className="learn-kicker">{module.tag} · {module.title}</p>
-        <h1 className="learn-h1">{lesson.title}</h1>
+        <h1 className="learn-h1">{lesson.title}{lesson.isNew && <span className="new-badge">{L.newBadge}</span>}</h1>
         {lesson.minutes > 0 && <p className="learn-meta">{lesson.minutes} {L.minutesUnit}</p>}
 
-        <section className="learn-notes card">
-          <h2>{L.notesTitle}</h2>
-          <p>{lesson.notes}</p>
-        </section>
+        {lesson.files.length > 0 && (
+          <section className="learn-files card">
+            <h2>{L.filesTitle}</h2>
+            <ul>
+              {lesson.files.map((f, i) => (
+                <li key={i}>
+                  <span className="lf-name">📄 {f.name}</span>
+                  <span className="lf-size">{formatSize(f.size)}</span>
+                  {f.url && <a href={f.url} target="_blank" rel="noopener noreferrer" download={f.name} className="btn btn-ghost btn-sm">{L.download}</a>}
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {lesson.notes && (
+          <section className="learn-notes card">
+            <h2>{L.notesTitle}</h2>
+            <p>{lesson.notes}</p>
+          </section>
+        )}
 
         <div className="learn-done">
           {step.done ? (

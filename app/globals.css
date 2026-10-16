@@ -684,3 +684,153 @@ fieldset:disabled .quiz-choice{cursor:default}
   .post-flags{justify-content:flex-start;order:3;flex-basis:100%}
   .post-imgs.n3{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
+
+/* ===== ห้องเรียน: ป้ายใหม่ · ไฟล์แนบ · ใบประกาศ ===== */
+.new-badge{display:inline-block;margin-left:8px;font-size:12px;font-weight:700;color:#fff;background:var(--blue);border-radius:999px;padding:2px 9px;vertical-align:middle;line-height:1.5}
+.new-badge.sm{font-size:11px;padding:1px 7px;margin-left:6px}
+.learn-files{margin-top:18px;padding:20px}
+.learn-files h2{font-size:17px;margin-bottom:10px}
+.learn-files ul{list-style:none;display:flex;flex-direction:column;gap:8px}
+.learn-files li{display:flex;align-items:center;gap:10px;flex-wrap:wrap;border:1px solid var(--line);border-radius:12px;padding:8px 12px}
+.lf-name{flex:1;min-width:0;overflow-wrap:anywhere;color:var(--ink);font-weight:500}
+.lf-size{font-size:13px;color:var(--muted)}
+.new-lessons{padding:20px;margin-top:18px}
+.new-lessons ul{list-style:none;display:flex;flex-direction:column;gap:6px}
+.new-lessons a{color:var(--ink)}
+.new-lessons i{color:var(--muted);font-style:normal;font-size:13px}
+.cert-card{display:flex;align-items:center;gap:16px;padding:18px 20px;margin-top:18px;flex-wrap:wrap}
+.cert-card.ready{border-color:var(--blue-line);background:var(--blue-soft)}
+.cert-card div{flex:1;min-width:200px}
+.cert-card p{font-size:14px;margin:0}
+.cert-ic{font-size:30px}
+.cert-wrap{max-width:860px;margin:0 auto}
+.cert-actions{display:flex;justify-content:space-between;gap:10px;margin-bottom:16px}
+.cert-paper{background:#fff;border:10px double var(--blue-line);border-radius:12px;padding:48px 40px;text-align:center;color:var(--ink)}
+.cert-logo{margin:0 auto 6px}
+.cert-brand{font-weight:700;letter-spacing:.2em;color:var(--blue)}
+.cert-h{font-size:34px;margin:12px 0 4px}
+.cert-sub{color:var(--body)}
+.cert-name{font-size:30px;font-weight:700;margin:14px 0;border-bottom:1px solid var(--line);display:inline-block;padding:0 24px 6px;min-width:60%}
+.cert-body{max-width:560px;margin:0 auto;color:var(--body)}
+.cert-foot{display:flex;justify-content:space-around;gap:16px;flex-wrap:wrap;margin-top:32px}
+.cert-foot div{display:flex;flex-direction:column;font-size:14px}
+.cert-foot span{color:var(--muted)}
+.cert-sign{color:var(--ink)!important;font-weight:600;border-top:1px solid var(--line);padding-top:6px}
+.cert-note{margin-top:28px;font-size:12px;color:var(--muted)}
+@media (max-width:600px){.cert-paper{padding:28px 16px}.cert-h{font-size:26px}.cert-name{font-size:22px;min-width:0}}
+@media print{
+  .no-print,.nav,.proto-bar,.prototype-banner{display:none!important}
+  .learn-main{padding:0!important}
+  .cert-paper{border-color:#cbd5e1;box-shadow:none}
+  body{background:#fff}
+}
+
+/* ===== หน้าราคา: โค้ดส่วนลด ===== */
+.coupon-box{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;margin:0 auto 18px;max-width:760px}
+.coupon-box label{font-size:14px;color:var(--body)}
+.coupon-box input{font:inherit;font-size:14px;border:1px solid var(--line);border-radius:10px;padding:7px 10px;width:150px;text-transform:uppercase}
+.coupon-ok{font-size:13px;color:#15803d;font-weight:600}
+.coupon-err{font-size:13px;color:var(--down)}
+.coupon-tag{display:block;font-size:12px;font-weight:600;color:#15803d}
+
+/* ===== คอนโซลแอดมิน ===== */
+.adm-main{padding-top:24px;padding-bottom:72px}
+.adm-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px;border-bottom:1px solid var(--line)}
+.adm-tabs button{font:inherit;font-size:15px;font-weight:600;background:none;border:0;border-bottom:3px solid transparent;padding:10px 14px;color:var(--body);cursor:pointer}
+.adm-tabs button.on{color:var(--blue);border-bottom-color:var(--blue)}
+.adm-card{padding:20px;margin-bottom:16px}
+.adm-card h2{font-size:18px;margin-bottom:6px}
+.adm-h3{font-size:15px;margin:14px 0 8px}
+.adm-hint{font-size:14px;color:var(--body);background:var(--bg-soft);border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin-bottom:14px}
+.adm-sub{font-size:13px;color:var(--muted)}
+.adm-msg{font-size:13px;color:var(--blue);font-weight:600}
+.adm-danger{color:var(--down)!important}
+.adm-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.adm-grow{flex:1;min-width:180px}
+.adm-form{display:flex;flex-direction:column;gap:10px}
+.adm-form label,.adm-inline{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:600;color:var(--ink)}
+.adm-inline{flex-direction:row;align-items:center;gap:8px}
+.adm-form input:not([type=checkbox]):not([type=radio]),.adm-form textarea,.adm-form select,.adm-row input,.adm-inline select,.adm-picker input,.adm-quiz input:not([type=radio]),.adm-quiz textarea{
+  font:inherit;font-size:14px;font-weight:400;border:1px solid var(--line);border-radius:10px;padding:8px 10px;color:var(--ink);background:#fff;width:100%;min-width:0}
+.adm-inline select{width:auto;max-width:100%}
+.adm-form small{font-weight:400;color:var(--muted)}
+.adm-check{flex-direction:row!important;align-items:center;gap:8px!important;font-weight:500!important}
+.adm-grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.adm-presets{display:flex;gap:6px}
+.adm-presets button{font:inherit;font-size:12px;border:1px solid var(--line);background:#fff;border-radius:8px;padding:2px 10px;cursor:pointer}
+.adm-presets button.on{border-color:var(--blue);color:var(--blue)}
+.adm-mod{padding:0;margin-bottom:12px;overflow:hidden}
+.adm-mod.is-hidden{opacity:.75;border-style:dashed}
+.adm-mod-head{display:flex;align-items:center;gap:6px;padding:10px 12px}
+.adm-mod-title{flex:1;min-width:0;text-align:left;font:inherit;background:none;border:0;cursor:pointer;color:var(--ink);display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline}
+.adm-mod-body{border-top:1px solid var(--line);padding:16px;display:flex;flex-direction:column;gap:14px;background:var(--bg-soft)}
+.adm-arrows{display:inline-flex;flex-direction:column;gap:2px}
+.adm-arrows button{font-size:10px;line-height:1;border:1px solid var(--line);background:#fff;border-radius:6px;padding:3px 6px;cursor:pointer;color:var(--body)}
+.adm-arrows button:hover{border-color:var(--blue);color:var(--blue)}
+.adm-lessons{list-style:none;display:flex;flex-direction:column;gap:6px}
+.adm-lessons>li{background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.adm-lesson-row{display:flex;align-items:center;gap:6px;padding:8px 10px}
+.adm-lesson-title{flex:1;min-width:0;text-align:left;font:inherit;font-size:14px;background:none;border:0;cursor:pointer;color:var(--ink);display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;justify-content:space-between}
+.adm-badges{display:inline-flex;flex-wrap:wrap;gap:4px}
+.adm-badges i{font-style:normal;font-size:11px;font-weight:600;border-radius:999px;padding:1px 8px;background:var(--bg-soft);border:1px solid var(--line);color:var(--body)}
+.adm-badges i.b-ok{background:#f0fdf4;border-color:#bbf7d0;color:#15803d}
+.adm-badges i.b-muted{color:var(--muted)}
+.adm-badges i.b-hidden{background:#fef3c7;border-color:#fde68a;color:#92400e}
+.adm-badges i.b-new{background:var(--blue);border-color:var(--blue);color:#fff}
+.adm-editor{border-top:1px solid var(--line);padding:14px;display:flex;flex-direction:column;gap:16px}
+.adm-files h4,.adm-quiz h4,.adm-detail h4{font-size:14px;margin-bottom:6px}
+.adm-files ul{list-style:none;display:flex;flex-direction:column;gap:6px;margin-bottom:8px}
+.adm-files li{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:14px}
+.adm-files li a{overflow-wrap:anywhere}
+.adm-upload{cursor:pointer;display:inline-flex}
+.adm-upload.disabled{opacity:.6;pointer-events:none}
+.adm-extra{display:flex;flex-direction:column;gap:10px;border-top:1px dashed var(--line);padding-top:12px}
+.adm-picker{border:1px solid var(--line);border-radius:12px;padding:10px;background:#fff;display:flex;flex-direction:column;gap:8px}
+.adm-picker ul{list-style:none;max-height:280px;overflow:auto;display:flex;flex-direction:column;gap:4px}
+.adm-picker li button{width:100%;text-align:left;font:inherit;font-size:14px;background:var(--bg-soft);border:1px solid var(--line);border-radius:8px;padding:6px 10px;cursor:pointer;display:flex;justify-content:space-between;gap:10px;color:var(--ink)}
+.adm-picker li button:hover{border-color:var(--blue)}
+.adm-quiz{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:12px}
+.adm-q{border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.adm-q legend{font-weight:700;padding:0 6px;color:var(--blue)}
+.adm-q label{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:600}
+.adm-choice{display:flex;align-items:center;gap:8px}
+.adm-choice input[type=radio]{width:18px;height:18px;flex-shrink:0;accent-color:var(--blue)}
+.adm-x{border:0;background:none;font-size:18px;color:var(--muted);cursor:pointer;padding:0 4px}
+.adm-list{list-style:none;display:flex;flex-direction:column;gap:6px}
+.adm-member{width:100%;text-align:left;font:inherit;font-size:14px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 12px;cursor:pointer;display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;color:var(--ink)}
+.adm-member.on,.adm-member:hover{border-color:var(--blue)}
+.adm-member .adm-badges{margin-left:auto}
+.adm-pending{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;font-size:14px;border:1px dashed var(--line);border-radius:10px;padding:8px 12px}
+.adm-detail{padding:12px 4px 4px;display:flex;flex-direction:column;gap:8px;font-size:14px}
+.adm-table-wrap{overflow-x:auto;max-width:100%}
+.adm-table-wrap.card{padding:0}
+.adm-table{width:100%;border-collapse:collapse;font-size:13px}
+.adm-table th,.adm-table td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+.adm-table th{font-weight:600;color:var(--muted);white-space:nowrap;background:var(--bg-soft)}
+.adm-table tr.dim td{color:var(--muted)}
+.adm-table .strike{text-decoration:line-through;color:var(--muted)}
+.adm-actions{display:flex;gap:4px;flex-wrap:wrap}
+.adm-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-bottom:12px}
+.adm-stats .card{padding:14px 16px;display:flex;flex-direction:column;gap:2px}
+.adm-stats span{font-size:13px;color:var(--muted)}
+.adm-stats b{font-size:22px;color:var(--ink)}
+.adm-stats small{font-size:12px;color:var(--body)}
+.adm-sales,.adm-coupons,.adm-members,.adm-course{display:flex;flex-direction:column;gap:12px}
+.adm-plans{border:0;display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:600}
+.adm-plans legend{margin-bottom:4px}
+
+/* ===== คอมมูนิตี้: โพล + ไฟล์แนบ ===== */
+.poll{border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:10px;display:flex;flex-direction:column;gap:6px}
+.poll-opt{position:relative;display:flex;align-items:center;gap:8px;font:inherit;font-size:14px;text-align:left;width:100%;border:1px solid var(--line);border-radius:10px;padding:8px 12px;background:#fff;cursor:pointer;overflow:hidden;color:var(--ink)}
+.poll-opt:disabled{cursor:default}
+.poll-opt.mine{border-color:var(--blue)}
+.poll-opt .poll-bar{position:absolute;inset:0 auto 0 0;background:var(--blue-soft);z-index:0;transition:width .3s}
+.poll-opt>span{position:relative;z-index:1}
+.poll-opt .poll-pct{margin-left:auto;font-weight:600;color:var(--blue)}
+.poll-meta{font-size:12px;color:var(--muted)}
+.post-files{list-style:none;display:flex;flex-direction:column;gap:6px;margin-top:10px}
+.post-files a{display:inline-flex;gap:6px;align-items:center;font-size:14px;border:1px solid var(--line);border-radius:10px;padding:6px 10px;color:var(--ink);overflow-wrap:anywhere}
+.composer-poll{display:flex;flex-direction:column;gap:6px;border:1px dashed var(--line);border-radius:12px;padding:10px}
+.composer-poll input[type=text],.composer-poll input:not([type]){font:inherit;font-size:14px;border:1px solid var(--line);border-radius:10px;padding:7px 10px}
+.composer-poll label{font-size:13px;display:flex;align-items:center;gap:6px}
+.composer-files{list-style:none;display:flex;flex-direction:column;gap:4px;font-size:13px}

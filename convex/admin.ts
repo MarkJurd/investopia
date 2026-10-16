@@ -2,6 +2,8 @@
  * ตั้งค่า: npx convex env set ADMIN_EMAILS "a@gmail.com,b@gmail.com"  (ไม่เขียนอีเมลลงโค้ด/หน้าเว็บ) */
 import type { QueryCtx } from "./_generated/server";
 import type { Id } from "./_generated/dataModel";
+import { ConvexError } from "convex/values";
+import { getAuthUserId } from "@convex-dev/auth/server";
 
 export function adminEmails(): string[] {
   return (process.env.ADMIN_EMAILS ?? "").split(",").map((e) => e.trim().toLowerCase()).filter(Boolean);
@@ -21,4 +23,11 @@ export async function adminUserIds(ctx: QueryCtx): Promise<Id<"users">[]> {
     if (user && user.emailVerificationTime !== undefined) ids.push(user._id);
   }
   return ids;
+}
+
+/** ใช้ในฟังก์ชันของหน้า /admin — ไม่ใช่แอดมิน = ปฏิเสธ */
+export async function requireAdmin(ctx: QueryCtx): Promise<Id<"users">> {
+  const userId = await getAuthUserId(ctx);
+  if (userId === null || !(await isAdminUser(ctx, userId))) throw new ConvexError("NOT_ADMIN");
+  return userId;
 }

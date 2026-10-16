@@ -12,7 +12,7 @@ import { internal } from "./_generated/api";
 import { getMembership } from "./payments";
 import { adminUserIds, isAdminUser } from "./admin";
 import { planValidator } from "./plans";
-import { COURSE } from "../lib/course";
+import { findVisibleLesson, lessonTitle, loadCourse, visibleModules } from "./course";
 
 const MAX_POST = 3000;
 const MAX_COMMENT = 2000;
@@ -22,6 +22,10 @@ const IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 const POSTS_PER_HOUR = 10;
 const COMMENTS_PER_HOUR = 30;
 const HOUR = 60 * 60 * 1000;
+const MAX_FILES = 5;                         // ไฟล์แนบต่อโพสต์ (แอดมินเท่านั้น)
+const MAX_FILE_BYTES = 50 * 1024 * 1024;
+const POLL_MIN = 2;
+const POLL_MAX = 10;
 const NAME_MIN = 2;
 const NAME_MAX = 20;
 // ชื่อที่ห้ามใช้ (กันสวมรอยเป็นผู้สอน/ทีมงาน) — แอดมินใช้ได้
@@ -31,10 +35,6 @@ const langValidator = v.union(v.literal("th"), v.literal("en"));
 const tagValidator = v.union(v.literal("general"), v.literal("lesson"));
 const targetTypeValidator = v.union(v.literal("post"), v.literal("comment"));
 
-const LESSONS = {
-  th: new Map(COURSE.modules.flatMap((m) => m.lessons.map((l) => [l.id, { title: l.title, moduleTag: m.tag }] as const))),
-  en: new Map(COURSE.modules.flatMap((m) => m.lessons.map((l) => [l.id, { title: l.title, moduleTag: m.tag }] as const))),
-};
 
 /* ---------- สิทธิ์ ---------- */
 type Viewer = { userId: Id<"users">; admin: boolean };
@@ -82,6 +82,11 @@ const postOut = v.object({
   imageUrls: v.array(v.string()), likeCount: v.number(), commentCount: v.number(), likedByMe: v.boolean(),
   createdAt: v.number(), editedAt: v.union(v.number(), v.null()), pinned: v.boolean(),
   hidden: v.boolean(), reportCount: v.number(), authorPlan: v.union(planValidator, v.null()),
+  files: v.array(v.object({ name: v.string(), size: v.number(), url: v.union(v.string(), v.null()) })),
+  poll: v.union(v.null(), v.object({
+    options: v.array(v.string()), counts: v.array(v.number()), voters: v.number(), multi: v.boolean(),
+    closesAt: v.union(v.number(), v.null()), closed: v.boolean(), myChoices: v.array(v.number()),
+  })),
 });
 const commentOut = v.object({
   id: v.string(), authorName: v.string(), authorIsAdmin: v.boolean(), isMine: v.boolean(),
@@ -106,13 +111,29 @@ async function toPostView(ctx: QueryCtx, post: Doc<"posts">, viewer: Viewer, lan
     authorName: a.name, authorIsAdmin: a.isAdmin, isMine: post.authorId === viewer.userId,
     body: post.body, tag: post.tag,
     lessonId: post.lessonId ?? null,
-    lessonTitle: post.lessonId ? (LESSONS[lang].get(post.lessonId)?.title ?? null) : null,
+    lessonTitle: post.lessonId ? await lessonTitle(ctx, post.lessonId) : null,
     imageUrls: urls, likeCount: post.likeCount, commentCount: post.commentCount,
     likedByMe: await likedBy(ctx, viewer.userId, post._id),
     createdAt: post._creationTime, editedAt: post.editedAt ?? null, pinned: post.pinned,
     hidden: viewer.admin ? post.hidden : false,
     reportCount: viewer.admin ? post.reportCount : 0,
     authorPlan: a.plan,
+    files: await fileViews(ctx, post.files ?? []),
+    poll: post.poll ? await pollView(ctx, post._id, post.poll, viewer.userId, now) : null,
+  };
+}
+
+async function fileViews(ctx: QueryCtx, files: NonNullable<Doc<"posts">["files"]>) {
+  const out = [];
+  for (const f of files) out.push({ name: f.name, size: f.size, url: await ctx.storage.getUrl(f.storageId) });
+  return out;
+}
+
+async function pollView(ctx: QueryCtx, postId: Id<"posts">, poll: NonNullable<Doc<"posts">["poll"]>, userId: Id<"users">, now: number) {
+  const mine = await ctx.db.query("pollVotes").withIndex("by_postId_and_userId", (q) => q.eq("postId", postId).eq("userId", userId)).unique();
+  return {
+    options: poll.options, counts: poll.counts, voters: poll.voters, multi: poll.multi, closesAt: poll.closesAt,
+    closed: poll.closesAt !== null && poll.closesAt <= now, myChoices: mine?.choices ?? [],
   };
 }
 
@@ -148,7 +169,7 @@ export const me = query({
       status: "ok" as const,
       isAdmin: r.viewer.admin,
       displayName: profile?.displayName ?? null,
-      lessons: [...LESSONS[lang].entries()].map(([id, l]) => ({ id, title: l.title, moduleTag: l.moduleTag })),
+      lessons: visibleModules((await loadCourse(ctx)).modules).flatMap((m) => m.lessons.map((l) => ({ id: l.key, title: l.title, moduleTag: m.tag }))),
     };
   },
 });
@@ -284,15 +305,23 @@ async function notify(ctx: MutationCtx, n: Omit<Doc<"notifications">, "_id" | "_
 }
 
 export const createPost = mutation({
-  args: { body: v.string(), tag: tagValidator, lessonId: v.optional(v.string()), imageIds: v.array(v.id("_storage")) },
+  args: {
+    body: v.string(), tag: tagValidator, lessonId: v.optional(v.string()), imageIds: v.array(v.id("_storage")),
+    // แอดมินเท่านั้น: ไฟล์แนบ + โพล
+    files: v.optional(v.array(v.object({ storageId: v.id("_storage"), name: v.string() }))),
+    poll: v.optional(v.object({ options: v.array(v.string()), multi: v.boolean(), closesAt: v.union(v.number(), v.null()) })),
+  },
   returns: v.string(),
-  handler: async (ctx, { body, tag, lessonId, imageIds }) => {
+  handler: async (ctx, { body, tag, lessonId, imageIds, files, poll }) => {
     const viewer = await requireViewer(ctx);
-    const discard = async () => { for (const id of imageIds) await ctx.storage.delete(id); };
+    const discard = async () => {
+      for (const id of imageIds) await ctx.storage.delete(id);
+      for (const f of files ?? []) await ctx.storage.delete(f.storageId);
+    };
     try {
       const text = cleanBody(body, MAX_POST);
       if (!viewer.admin && !(await getProfile(ctx, viewer.userId))) throw new ConvexError("NEED_DISPLAY_NAME");
-      if (tag === "lesson" && (!lessonId || !LESSONS.th.has(lessonId))) throw new ConvexError("UNKNOWN_LESSON");
+      if (tag === "lesson" && (!lessonId || (await findVisibleLesson(ctx, lessonId)) === null)) throw new ConvexError("UNKNOWN_LESSON");
       if (imageIds.length > MAX_IMAGES) throw new ConvexError("TOO_MANY_IMAGES");
       for (const id of imageIds) {
         const meta = await ctx.db.system.get("_storage", id);
@@ -301,8 +330,24 @@ export const createPost = mutation({
       const recent = await ctx.db.query("posts").withIndex("by_authorId", (q) => q.eq("authorId", viewer.userId)).order("desc").take(POSTS_PER_HOUR);
       if (recent.length >= POSTS_PER_HOUR && Date.now() - recent[POSTS_PER_HOUR - 1]._creationTime < HOUR) throw new ConvexError("RATE_LIMIT");
 
+      if ((files?.length || poll) && !viewer.admin) throw new ConvexError("FORBIDDEN");
+      const savedFiles = [];
+      if ((files ?? []).length > MAX_FILES) throw new ConvexError("TOO_MANY_FILES");
+      for (const f of files ?? []) {
+        const meta = await ctx.db.system.get("_storage", f.storageId);
+        if (!meta || meta.size > MAX_FILE_BYTES) throw new ConvexError("FILE_TOO_BIG");
+        savedFiles.push({ storageId: f.storageId, name: f.name.trim().slice(0, 150) || "file", size: meta.size });
+      }
+      let savedPoll;
+      if (poll) {
+        const options = poll.options.map((o) => o.trim().slice(0, 120)).filter(Boolean);
+        if (options.length < POLL_MIN || options.length > POLL_MAX) throw new ConvexError("BAD_POLL");
+        savedPoll = { options, counts: options.map(() => 0), multi: poll.multi, closesAt: poll.closesAt, voters: 0 };
+      }
+
       const id = await ctx.db.insert("posts", {
         authorId: viewer.userId, body: text, tag, lessonId: tag === "lesson" ? lessonId : undefined, imageIds,
+        files: savedFiles.length ? savedFiles : undefined, poll: savedPoll,
         likeCount: 0, commentCount: 0, reportCount: 0, pinned: false, hidden: false,
       });
       if (!viewer.admin) {
@@ -352,7 +397,43 @@ export const deletePost = mutation({
     for (const n of await ctx.db.query("notifications").withIndex("by_postId", (q) => q.eq("postId", postId)).take(1000)) await ctx.db.delete("notifications", n._id);
     for (const t of await ctx.db.query("telegramThreads").withIndex("by_postId", (q) => q.eq("postId", postId)).take(1000)) await ctx.db.delete("telegramThreads", t._id);
     for (const id of p.imageIds) await ctx.storage.delete(id);
+    for (const f of p.files ?? []) await ctx.storage.delete(f.storageId);
+    for (const vote of await ctx.db.query("pollVotes").withIndex("by_postId_and_userId", (q) => q.eq("postId", postId)).take(5000)) await ctx.db.delete("pollVotes", vote._id);
     await ctx.db.delete("posts", postId);
+    return null;
+  },
+});
+
+/* ---------- โหวตในโพล (ไม่เปิดเผยว่าใครเลือกอะไร — เก็บแค่ของตัวเองไว้ให้เปลี่ยนใจได้) ---------- */
+export const vote = mutation({
+  args: { postId: v.id("posts"), choices: v.array(v.number()) },
+  returns: v.null(),
+  handler: async (ctx, { postId, choices }) => {
+    const viewer = await requireViewer(ctx);
+    const post = await ctx.db.get("posts", postId);
+    if (!post || !post.poll || (post.hidden && !viewer.admin)) throw new ConvexError("NOT_FOUND");
+    const poll = post.poll;
+    if (poll.closesAt !== null && poll.closesAt <= Date.now()) throw new ConvexError("POLL_CLOSED");
+    const picked = [...new Set(choices)].sort((a, b) => a - b);
+    if (picked.some((c) => !Number.isInteger(c) || c < 0 || c >= poll.options.length)) throw new ConvexError("BAD_POLL");
+    if (!poll.multi && picked.length > 1) throw new ConvexError("BAD_POLL");
+
+    const counts = [...poll.counts];
+    let voters = poll.voters;
+    const prev = await ctx.db.query("pollVotes").withIndex("by_postId_and_userId", (q) => q.eq("postId", postId).eq("userId", viewer.userId)).unique();
+    if (prev) {
+      for (const c of prev.choices) counts[c] = Math.max(0, (counts[c] ?? 0) - 1);
+      voters--;
+    }
+    if (picked.length > 0) {
+      for (const c of picked) counts[c] = (counts[c] ?? 0) + 1;
+      voters++;
+      if (prev) await ctx.db.patch("pollVotes", prev._id, { choices: picked });
+      else await ctx.db.insert("pollVotes", { postId, userId: viewer.userId, choices: picked });
+    } else if (prev) {
+      await ctx.db.delete("pollVotes", prev._id);       // เลือกว่าง = ถอนโหวต
+    }
+    await ctx.db.patch("posts", postId, { poll: { ...poll, counts, voters: Math.max(0, voters) } });
     return null;
   },
 });
@@ -514,8 +595,9 @@ export const unreadCount = query({
 export const notifications = query({
   args: { lang: langValidator, now: v.number() },
   returns: v.array(v.object({
-    id: v.string(), type: v.union(v.literal("like_post"), v.literal("like_comment"), v.literal("comment"), v.literal("new_post")),
-    actorName: v.string(), byAdmin: v.boolean(), postId: v.string(), preview: v.string(), read: v.boolean(), createdAt: v.number(),
+    id: v.string(), type: v.union(v.literal("like_post"), v.literal("like_comment"), v.literal("comment"), v.literal("new_post"), v.literal("new_lesson")),
+    actorName: v.string(), byAdmin: v.boolean(), postId: v.union(v.string(), v.null()), lessonKey: v.union(v.string(), v.null()),
+    preview: v.string(), read: v.boolean(), createdAt: v.number(),
   })),
   handler: async (ctx, { lang, now }) => {
     const r = await getViewer(ctx, now);
@@ -525,7 +607,10 @@ export const notifications = query({
     const out = [];
     for (const n of rows) {
       const a = await authorInfo(ctx, n.actorId, r.viewer, lang, Math.max(now, Date.now()), cache);
-      out.push({ id: n._id as string, type: n.type, actorName: a.name, byAdmin: n.byAdmin, postId: n.postId as string, preview: n.preview, read: n.read, createdAt: n._creationTime });
+      out.push({
+        id: n._id as string, type: n.type, actorName: a.name, byAdmin: n.byAdmin, postId: n.postId ?? null, lessonKey: n.lessonKey ?? null,
+        preview: n.preview, read: n.read, createdAt: n._creationTime,
+      });
     }
     return out;
   },

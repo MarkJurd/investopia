@@ -39,6 +39,9 @@ export function errorText(err: unknown, C: Content): string {
     case "EMPTY": return D.errEmpty;
     case "NAME_INVALID": return D.nameInvalid;
     case "NAME_RESERVED": return D.nameReserved;
+    case "FILE_TOO_BIG": case "TOO_MANY_FILES": return D.errFile;
+    case "BAD_POLL": return D.errPoll;
+    case "POLL_CLOSED": return D.errPollClosed;
     default: return D.errGeneric;
   }
 }

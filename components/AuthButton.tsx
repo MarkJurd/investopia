@@ -45,6 +45,7 @@ function UserMenu() {
           {member && <span className="plan-badge">{CONTENT.planLabels[member.plan]}</span>}
           {(member || me?.admin) && <Link href={learnPath(CONTENT)} className="btn btn-primary btn-sm btn-block" role="menuitem" onClick={() => setOpen(false)}>{A.classroom}</Link>}
           {(member || me?.admin) && <Link href={communityPath(CONTENT)} className="btn btn-ghost btn-sm btn-block" role="menuitem" onClick={() => setOpen(false)}>{A.community}</Link>}
+          {me?.admin && <Link href="/admin" className="btn btn-ghost btn-sm btn-block" role="menuitem" onClick={() => setOpen(false)}>{A.admin}</Link>}
           <button className="btn btn-ghost btn-sm btn-block" role="menuitem" onClick={() => void signOut()}>{A.signOut}</button>
         </div>
       )}

@@ -56,7 +56,11 @@ http.route({
       if (!isPlanId(plan) || typeof userId !== "string" || typeof sessionId !== "string" || typeof amountTotal !== "number") {
         return new Response("bad session data", { status: 400 });
       }
-      if (amountTotal !== PLANS[plan].amount * 100 || obj.currency !== "thb") {
+      // ยอดที่ต้องได้รับ = ราคาหลังส่วนลดที่ server ของเราใส่ไว้ตอนสร้างหน้าจ่ายเงิน (ไม่เกินราคาเต็ม)
+      const listAmount = PLANS[plan].amount;
+      const expected = typeof meta.amount === "string" && meta.amount !== "" ? Number(meta.amount) : listAmount;
+      const coupon = typeof meta.coupon === "string" && meta.coupon !== "" ? meta.coupon : undefined;
+      if (!Number.isFinite(expected) || expected > listAmount || amountTotal !== expected * 100 || obj.currency !== "thb") {
         console.error("amount mismatch", sessionId, plan, amountTotal);
         return new Response("amount mismatch", { status: 400 });
       }
@@ -65,6 +69,8 @@ http.route({
         userId,
         plan,
         amount: amountTotal / 100,
+        listAmount,
+        couponCode: coupon,
         paymentIntentId: typeof obj.payment_intent === "string" ? obj.payment_intent : null,
       });
     } else if (event.type === "charge.refunded") {

@@ -2,6 +2,7 @@ import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 import { authTables } from "@convex-dev/auth/server";
 import { planValidator } from "./plans";
+import { quizItemValidator } from "./course";
 
 // ตารางของระบบล็อกอิน (users, sessions, accounts ฯลฯ) มาจาก Convex Auth
 export default defineSchema({
@@ -11,7 +12,7 @@ export default defineSchema({
   memberships: defineTable({
     userId: v.id("users"),
     plan: planValidator,
-    status: v.union(v.literal("active"), v.literal("refunded")),
+    status: v.union(v.literal("active"), v.literal("refunded"), v.literal("revoked")),  // revoked = แอดมินยกเลิกเอง
     startsAt: v.number(),
     expiresAt: v.number(),
     amount: v.number(),                       // บาท
@@ -19,6 +20,11 @@ export default defineSchema({
     paymentIntentId: v.union(v.string(), v.null()),
     indicatorBonus: v.boolean(),              // ได้ Indicator (รายปี 50 คนแรก / VIP)
     monthKey: v.string(),                     // เดือนที่ซื้อ (เวลาไทย) ใช้นับที่นั่ง VIP
+    source: v.optional(v.union(v.literal("stripe"), v.literal("manual"))),  // ไม่มี = stripe (ข้อมูลเก่า)
+    listAmount: v.optional(v.number()),       // ราคาเต็มก่อนส่วนลด (บาท)
+    couponCode: v.optional(v.string()),       // โค้ดส่วนลดที่ใช้
+    note: v.optional(v.string()),             // บันทึกของแอดมิน (เช่น "ลูกค้าเก่า ให้ฟรี 1 เดือน")
+    changedAt: v.optional(v.number()),        // เวลาที่แอดมินแก้/ยกเลิกล่าสุด
   })
     .index("by_userId", ["userId"])
     .index("by_stripeSessionId", ["stripeSessionId"])
@@ -26,7 +32,64 @@ export default defineSchema({
     .index("by_plan_and_monthKey", ["plan", "monthKey"])
     .index("by_plan_and_indicatorBonus", ["plan", "indicatorBonus"]),
 
-  /* ---------- ห้องเรียน (/learn) — id บทเรียน/โมดูลมาจาก lib/course.ts ---------- */
+  // สิทธิ์ที่แอดมินให้ล่วงหน้าด้วยอีเมล (ลูกค้าที่ยังไม่เคยล็อกอิน) — เปิดใช้อัตโนมัติตอนล็อกอินครั้งแรก
+  pendingGrants: defineTable({
+    email: v.string(),                        // ตัวพิมพ์เล็ก
+    plan: planValidator,
+    days: v.number(),
+    note: v.string(),
+    appliedAt: v.union(v.number(), v.null()),
+  }).index("by_email", ["email"]),
+
+  // โค้ดส่วนลด (สร้างในหน้า /admin) — ผู้ซื้อกรอกตอนกดจ่ายเงิน
+  coupons: defineTable({
+    code: v.string(),                         // ตัวพิมพ์ใหญ่ เช่น "NEWYEAR"
+    kind: v.union(v.literal("percent"), v.literal("amount")),
+    value: v.number(),                        // percent: 1–90 · amount: บาท
+    plans: v.array(planValidator),            // ใช้ได้กับแพ็กเกจไหน
+    maxUses: v.union(v.number(), v.null()),   // null = ไม่จำกัด
+    uses: v.number(),
+    expiresAt: v.union(v.number(), v.null()),
+    active: v.boolean(),
+    note: v.string(),
+  }).index("by_code", ["code"]),
+
+  /* ---------- เนื้อหาคอร์ส (แก้จาก /admin) — ดู convex/course.ts ---------- */
+  courseModules: defineTable({
+    key: v.string(),                          // เช่น "m0" (ห้ามเปลี่ยน — ผลแบบทดสอบผูกกับ key)
+    order: v.number(),
+    title: v.string(),
+    practice: v.string(),                     // งานลงมือทำท้ายโมดูล
+    hidden: v.boolean(),
+    quiz: v.array(quizItemValidator),
+  })
+    .index("by_order", ["order"])
+    .index("by_key", ["key"]),
+
+  courseLessons: defineTable({
+    key: v.string(),                          // เช่น "m2-1" (ห้ามเปลี่ยน — ความคืบหน้าผูกกับ key)
+    moduleId: v.id("courseModules"),
+    order: v.number(),
+    title: v.string(),
+    notes: v.string(),
+    videoId: v.string(),                      // Bunny Video ID ("" = ยังไม่มีวิดีโอ)
+    minutes: v.number(),
+    hidden: v.boolean(),
+    indicatorOnly: v.boolean(),               // เปิดเฉพาะผู้ได้ Indicator + แอดมิน
+    newSince: v.optional(v.number()),         // ป้าย "ใหม่" นับจากเวลานี้
+  })
+    .index("by_moduleId_and_order", ["moduleId", "order"])
+    .index("by_key", ["key"]),
+
+  // ไฟล์แนบใต้คลิป (ใบงาน PDF ฯลฯ) — ดาวน์โหลดได้เฉพาะคนที่เปิดบทนั้นได้
+  lessonFiles: defineTable({
+    lessonId: v.id("courseLessons"),
+    storageId: v.id("_storage"),
+    name: v.string(),
+    size: v.number(),
+  }).index("by_lessonId", ["lessonId"]),
+
+  /* ---------- ห้องเรียน (/learn) — key บทเรียน/โมดูลมาจากตาราง courseLessons / courseModules ---------- */
   // บทที่ผู้เรียนกด "เรียนจบแล้ว" (1 แถว = 1 บท)
   lessonProgress: defineTable({
     userId: v.id("users"),
@@ -57,6 +120,14 @@ export default defineSchema({
     tag: v.union(v.literal("general"), v.literal("lesson")),
     lessonId: v.optional(v.string()),            // ใช้เมื่อ tag = lesson (id บทเรียนจาก lib/course.ts)
     imageIds: v.array(v.id("_storage")),
+    files: v.optional(v.array(v.object({ storageId: v.id("_storage"), name: v.string(), size: v.number() }))),  // ไฟล์แนบ (แอดมินเท่านั้น)
+    poll: v.optional(v.object({                  // โพล (แอดมินเท่านั้น) — ไม่เปิดเผยว่าใครโหวตอะไร
+      options: v.array(v.string()),
+      counts: v.array(v.number()),
+      multi: v.boolean(),                        // เลือกได้หลายข้อ
+      closesAt: v.union(v.number(), v.null()),
+      voters: v.number(),
+    })),
     likeCount: v.number(),
     commentCount: v.number(),
     reportCount: v.number(),
@@ -80,6 +151,12 @@ export default defineSchema({
   })
     .index("by_postId", ["postId"])
     .index("by_authorId", ["authorId"]),
+
+  pollVotes: defineTable({
+    postId: v.id("posts"),
+    userId: v.id("users"),
+    choices: v.array(v.number()),
+  }).index("by_postId_and_userId", ["postId", "userId"]),
 
   likes: defineTable({
     userId: v.id("users"),
@@ -110,14 +187,16 @@ export default defineSchema({
 
   notifications: defineTable({
     userId: v.id("users"),                       // ผู้รับ
-    type: v.union(v.literal("like_post"), v.literal("like_comment"), v.literal("comment"), v.literal("new_post")),
+    type: v.union(v.literal("like_post"), v.literal("like_comment"), v.literal("comment"), v.literal("new_post"), v.literal("new_lesson")),
     actorId: v.id("users"),
-    postId: v.id("posts"),
+    postId: v.optional(v.id("posts")),           // ไม่มีเมื่อ type = new_lesson
+    lessonKey: v.optional(v.string()),           // ใช้เมื่อ type = new_lesson
     byAdmin: v.boolean(),                        // คนทำเป็นแอดมินไหม (ใช้เน้นว่า "ผู้สอนตอบแล้ว")
     preview: v.string(),
     read: v.boolean(),
   })
     .index("by_userId_and_read", ["userId", "read"])
     .index("by_userId", ["userId"])
-    .index("by_postId", ["postId"]),
+    .index("by_postId", ["postId"])
+    .index("by_userId_and_lessonKey", ["userId", "lessonKey"]),
 });

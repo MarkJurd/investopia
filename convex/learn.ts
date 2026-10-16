@@ -1,6 +1,6 @@
-/* ห้องเรียน (/learn): เนื้อหาบทเรียน · ความคืบหน้า · แบบทดสอบ
+/* ห้องเรียน (/learn): เนื้อหาบทเรียน · ความคืบหน้า · แบบทดสอบ · ไฟล์แนบ · ใบประกาศ
  * ทุกฟังก์ชันเช็กสิทธิ์สมาชิกที่นี่ (ฝั่งเซิร์ฟเวอร์) — หน้าเว็บไม่มีทางได้เนื้อหา/เฉลยถ้าไม่ใช่สมาชิก
- * เนื้อหาบทเรียนอยู่ที่ lib/course.ts (ไทย) และ lib/course.en.ts (อังกฤษ) */
+ * เนื้อหาคอร์สอยู่ในฐานข้อมูล (แก้ที่หน้า /admin) — ดู convex/course.ts */
 import { action, internalMutation, internalQuery, mutation, query } from "./_generated/server";
 import type { QueryCtx } from "./_generated/server";
 import type { Id } from "./_generated/dataModel";
@@ -11,20 +11,16 @@ import { getMembership } from "./payments";
 import { isAdminUser } from "./admin";
 import { planValidator } from "./plans";
 import { signBunnyEmbedUrl } from "./bunny";
-import { COURSE, INDICATOR_ONLY_LESSONS, type Course } from "../lib/course";
+import { findVisibleLesson, findVisibleModule, loadCourse, NEW_LESSON_DAYS, visibleModules } from "./course";
 
 const PASS_PERCENT = 70;        // ผ่านแบบทดสอบเมื่อได้ ≥ 70%
+const DAY = 24 * 60 * 60 * 1000;
 
-const LESSON_IDS = new Set(COURSE.modules.flatMap((m) => m.lessons.map((l) => l.id)));
-const QUIZ_MODULE_IDS = new Set(COURSE.modules.filter((m) => m.quiz.length > 0).map((m) => m.id));
-
-const langValidator = v.union(v.literal("th"), v.literal("en"));
-const courseFor = (_lang: "th" | "en"): Course => COURSE;
+const langValidator = v.optional(v.union(v.literal("th"), v.literal("en")));   // ไม่ใช้แล้ว (เว็บเหลือภาษาไทย) — เก็บไว้ให้หน้าเว็บเวอร์ชันเก่าไม่พัง
 
 /* ---------- วิดีโอ (Bunny Stream) ----------
- * videoId ของแต่ละบทอยู่ใน lib/course.ts (ใช้ของไฟล์ไทยทั้ง 2 ภาษา) · ลิงก์เล่นสร้างตอนเปิดบทเท่านั้น (action videoUrl)
+ * videoId ของแต่ละบทแก้ได้ในหน้า /admin · ลิงก์เล่นสร้างตอนเปิดบทเท่านั้น (action videoUrl)
  * ยังไม่ตั้งค่า Bunny (BUNNY_LIBRARY_ID / BUNNY_TOKEN_KEY) หรือบทไม่มี videoId = ขึ้น "เร็วๆ นี้" */
-const VIDEO_ID_BY_LESSON = new Map(COURSE.modules.flatMap((m) => m.lessons.map((l) => [l.id, l.videoId] as const)));
 const VIDEO_LINK_HOURS = 4;    // ลิงก์เล่นหมดอายุกี่ชั่วโมง (เปิดบทใหม่ = ได้ลิงก์ใหม่)
 const bunnyReady = () => Boolean(process.env.BUNNY_LIBRARY_ID && process.env.BUNNY_TOKEN_KEY);
 
@@ -63,10 +59,13 @@ async function loadProgress(ctx: QueryCtx, userId: Id<"users">) {
 }
 
 /* ---------- หน้าห้องเรียน: เนื้อหา (ไม่มีเฉลย) + ความคืบหน้าของฉัน ---------- */
+const fileOut = v.object({ name: v.string(), size: v.number(), url: v.union(v.string(), v.null()) });
 const lessonOut = v.object({
   id: v.string(), title: v.string(), notes: v.string(), minutes: v.number(),
   hasVideo: v.boolean(),                        // false = ยังไม่มีวิดีโอ → แสดง "เร็วๆ นี้"
   locked: v.boolean(),                          // true = บทนี้สำหรับผู้ที่ได้ Indicator เท่านั้น (ไม่ส่งเนื้อหา)
+  isNew: v.boolean(),                           // ป้าย "ใหม่"
+  files: v.array(fileOut),                      // ไฟล์แนบใต้คลิป (ว่างถ้าล็อก)
 });
 const moduleOut = v.object({
   id: v.string(), tag: v.string(), title: v.string(), practice: v.string(),
@@ -93,29 +92,39 @@ export const overview = query({
       passPercent: v.number(),
     }),
   ),
-  handler: async (ctx, { lang, now: clientNow }) => {
+  handler: async (ctx, { now: clientNow }) => {
     const userId = await getAuthUserId(ctx);
     if (userId === null) return { status: "signedOut" as const };
-    const membership = await getAccess(ctx, userId, Math.max(clientNow, Date.now()));
+    const now = Math.max(clientNow, Date.now());
+    const membership = await getAccess(ctx, userId, now);
     if (membership === null) return { status: "noMembership" as const };
 
     const { lessons, quizzes } = await loadProgress(ctx, userId);
     const videosOn = bunnyReady();
     const canIndicator = await canSeeIndicator(ctx, userId, membership.indicatorBonus);
+    const modules = [];
+    for (const m of visibleModules((await loadCourse(ctx)).modules)) {
+      const outLessons = [];
+      for (const l of m.lessons) {
+        const locked = l.indicatorOnly && !canIndicator;
+        const files = [];
+        if (!locked) for (const f of l.files) files.push({ name: f.name, size: f.size, url: await ctx.storage.getUrl(f.storageId) });
+        outLessons.push({
+          id: l.key, title: l.title, notes: locked ? "" : l.notes, minutes: l.minutes, locked,
+          hasVideo: !locked && videosOn && l.videoId !== "",
+          isNew: l.newSince !== null && now - l.newSince < NEW_LESSON_DAYS * DAY,
+          files,
+        });
+      }
+      modules.push({
+        id: m.key, tag: m.tag, title: m.title, practice: m.practice, lessons: outLessons,
+        quiz: m.quiz.map((q) => ({ q: q.q, choices: q.choices })),  // ไม่ส่งเฉลย/คำอธิบาย
+      });
+    }
     return {
       status: "ok" as const,
       membership: { plan: membership.plan, expiresAt: membership.expiresAt },
-      modules: courseFor(lang).modules.map((m) => ({
-        id: m.id, tag: m.tag, title: m.title, practice: m.practice,
-        lessons: m.lessons.map((l) => {
-          const locked = INDICATOR_ONLY_LESSONS.has(l.id) && !canIndicator;
-          return {
-            id: l.id, title: l.title, notes: locked ? "" : l.notes, minutes: l.minutes, locked,
-            hasVideo: !locked && videosOn && (VIDEO_ID_BY_LESSON.get(l.id) ?? "") !== "",
-          };
-        }),
-        quiz: m.quiz.map((q) => ({ q: q.q, choices: q.choices })),  // ไม่ส่งเฉลย/คำอธิบาย
-      })),
+      modules,
       doneLessonIds: lessons.map((l) => l.lessonId),
       quizzes: quizzes.map((r) => ({
         moduleId: r.moduleId, total: r.total, bestCorrect: r.bestCorrect, passed: r.passed, attempts: r.attempts,
@@ -132,8 +141,9 @@ export const setLessonDone = mutation({
   handler: async (ctx, { lessonId, done }) => {
     const now = Date.now();
     const userId = await requireMember(ctx, now);
-    if (!LESSON_IDS.has(lessonId)) throw new ConvexError("UNKNOWN_LESSON");
-    if (INDICATOR_ONLY_LESSONS.has(lessonId)) {
+    const lesson = await findVisibleLesson(ctx, lessonId);
+    if (lesson === null) throw new ConvexError("UNKNOWN_LESSON");
+    if (lesson.indicatorOnly) {
       const m = await getAccess(ctx, userId, now);
       if (!(await canSeeIndicator(ctx, userId, m?.indicatorBonus ?? false))) throw new ConvexError("LOCKED");
     }
@@ -156,10 +166,10 @@ export const submitQuiz = mutation({
     passed: v.boolean(),
     results: v.array(v.object({ correct: v.boolean(), answer: v.number(), explain: v.string() })),
   }),
-  handler: async (ctx, { moduleId, lang, answers }) => {
+  handler: async (ctx, { moduleId, answers }) => {
     const userId = await requireMember(ctx, Date.now());
-    const mod = courseFor(lang).modules.find((m) => m.id === moduleId);
-    if (!mod || !QUIZ_MODULE_IDS.has(moduleId)) throw new ConvexError("UNKNOWN_QUIZ");
+    const mod = await findVisibleModule(ctx, moduleId);
+    if (!mod || mod.quiz.length === 0) throw new ConvexError("UNKNOWN_QUIZ");
     if (answers.length !== mod.quiz.length) throw new ConvexError("BAD_ANSWERS");
 
     const results = mod.quiz.map((q, i) => ({ correct: answers[i] === q.answer, answer: q.answer, explain: q.explain }));
@@ -172,7 +182,8 @@ export const submitQuiz = mutation({
       .withIndex("by_userId_and_moduleId", (q) => q.eq("userId", userId).eq("moduleId", moduleId))
       .unique();
     if (prev) {
-      const best = Math.max(prev.bestCorrect, correct);
+      // จำนวนข้อเปลี่ยน (แอดมินแก้แบบทดสอบ) = เริ่มนับคะแนนดีสุดใหม่ แต่ "ผ่านแล้ว" ยังคงอยู่
+      const best = prev.total === total ? Math.max(prev.bestCorrect, correct) : correct;
       await ctx.db.patch("quizResults", prev._id, {
         total, bestCorrect: best, passed: prev.passed || passes(best), attempts: prev.attempts + 1,
       });
@@ -190,9 +201,10 @@ export const videoIdForMember = internalQuery({
   handler: async (ctx, { userId, lessonId }) => {
     const m = await getAccess(ctx, userId, Date.now());
     if (m === null) return null;
-    if (INDICATOR_ONLY_LESSONS.has(lessonId) && !(await canSeeIndicator(ctx, userId, m.indicatorBonus))) return null;
-    const id = VIDEO_ID_BY_LESSON.get(lessonId) ?? "";
-    return id === "" ? null : id;
+    const lesson = await findVisibleLesson(ctx, lessonId);
+    if (lesson === null || lesson.videoId === "") return null;
+    if (lesson.indicatorOnly && !(await canSeeIndicator(ctx, userId, m.indicatorBonus))) return null;
+    return lesson.videoId;
   },
 });
 
@@ -209,6 +221,45 @@ export const videoUrl = action({
     if (videoId === null) return null;
     const expires = Math.floor(Date.now() / 1000) + VIDEO_LINK_HOURS * 3600;
     return await signBunnyEmbedUrl(libraryId, tokenKey, videoId, expires);
+  },
+});
+
+/* ---------- ใบประกาศเรียนจบ: เรียนจบทุกบท (ที่เปิดได้) + ผ่านแบบทดสอบทุกโมดูล ---------- */
+export const certificate = query({
+  args: { now: v.number() },
+  returns: v.union(
+    v.object({ status: v.literal("notEligible"), done: v.number(), total: v.number() }),
+    v.object({ status: v.literal("ok"), name: v.string(), completedAt: v.number(), certId: v.string() }),
+  ),
+  handler: async (ctx, { now: clientNow }) => {
+    const now = Math.max(clientNow, Date.now());
+    const userId = await requireMember(ctx, now);
+    const m = await getAccess(ctx, userId, now);
+    const canIndicator = await canSeeIndicator(ctx, userId, m?.indicatorBonus ?? false);
+    const { lessons, quizzes } = await loadProgress(ctx, userId);
+    const doneAt = new Map(lessons.map((l) => [l.lessonId, l.completedAt]));
+    const passed = new Set(quizzes.filter((q) => q.passed).map((q) => q.moduleId));
+
+    let total = 0, done = 0, last = 0;
+    for (const mod of visibleModules((await loadCourse(ctx)).modules)) {
+      for (const l of mod.lessons) {
+        if (l.indicatorOnly && !canIndicator) continue;
+        total++;
+        const t = doneAt.get(l.key);
+        if (t !== undefined) { done++; last = Math.max(last, t); }
+      }
+      if (mod.quiz.length > 0) { total++; if (passed.has(mod.key)) done++; }
+    }
+    if (total === 0 || done < total) return { status: "notEligible" as const, done, total };
+
+    const user = await ctx.db.get("users", userId);
+    const profile = await ctx.db.query("profiles").withIndex("by_userId", (q) => q.eq("userId", userId)).unique();
+    return {
+      status: "ok" as const,
+      name: user?.name ?? profile?.displayName ?? "",
+      completedAt: last || now,
+      certId: `INV-${(userId as string).slice(-8).toUpperCase()}`,
+    };
   },
 });
 

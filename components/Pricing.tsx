@@ -4,12 +4,14 @@
  * ยังไม่ล็อกอิน → ล็อกอินด้วย Google ก่อน แล้วพาไปหน้าจ่ายเงินต่ออัตโนมัติ */
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useAction, useConvexAuth, useQuery } from "convex/react";
+import { ConvexError } from "convex/values";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { api } from "@/convex/_generated/api";
 import type { PlanId } from "@/convex/plans";
 import { useContent } from "@/components/ContentContext";
 
 const PENDING_KEY = "investopia.pendingPlan"; // จำแพ็กเกจที่กดไว้ระหว่างไปล็อกอิน
+const COUPON_KEY = "investopia.pendingCoupon";
 const PLAN_IDS: PlanId[] = ["yearly", "vip"]; // แพ็กเกจที่เปิดขาย (ต้องตรงกับ FOR_SALE ใน convex/plans.ts)
 
 function readPending(): PlanId | null {
@@ -18,6 +20,15 @@ function readPending(): PlanId | null {
     sessionStorage.removeItem(PENDING_KEY);
     return PLAN_IDS.includes(v as PlanId) ? (v as PlanId) : null;
   } catch { return null; }
+}
+
+function couponError(code: string, K: ReturnType<typeof useContent>["checkout"]): string {
+  switch (code) {
+    case "COUPON_EXPIRED": return K.couponExpired;
+    case "COUPON_USED_UP": return K.couponUsedUp;
+    case "COUPON_NOT_FOR_PLAN": return K.couponNotForPlan;
+    default: return K.couponInvalid;
+  }
 }
 
 export default function Pricing() {
@@ -29,24 +40,42 @@ export default function Pricing() {
   const vipLeft = useQuery(api.payments.vipSeatsLeft);
   const [busy, setBusy] = useState<PlanId | null>(null);
   const [msg, setMsg] = useState("");
+  const [codeInput, setCodeInput] = useState("");
+  // โค้ดที่กด "ใช้โค้ด" + เวลาตอนกด (อ่านเวลาใน event handler เท่านั้น — หน้านี้ถูก prerender)
+  const [appliedState, setAppliedState] = useState<{ code: string; at: number } | null>(null);
+  const applied = appliedState?.code ?? "";
+  const setApplied = (code: string) => setAppliedState(code ? { code, at: Math.floor(Date.now() / 60000) * 60000 } : null);
+  const now = appliedState?.at ?? 0;
+  const qYearly = useQuery(api.payments.checkCoupon, applied ? { plan: "yearly", code: applied, now } : "skip");
+  const qVip = useQuery(api.payments.checkCoupon, applied ? { plan: "vip", code: applied, now } : "skip");
+  const quotes: Partial<Record<PlanId, typeof qYearly>> = { yearly: qYearly, vip: qVip };
+  const anyOk = Object.values(quotes).some((q) => q?.ok);
+  const firstErr = Object.values(quotes).find((q) => q && !q.ok);
 
-  const pay = useCallback(async (plan: PlanId) => {
+  const pay = useCallback(async (plan: PlanId, coupon?: string) => {
     setMsg("");
     setBusy(plan);
     try {
-      const { url } = await createCheckout({ plan, lang: CONTENT.locale.code === "en" ? "en" : "th" });
+      const { url } = await createCheckout({ plan, coupon: coupon || undefined });
       window.location.href = url;
     } catch (e) {
       setBusy(null);
-      setMsg(String(e).includes("VIP_FULL") ? K.vipFull : K.error);
+      const code = e instanceof ConvexError && typeof e.data === "string" ? e.data : String(e);
+      setMsg(code.includes("VIP_FULL") ? K.vipFull : code.startsWith("COUPON_") ? couponError(code, K) : K.error);
     }
-  }, [createCheckout, K.vipFull, K.error, CONTENT.locale.code]);
+  }, [createCheckout, K]);
+
+  const couponFor = (plan: PlanId) => (quotes[plan]?.ok ? applied : undefined);
 
   const choose = async (plan: PlanId) => {
-    if (isAuthenticated) return pay(plan);
-    try { sessionStorage.setItem(PENDING_KEY, plan); } catch { /* ไม่มี storage ก็แค่ต้องกดซ้ำหลังล็อกอิน */ }
+    if (isAuthenticated) return pay(plan, couponFor(plan));
+    try {
+      sessionStorage.setItem(PENDING_KEY, plan);
+      const c = couponFor(plan);
+      if (c) sessionStorage.setItem(COUPON_KEY, c); else sessionStorage.removeItem(COUPON_KEY);
+    } catch { /* ไม่มี storage ก็แค่ต้องกดซ้ำหลังล็อกอิน */ }
     setMsg(K.signInFirst);
-    await signIn("google", { redirectTo: `${CONTENT.locale.base === "/" ? "" : CONTENT.locale.base}/#pricing` });
+    await signIn("google", { redirectTo: "/#pricing" });
   };
 
   // กลับมาจากล็อกอินแล้ว → ไปหน้าจ่ายเงินของแพ็กเกจที่กดไว้ต่อเลย
@@ -55,11 +84,23 @@ export default function Pricing() {
     if (!isAuthenticated || resumed.current) return;
     resumed.current = true;
     const plan = readPending();
-    if (plan) setTimeout(() => void pay(plan), 0);
+    let coupon: string | undefined;
+    try { coupon = sessionStorage.getItem(COUPON_KEY) ?? undefined; sessionStorage.removeItem(COUPON_KEY); } catch { /* ไม่มี storage */ }
+    if (plan) setTimeout(() => void pay(plan, coupon), 0);
   }, [isAuthenticated, pay]);
 
   return (
     <>
+      <form className="coupon-box" onSubmit={(e) => { e.preventDefault(); setApplied(codeInput.trim().toUpperCase()); }}>
+        <label htmlFor="coupon">{K.couponLabel}</label>
+        <input id="coupon" value={codeInput} onChange={(e) => setCodeInput(e.target.value)} placeholder={K.couponPlaceholder}
+          maxLength={30} autoComplete="off" spellCheck={false} />
+        {applied
+          ? <button type="button" className="btn btn-ghost btn-sm" onClick={() => { setApplied(""); setCodeInput(""); }}>{K.couponRemove}</button>
+          : <button type="submit" className="btn btn-ghost btn-sm" disabled={!codeInput.trim()}>{K.couponApply}</button>}
+        {applied && anyOk && <span className="coupon-ok" role="status">✓ {K.couponApplied} {applied}</span>}
+        {applied && !anyOk && firstErr && !firstErr.ok && <span className="coupon-err" role="alert">{couponError(firstErr.error, K)}</span>}
+      </form>
       <div className="price-grid">
         {P.packages.map((p, i) => {
           const id = p.id as PlanId;
@@ -69,7 +110,12 @@ export default function Pricing() {
               {p.badge && <span className={p.badgeType === "limited" ? "badge-limited" : "badge-best"}>{p.badge}</span>}
               <div className="price-name">{p.name}</div>
               <div className="price-for">{p.for}</div>
-              <div className="price-num">฿{p.num}{p.numStrike && <span className="strike">{p.numStrike}</span>}</div>
+              {(() => {
+                const q = quotes[id];
+                return q?.ok && q.code
+                  ? <div className="price-num">฿{q.amount.toLocaleString("en-US")}<span className="strike">{p.num}</span><span className="coupon-tag">{K.couponAfter}</span></div>
+                  : <div className="price-num">฿{p.num}{p.numStrike && <span className="strike">{p.numStrike}</span>}</div>;
+              })()}
               <div className="price-per">{p.per}</div>
               <ul className="price-feats">
                 {p.feats.map((f) => <li key={f.text} className={f.off ? "off" : undefined}>{f.text}</li>)}

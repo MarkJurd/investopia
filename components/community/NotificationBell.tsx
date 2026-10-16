@@ -8,8 +8,9 @@ import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import { useContent } from "@/components/ContentContext";
 import { BOOT_NOW, communityPath, langOf, timeAgo } from "@/components/community/helpers";
+import { learnPath } from "@/components/learn/steps";
 
-type Kind = "like_post" | "like_comment" | "comment" | "new_post";
+type Kind = "like_post" | "like_comment" | "comment" | "new_post" | "new_lesson";
 
 export default function NotificationBell() {
   const C = useContent();
@@ -33,6 +34,7 @@ export default function NotificationBell() {
   }, [open]);
 
   const text = (type: Kind, byAdmin: boolean, actor: string) => {
+    if (type === "new_lesson") return D.notifNewLesson;
     if (type === "new_post") return `${actor} · ${D.notifNewPost}`;
     if (type === "comment" && byAdmin) return D.notifAdminReply;
     const verb = type === "like_post" ? D.notifLikePost : type === "like_comment" ? D.notifLikeComment : D.notifComment;
@@ -58,7 +60,7 @@ export default function NotificationBell() {
             {list && list.length === 0 && <p className="bell-empty">{D.notifEmpty}</p>}
             {list?.map((n) => (
               <button key={n.id} className={`bell-item${n.read ? "" : " unread"}${n.byAdmin && n.type === "comment" ? " admin" : ""}`}
-                onClick={() => { setOpen(false); if (!n.read) void markRead({ notificationId: n.id as Id<"notifications"> }); router.push(communityPath(C, n.postId)); }}>
+                onClick={() => { setOpen(false); if (!n.read) void markRead({ notificationId: n.id as Id<"notifications"> }); router.push(n.lessonKey ? learnPath(C, n.lessonKey) : communityPath(C, n.postId ?? undefined)); }}>
                 <span className="bi-top"><b>{text(n.type, n.byAdmin, n.actorName)}</b><i>{timeAgo(n.createdAt, C.locale.dateLocale)}</i></span>
                 {n.preview && <span className="bi-prev">{n.preview}</span>}
               </button>

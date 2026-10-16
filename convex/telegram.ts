@@ -85,6 +85,52 @@ export const notifyOwner = internalAction({
   },
 });
 
+/* ---------- ขาออก: มีคนจ่ายเงินสำเร็จ → แจ้งยอดขาย ---------- */
+export const saleInfo = internalQuery({
+  args: { membershipId: v.id("memberships") },
+  returns: v.union(v.null(), v.object({
+    name: v.string(), email: v.string(), plan: v.string(), amount: v.number(), listAmount: v.number(),
+    coupon: v.union(v.string(), v.null()), indicator: v.boolean(), monthRevenue: v.number(), monthCount: v.number(),
+  })),
+  handler: async (ctx, { membershipId }) => {
+    const m = await ctx.db.get("memberships", membershipId);
+    if (m === null) return null;
+    const u = await ctx.db.get("users", m.userId);
+    // ยอดเดือนนี้ (เดือนไทย) — นับเฉพาะที่จ่ายผ่าน Stripe และยังไม่คืนเงิน
+    const recent = await ctx.db.query("memberships").order("desc").take(1000);
+    const month = recent.filter((r) => r.monthKey === m.monthKey && (r.source ?? "stripe") === "stripe" && r.status !== "refunded");
+    return {
+      name: u?.name ?? "-", email: u?.email ?? "-", plan: PLANS[m.plan].name, amount: m.amount,
+      listAmount: m.listAmount ?? PLANS[m.plan].amount, coupon: m.couponCode ?? null, indicator: m.indicatorBonus,
+      monthRevenue: month.reduce((s, r) => s + r.amount, 0), monthCount: month.length,
+    };
+  },
+});
+
+export const notifySale = internalAction({
+  args: { membershipId: v.id("memberships") },
+  returns: v.null(),
+  handler: async (ctx, { membershipId }) => {
+    const token = process.env.TELEGRAM_BOT_TOKEN;
+    const chatId = process.env.TELEGRAM_CHAT_ID;
+    if (!token || !chatId) return null;
+    const s: { name: string; email: string; plan: string; amount: number; listAmount: number; coupon: string | null; indicator: boolean; monthRevenue: number; monthCount: number } | null =
+      await ctx.runQuery(internal.telegram.saleInfo, { membershipId });
+    if (s === null) return null;
+    const baht = (n: number) => `฿${n.toLocaleString("en-US")}`;
+    const site = (process.env.SITE_URL ?? "").replace(/\/$/, "");
+    const message =
+      `💰 ขายได้! ${s.plan} ${baht(s.amount)}` +
+      (s.coupon ? ` (โค้ด ${s.coupon} ลดจาก ${baht(s.listAmount)})` : "") +
+      `\n👤 ${s.name} · ${s.email}` +
+      (s.indicator ? "\n🎁 ได้ Indicator — ส่งให้ลูกค้าด้วย" : "") +
+      `\n📈 เดือนนี้: ${s.monthCount} รายการ รวม ${baht(s.monthRevenue)}` +
+      `\n🔗 ${site}/admin`;
+    await sendMessage(token, chatId, message);
+    return null;
+  },
+});
+
 /* ---------- ขาเข้า: เจ้าของ reply ใน Telegram ---------- */
 export const markSeen = internalMutation({
   args: { updateId: v.number() },
