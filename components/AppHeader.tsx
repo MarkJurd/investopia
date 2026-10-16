@@ -2,7 +2,6 @@
 
 /* เมนูบนร่วมของห้องเรียน + คอมมูนิตี้: โลโก้ · ห้องเรียน · คอมมูนิตี้ · ภาษา · กระดิ่งแจ้งเตือน · บัญชี */
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { useConvexAuth, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useContent } from "@/components/ContentContext";
@@ -13,11 +12,8 @@ import { learnPath } from "@/components/learn/steps";
 
 export default function AppHeader({ active }: { active: "learn" | "community" }) {
   const C = useContent();
-  const path = usePathname();
   const { isAuthenticated } = useConvexAuth();
   const me = useQuery(api.community.me, isAuthenticated ? { lang: langOf(C), now: BOOT_NOW } : "skip");
-  const otherBase = C.locale.switchHref === "/" ? "" : C.locale.switchHref;
-  const rest = C.locale.code === "en" ? path.replace(/^\/en/, "") : path;
   return (
     <header className="nav scrolled">
       <div className="container nav-inner">
@@ -32,7 +28,6 @@ export default function AppHeader({ active }: { active: "learn" | "community" })
           </nav>
         </div>
         <div className="nav-cta">
-          <a href={`${otherBase}${rest}`} className="lang-switch">{C.locale.switchLabel}</a>
           {me?.status === "ok" && <NotificationBell />}
           <AuthButton />
         </div>

@@ -12,7 +12,6 @@ import { isAdminUser } from "./admin";
 import { planValidator } from "./plans";
 import { signBunnyEmbedUrl } from "./bunny";
 import { COURSE, INDICATOR_ONLY_LESSONS, type Course } from "../lib/course";
-import { COURSE_EN } from "../lib/course.en";
 
 const PASS_PERCENT = 70;        // ผ่านแบบทดสอบเมื่อได้ ≥ 70%
 
@@ -20,7 +19,7 @@ const LESSON_IDS = new Set(COURSE.modules.flatMap((m) => m.lessons.map((l) => l.
 const QUIZ_MODULE_IDS = new Set(COURSE.modules.filter((m) => m.quiz.length > 0).map((m) => m.id));
 
 const langValidator = v.union(v.literal("th"), v.literal("en"));
-const courseFor = (lang: "th" | "en"): Course => (lang === "en" ? COURSE_EN : COURSE);
+const courseFor = (_lang: "th" | "en"): Course => COURSE;
 
 /* ---------- วิดีโอ (Bunny Stream) ----------
  * videoId ของแต่ละบทอยู่ใน lib/course.ts (ใช้ของไฟล์ไทยทั้ง 2 ภาษา) · ลิงก์เล่นสร้างตอนเปิดบทเท่านั้น (action videoUrl)

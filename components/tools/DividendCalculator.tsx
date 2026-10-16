@@ -1,7 +1,7 @@
 "use client";
 
 /* ตัวคำนวณปันผลต่อปี — ใช้ฟรี ไม่ต้องล็อกอิน · คำนวณในเบราว์เซอร์ทั้งหมด (ไม่ส่งข้อมูลอะไรออกไป)
- * ตัวเลข Yield/ภาษี: lib/yields.ts · ข้อความ: lib/content.ts (dividend) และ content.en.ts */
+ * ตัวเลข Yield/ภาษี: lib/yields.ts · ข้อความ: lib/content.ts (dividend) */
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useContent } from "@/components/ContentContext";

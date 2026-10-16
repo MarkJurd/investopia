@@ -13,7 +13,6 @@ import { getMembership } from "./payments";
 import { adminUserIds, isAdminUser } from "./admin";
 import { planValidator } from "./plans";
 import { COURSE } from "../lib/course";
-import { COURSE_EN } from "../lib/course.en";
 
 const MAX_POST = 3000;
 const MAX_COMMENT = 2000;
@@ -34,7 +33,7 @@ const targetTypeValidator = v.union(v.literal("post"), v.literal("comment"));
 
 const LESSONS = {
   th: new Map(COURSE.modules.flatMap((m) => m.lessons.map((l) => [l.id, { title: l.title, moduleTag: m.tag }] as const))),
-  en: new Map(COURSE_EN.modules.flatMap((m) => m.lessons.map((l) => [l.id, { title: l.title, moduleTag: m.tag }] as const))),
+  en: new Map(COURSE.modules.flatMap((m) => m.lessons.map((l) => [l.id, { title: l.title, moduleTag: m.tag }] as const))),
 };
 
 /* ---------- สิทธิ์ ---------- */

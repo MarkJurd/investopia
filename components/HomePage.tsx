@@ -1,4 +1,4 @@
-/* หน้าแรก (ใช้ร่วมกันทั้งภาษาไทย / อังกฤษ) — ข้อความมาจาก lib/content.ts หรือ lib/content.en.ts
+/* หน้าแรก — ข้อความมาจาก lib/content.ts
  * อย่าพิมพ์ข้อความลงไฟล์นี้ตรงๆ */
 import { ContentProvider, type Content } from "@/components/ContentContext";
 import Effects from "@/components/Effects";
@@ -52,7 +52,6 @@ export default function HomePage({ C }: { C: Content }) {
           <Logo name={C.brand.name} />
           <nav className="nav-links">{C.nav.links.map((l) => <a key={l.href} href={l.href}>{l.text}</a>)}</nav>
           <div className="nav-cta">
-            <a href={C.locale.switchHref} className="lang-switch" hrefLang={C.locale.code === "th" ? "en" : "th"}>{C.locale.switchLabel}</a>
             <AuthButton />
             <a href="#pricing" className="btn btn-primary">{C.nav.primary}</a>
           </div>
