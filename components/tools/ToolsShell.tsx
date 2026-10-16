@@ -4,7 +4,7 @@ import Link from "next/link";
 import { ContentProvider, type Content } from "@/components/ContentContext";
 import AuthButton from "@/components/AuthButton";
 
-export default function ToolsShell({ C, children }: { C: Content; path?: string; children: React.ReactNode }) {
+export default function ToolsShell({ C, chip, children }: { C: Content; path?: string; chip?: string; children: React.ReactNode }) {
   return (
     <ContentProvider value={C}>
       <div lang={C.locale.code} className="tool-shell">
@@ -15,7 +15,7 @@ export default function ToolsShell({ C, children }: { C: Content; path?: string;
                 <img src="/logo.svg" alt="" className="logo-mark" width={32} height={32} />
                 <span>{C.brand.name}</span>
               </Link>
-              <span className="learn-chip">{C.dividend.tools}</span>
+              <span className="learn-chip">{chip ?? C.dividend.tools}</span>
             </div>
             <div className="nav-cta">
               <AuthButton />
@@ -27,6 +27,7 @@ export default function ToolsShell({ C, children }: { C: Content; path?: string;
           <div className="container">
             <div className="disclaimer">
               <strong style={{ color: "var(--body)" }}>{C.footer.disclaimerLabel}</strong> {C.footer.disclaimer}<br /><br />
+              <span className="legal-links"><Link href="/privacy">{C.legal.footerPrivacy}</Link> · <Link href="/terms">{C.legal.footerTerms}</Link></span><br />
               {C.footer.copyright}
             </div>
           </div>

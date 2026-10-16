@@ -216,6 +216,7 @@ export default function HomePage({ C }: { C: Content }) {
           </div>
           <div className="disclaimer">
             <strong style={{ color: "var(--body)" }}>{C.footer.disclaimerLabel}</strong> {C.footer.disclaimer}<br /><br />
+            <span className="legal-links"><a href="/privacy">{C.legal.footerPrivacy}</a> · <a href="/terms">{C.legal.footerTerms}</a></span><br />
             {C.footer.copyright}
           </div>
         </div>

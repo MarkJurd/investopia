@@ -137,6 +137,9 @@ export default function Pricing() {
         <div><div className="g-t">{P.guarantee.title}</div><div className="g-s">{P.guarantee.text}</div></div>
       </div>
       <p className="secure-note">{K.secureNote}</p>
+      <p className="secure-note legal-agree">
+        {CONTENT.legal.checkoutAgreeBefore} <a href="/terms">{CONTENT.legal.footerTerms}</a> {CONTENT.legal.checkoutAgreeAnd} <a href="/privacy">{CONTENT.legal.footerPrivacy}</a>
+      </p>
       <p style={{ textAlign: "center", fontSize: 13, color: "var(--muted)", marginTop: 10 }}>{P.note}</p>
     </>
   );

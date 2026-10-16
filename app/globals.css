@@ -834,3 +834,16 @@ fieldset:disabled .quiz-choice{cursor:default}
 .composer-poll input[type=text],.composer-poll input:not([type]){font:inherit;font-size:14px;border:1px solid var(--line);border-radius:10px;padding:7px 10px}
 .composer-poll label{font-size:13px;display:flex;align-items:center;gap:6px}
 .composer-files{list-style:none;display:flex;flex-direction:column;gap:4px;font-size:13px}
+
+/* ===== หน้ากฎหมาย (/privacy, /terms) ===== */
+.legal{max-width:780px;padding-top:28px;padding-bottom:64px;color:var(--body)}
+.legal h1{font-size:30px;color:var(--ink);margin:14px 0 4px}
+.legal-updated{font-size:13px;color:var(--muted);margin-bottom:16px}
+.legal-intro{font-size:16px;margin-bottom:8px}
+.legal section{margin-top:22px}
+.legal h2{font-size:18px;color:var(--ink);margin-bottom:6px}
+.legal p{margin-bottom:8px;overflow-wrap:anywhere}
+.legal ul{padding-left:22px;display:flex;flex-direction:column;gap:6px}
+.legal-links a{color:var(--body);text-decoration:underline}
+.legal-agree a{text-decoration:underline}
+@media (max-width:600px){.legal h1{font-size:24px}}
