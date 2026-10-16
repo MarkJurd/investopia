@@ -1,8 +1,10 @@
 // คัดลอกค่า env จาก Convex dev ไปตั้งบน PRODUCTION โดยไม่พิมพ์ค่าออกหน้าจอ
-// ใช้: node scripts/copy-env-to-prod.mjs
+// ใช้: node scripts/copy-env-to-prod.mjs              (ชุดมาตรฐาน)
+//     node scripts/copy-env-to-prod.mjs NAME1 NAME2  (เลือกเฉพาะตัว เช่น STRIPE_SECRET_KEY)
 import { spawnSync } from "node:child_process";
 
-const NAMES = ["ADMIN_EMAILS", "AUTH_GOOGLE_ID", "AUTH_GOOGLE_SECRET", "BUNNY_LIBRARY_ID", "BUNNY_TOKEN_KEY"];
+const DEFAULT_NAMES = ["ADMIN_EMAILS", "AUTH_GOOGLE_ID", "AUTH_GOOGLE_SECRET", "BUNNY_LIBRARY_ID", "BUNNY_TOKEN_KEY"];
+const NAMES = process.argv.length > 2 ? process.argv.slice(2) : DEFAULT_NAMES;
 const cli = (args) => spawnSync(process.execPath, ["node_modules/convex/bin/main.js", ...args], { encoding: "utf8" });
 
 for (const name of NAMES) {
