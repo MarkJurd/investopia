@@ -193,8 +193,10 @@ export const grantFromCheckout = internalMutation({
       const given = await ctx.db
         .query("memberships")
         .withIndex("by_plan_and_indicatorBonus", (q) => q.eq("plan", "yearly").eq("indicatorBonus", true))
-        .take(INDICATOR_BONUS_LIMIT);
-      indicatorBonus = given.length < INDICATOR_BONUS_LIMIT;
+        .take(1000);
+      // นับเป็น "คน" ที่ยังได้สิทธิ์อยู่ — รายการที่คืนเงิน/ยกเลิกแล้วไม่กินโควตา 50 คน · ต่ออายุรายปี = ได้ต่อโดยไม่นับเพิ่ม
+      const holders = new Set(given.filter((m) => m.status === "active").map((m) => m.userId));
+      indicatorBonus = holders.has(userId) || holders.size < INDICATOR_BONUS_LIMIT;
     }
 
     const membershipId = await ctx.db.insert("memberships", {
