@@ -113,7 +113,7 @@ Convex agent skills for common tasks can be installed by running
 - **Stripe (โหมดทดสอบ) บน prod ตั้งเสร็จ 2026-10-16:** webhook `https://charming-parrot-860.convex.site/stripe/webhook` (3 เหตุการณ์เดิม) สร้างผ่าน API ในบัญชีเดียวกับ key · ทดสอบลายเซ็นแล้วผ่าน + เจ้าของซื้อทดสอบรายปีสำเร็จ สิทธิ์เปิดถูกต้อง (2026-10-16) · ⚠️ เจ้าของมี Stripe sandbox 2 อัน — **อันที่ใช้จริงคือ `acct_1RnaOoKTHreWTvII`** (อีกอัน `acct_1RnaOyQQyqFTY50Q` เจ้าของลบแล้ว 2026-10-16) · ตอนเปลี่ยนเป็น live: ต้องสร้าง webhook ใหม่ในโหมด live + ตั้ง sk_live_/whsec_ ใหม่บน prod
 - Google redirect URI ของ prod เพิ่มแล้ว · Bunny allowed domain เพิ่มแล้ว
 - **Google Cloud:** โปรเจกต์ OAuth จริงคือ `investopia-511407` ในบัญชีแบรนด์ investopia.admin@gmail.com (ใน Chrome ของเจ้าของ บัญชีส่วนตัวมีโปรเจกต์ investopia-511717 ที่ว่างเปล่า — อย่าเข้าผิดอัน) · **กด Publish app แล้ว 2026-10-18 (In production)** หลังเติม Branding: home/privacy/terms + authorized domain investopiaclass.com
-- **Stripe โหมดจริง (บัญชี acct_1RnaOoKTHreWTvII เปิดใช้งานแล้ว: บัตร/พร้อมเพย์/Apple Pay/Link):** ปิด Adaptive Pricing แล้ว 2026-10-18 · **ยังไม่ได้ตั้ง sk_live_ + webhook โหมดจริงบน prod** (เจ้าของคัดลอกกุญแจเอง → ตั้ง STRIPE_SECRET_KEY บน prod → สร้าง webhook live ผ่าน API → เอาแถบ prototypeBanner ออก)
+- **Stripe โหมดจริง (บัญชี acct_1RnaOoKTHreWTvII เปิดใช้งานแล้ว: บัตร/พร้อมเพย์/Apple Pay/Link):** ปิด Adaptive Pricing แล้ว 2026-10-18 · **ตั้ง sk_live_ บน prod แล้ว 2026-10-18 + สร้าง webhook โหมดจริง (we_1URlmXKTHreWTvIIsgcKjzqM) ตั้ง STRIPE_WEBHOOK_SECRET ใหม่แล้ว ทดสอบลายเซ็นผ่าน · เอาแถบโหมดทดสอบออกแล้ว → เว็บจริงรับเงินจริง** · dev ยังใช้ sk_test_ + webhook ของ superb-rabbit-529
 - **คอนโซลแอดมิน /admin** (ทดสอบหลังบ้านบน dev ผ่านครบ · หน้าจอตอนล็อกอินเจ้าของต้องลองเอง): บทเรียน (นำเข้าคอร์สครั้งแรก → แก้ชื่อ/สรุป/วิดีโอ/นาที, เรียงลำดับ ▲▼, ซ่อน, ย้ายโมดูล, ลบ, ไฟล์แนบ ≤50 MB, แบบทดสอบ, ป้าย "ใหม่" 14 วัน + แจ้งเตือนกระดิ่งผู้เรียน) · สมาชิก (ค้นด้วยอีเมล, ให้/ต่อสิทธิ์ด้วยมือ, อีเมลที่ยังไม่เคยล็อกอิน = รอเปิดตอนล็อกอินครั้งแรก, ยกเลิก, สลับ Indicator) · ยอดขาย (สรุปเดือนนี้/เดือนก่อน/ทั้งหมด + ตาราง + CSV) · โค้ดส่วนลด (% หรือบาท, แพ็กเกจ, จำนวนครั้ง, วันหมดอายุ — ราคาหลังลดต่ำสุด ฿20)
 - **นำเข้าคอร์สแล้วทั้ง dev และ prod (prod: เจ้าของกดเอง 2026-10-16)** → เนื้อหาห้องเรียนอยู่ในฐานข้อมูล แก้ที่ /admin เท่านั้น (lib/course.ts ไม่มีผลแล้ว)
 - ห้องเรียน: ไฟล์แนบใต้คลิป · ป้าย "ใหม่" · การ์ด/หน้าใบประกาศเรียนจบ /learn/certificate (เรียนครบทุกบท + ผ่านแบบทดสอบทุกโมดูล, พิมพ์/บันทึก PDF)
@@ -206,7 +206,7 @@ Investing.com Pro **ห้ามเอามาแสดงบนเว็บ** 
 - [ ] Google Cloud: เพิ่ม redirect URI ของ prod + กด Publish app (ออกจากโหมด Testing)
 - [ ] Stripe: ยืนยันตัวตนบัญชีจริง → ใช้ `sk_live_` + สร้าง webhook ของ prod → ตั้ง `STRIPE_WEBHOOK_SECRET` ของ prod
 - [ ] Hosting: Vercel Pro (~$20/เดือน — แพ็กเกจฟรีห้ามใช้เชิงพาณิชย์) หรือ Cloudflare · ผูกโดเมน
-- [ ] ลบ/เปลี่ยน `prototypeBanner` (แถบ "โหมดทดสอบ")
+- [x] ลบแถบ prototypeBanner แล้ว (2026-10-18)
 - [ ] ลบข้อมูลทดสอบใน Convex dev ที่ไม่ใช้ (สมาชิกรายเดือนจากการซื้อทดสอบ 12 ต.ค.)
 
 ### ไฟล์/โฟลเดอร์เก่า (ไม่ใช้แล้ว เก็บไว้อ้างอิง)
