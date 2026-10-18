@@ -45,7 +45,6 @@ export default function Curriculum() {
             <ul className="tl-lessons">
               {m.lessons.map((l) => <li key={l.b}><b>{l.b}</b> {l.t}</li>)}
             </ul>
-            {m.exercise && <div className="tl-ex"><b>{m.exercise.b}</b>{m.exercise.t}</div>}
           </div>
         ))}
       </div>

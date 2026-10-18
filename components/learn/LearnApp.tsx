@@ -15,7 +15,8 @@ import Dashboard from "@/components/learn/Dashboard";
 import LessonView from "@/components/learn/LessonView";
 import QuizView from "@/components/learn/QuizView";
 import CertificateView from "@/components/learn/CertificateView";
-import { buildSteps, CERT_STEP, learnPath, pricingPath } from "@/components/learn/steps";
+import ModuleView from "@/components/learn/ModuleView";
+import { buildSteps, CERT_STEP, MODULE_PREFIX, learnPath, pricingPath } from "@/components/learn/steps";
 
 function useStepId(): string | undefined {
   const m = usePathname().match(/\/learn\/([^/]+)/);
@@ -60,6 +61,10 @@ function Body() {
 
   const steps = buildSteps(data);
   if (!stepId) return <Dashboard data={data} steps={steps} now={now} />;
+  if (stepId.startsWith(MODULE_PREFIX)) {
+    const mod = data.modules.find((m) => m.id === stepId.slice(MODULE_PREFIX.length));
+    if (mod) return <ModuleView module={mod} steps={steps} />;
+  }
   if (stepId === CERT_STEP) return <CertificateView now={now} />;
   const index = steps.findIndex((s) => s.id === stepId);
   if (index === -1) {

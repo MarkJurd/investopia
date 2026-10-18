@@ -856,3 +856,34 @@ fieldset:disabled .quiz-choice{cursor:default}
 .drop-above{box-shadow:0 -3px 0 0 var(--blue)}
 .drop-below{box-shadow:0 3px 0 0 var(--blue)}
 @media (hover:none){.adm-drag-handle{display:none}}
+
+/* ห้องเรียน: การ์ดโมดูลใหญ่ + หน้ารวมบท (2026-10-18) */
+.mod-list{grid-template-columns:minmax(0,1fr);gap:16px}
+.mod-card{flex-direction:row;align-items:center;gap:20px;padding:26px 28px}
+.mc-num{flex:none;width:64px;height:64px;border-radius:18px;background:var(--blue-soft,#EEF4FF);color:var(--blue);font-size:30px;font-weight:700;display:grid;place-items:center}
+.mc-body{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+.mc-title{font-size:20px;line-height:1.35}
+.mc-meta{font-size:14px}
+.mc-go{font-size:34px;color:var(--muted);line-height:1}
+.mod-card:hover .mc-go{color:var(--blue)}
+.learn-modpage{max-width:760px;margin:0 auto}
+.learn-modpage .back-link{display:inline-block;margin-bottom:14px;font-size:14px;color:var(--muted)}
+.mp-progress{display:flex;align-items:center;gap:14px;margin:6px 0 22px}
+.mp-progress .pc-bar{flex:1}
+.les-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
+.les-row{display:flex;align-items:center;gap:18px;padding:20px 22px;color:var(--ink)}
+.les-row:hover{border-color:var(--blue-line);box-shadow:var(--shadow)}
+.les-n{flex:none;width:44px;height:44px;border-radius:50%;background:var(--blue-soft,#EEF4FF);color:var(--blue);font-weight:700;display:grid;place-items:center}
+.les-row.done .les-n{background:#DCFCE7;color:#15803D}
+.les-title{flex:1;min-width:0;font-size:17px;font-weight:600;line-height:1.4}
+.les-status{flex:none;font-size:13px;color:var(--blue);font-weight:600}
+.les-row.soon{opacity:.75}
+.les-row.soon .les-status{color:var(--muted)}
+.learn-kicker a{color:var(--blue)}
+@media(max-width:640px){
+  .mod-card{padding:18px;gap:14px}
+  .mc-num{width:48px;height:48px;font-size:22px;border-radius:14px}
+  .mc-title{font-size:17px}
+  .les-row{padding:16px;gap:12px}
+  .les-status{font-size:12px}
+}

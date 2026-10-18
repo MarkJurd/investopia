@@ -3,7 +3,7 @@
 /* หน้าแรกของห้องเรียน: วันหมดอายุ · ความคืบหน้า % · เรียนต่อจากที่ค้าง · รายการโมดูล */
 import Link from "next/link";
 import { useContent } from "@/components/ContentContext";
-import { CERT_STEP, countable, learnPath, pricingPath, type Overview, type Step } from "@/components/learn/steps";
+import { countable, learnPath, moduleStepId, pricingPath, type Overview, type Step } from "@/components/learn/steps";
 
 const DAY = 24 * 60 * 60 * 1000;
 const WARN_DAYS = 7;   // เตือนต่ออายุเมื่อเหลือไม่เกินกี่วัน
@@ -59,8 +59,10 @@ export default function Dashboard({ data, steps, now }: { data: Overview; steps:
             <Link href={learnPath(C, next.id)} className="btn btn-primary">
               {doneCount === 0 ? L.startBtn : L.continueBtn}: {next.kind === "lesson" ? next.lesson.title : `${next.module.tag} · ${L.quizTitle}`}
             </Link>
+          ) : counted.length === 0 ? (
+            <p>{L.rollingNote}</p>
           ) : (
-            <p><b>{L.allDoneTitle}</b> {L.allDoneText}</p>
+            <p><b>{L.allDoneTitle}</b> {L.allDoneText} {L.rollingNote}</p>
           )}
         </div>
       </section>
@@ -78,34 +80,27 @@ export default function Dashboard({ data, steps, now }: { data: Overview; steps:
         </section>
       )}
 
-      <section className={`cert-card card${next ? "" : " ready"}`}>
-        <span className="cert-ic" aria-hidden="true">🎓</span>
-        <div>
-          <b>{L.certCardTitle}</b>
-          <p>{next ? L.certCardLocked : L.certCardText}</p>
-        </div>
-        {!next && <Link href={learnPath(C, CERT_STEP)} className="btn btn-primary btn-sm">{L.certOpen}</Link>}
-      </section>
-
       <div className="dash-grid">
         <section>
           <h2 className="dash-h2">{L.modulesTitle}</h2>
           <div className="mod-list">
-            {data.modules.map((m) => {
+            {data.modules.map((m, n) => {
               const own = counted.filter((s) => s.module.id === m.id);
               const done = own.filter((s) => s.done).length;
-              const target = own.find((s) => !s.done) ?? own[0];
-              const quiz = own.find((s) => s.kind === "quiz");
+              const total = m.lessons.length;
+              const open = m.lessons.filter((l) => !l.locked && l.hasVideo).length;
               return (
-                <Link key={m.id} href={learnPath(C, target.id)} className={`mod-card card${done === own.length ? " complete" : ""}`}>
-                  <span className="mc-tag">{m.tag}</span>
-                  <b className="mc-title">{m.title}</b>
-                  <span className="mc-meta">
-                    {m.lessons.filter((l) => !l.locked).length} {L.lessonsUnit}
-                    {quiz?.kind === "quiz" && quiz.result && <> · {L.bestScore} {quiz.result.bestCorrect}/{quiz.result.total}</>}
-                    {quiz?.done && <> · <b className="ok-text">{L.passed}</b></>}
+                <Link key={m.id} href={learnPath(C, moduleStepId(m.id))} className={`mod-card card${own.length > 0 && done === own.length ? " complete" : ""}`}>
+                  <span className="mc-num" aria-hidden="true">{n + 1}</span>
+                  <span className="mc-body">
+                    <span className="mc-tag">{m.tag}</span>
+                    <b className="mc-title">{m.title}</b>
+                    <span className="mc-meta">
+                      {total} {L.lessonsUnit} · {open > 0 ? `${L.openLessons} ${open}` : L.comingSoon}
+                    </span>
+                    {own.length > 0 && <span className="pc-bar sm"><i style={{ width: `${Math.round((done / own.length) * 100)}%` }} /></span>}
                   </span>
-                  <span className="pc-bar sm"><i style={{ width: `${Math.round((done / own.length) * 100)}%` }} /></span>
+                  <span className="mc-go" aria-hidden="true">›</span>
                 </Link>
               );
             })}

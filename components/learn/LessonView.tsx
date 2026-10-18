@@ -9,7 +9,7 @@ import { Outline, StepNav } from "@/components/learn/Outline";
 import LessonVideo from "@/components/learn/LessonVideo";
 import Link from "next/link";
 import { communityPath } from "@/components/community/helpers";
-import { pricingPath, type Step } from "@/components/learn/steps";
+import { learnPath, moduleStepId, pricingPath, type Step } from "@/components/learn/steps";
 
 export function formatSize(bytes: number): string {
   if (bytes >= 1024 * 1024) return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
@@ -52,7 +52,7 @@ export default function LessonView({ steps, index }: { steps: Step[]; index: num
         <>
         <LessonVideo key={lesson.id} lessonId={lesson.id} title={lesson.title} hasVideo={lesson.hasVideo} />
 
-        <p className="learn-kicker">{module.tag} · {module.title}</p>
+        <p className="learn-kicker"><Link href={learnPath(C, moduleStepId(module.id))}>← {module.tag} · {module.title}</Link></p>
         <h1 className="learn-h1">{lesson.title}{lesson.isNew && <span className="new-badge">{L.newBadge}</span>}</h1>
         {lesson.minutes > 0 && <p className="learn-meta">{lesson.minutes} {L.minutesUnit}</p>}
 
