@@ -269,7 +269,7 @@ export const salesSummary = query({
       const paid = (m.source ?? "stripe") === "stripe";
       if (m.status === "refunded") out.allTime.refunded += m.amount;
       if (m.status === "active" && m.startsAt <= now && m.expiresAt > now) active.add(m.userId);
-      if (m.status === "active" && m.indicatorBonus && m.plan === "yearly") indicatorGiven++;
+      if (m.status === "active" && m.indicatorBonus && m.plan === "vip") indicatorGiven++;
       if (!paid || m.status === "refunded") continue;
       out.allTime.revenue += m.amount; out.allTime.count++;
       if (m.monthKey === thisKey) { out.thisMonth.revenue += m.amount; out.thisMonth.count++; }

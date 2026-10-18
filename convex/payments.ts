@@ -5,7 +5,7 @@ import { internal } from "./_generated/api";
 import { ConvexError, v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import {
-  PLANS, FOR_SALE, type PlanId, planValidator, VIP_SEATS_PER_MONTH, INDICATOR_BONUS_LIMIT, daysToMs, bangkokMonthKey,
+  PLANS, FOR_SALE, type PlanId, planValidator, VIP_SEATS_PER_MONTH, INDICATOR_BONUS_LIMIT, LAUNCH, daysToMs, bangkokMonthKey,
 } from "./plans";
 
 /* ---------- ที่นั่ง VIP ที่เหลือเดือนนี้ ---------- */
@@ -28,6 +28,28 @@ export const vipSeatsLeftInternal = internalQuery({
   args: {},
   returns: v.number(),
   handler: async (ctx) => countVipSeatsLeft(ctx),
+});
+
+/* ---------- รอบเปิดตัว: ที่นั่งรายปีที่เหลือ (นับคนที่จ่ายผ่าน Stripe และสิทธิ์ยังใช้งานอยู่) ---------- */
+async function countLaunchSeatsLeft(ctx: QueryCtx): Promise<number> {
+  const rows = await ctx.db
+    .query("memberships")
+    .withIndex("by_plan_and_monthKey", (q) => q.eq("plan", LAUNCH.plan))
+    .take(2000);
+  const people = new Set(rows.filter((m) => m.status === "active" && m.source !== "manual").map((m) => m.userId));
+  return Math.max(0, LAUNCH.seats - people.size);
+}
+
+export const launchStatus = query({
+  args: {},
+  returns: v.object({ seatsLeft: v.number(), total: v.number(), endsAt: v.number() }),
+  handler: async (ctx) => ({ seatsLeft: await countLaunchSeatsLeft(ctx), total: LAUNCH.seats, endsAt: LAUNCH.endsAt }),
+});
+
+export const launchSeatsLeftInternal = internalQuery({
+  args: {},
+  returns: v.number(),
+  handler: async (ctx) => countLaunchSeatsLeft(ctx),
 });
 
 /* ---------- สิทธิ์ปัจจุบันของผู้ใช้ที่ล็อกอินอยู่ ---------- */
@@ -111,6 +133,11 @@ export const createCheckout = action({
     const userId = await getAuthUserId(ctx);
     if (userId === null) throw new Error("NOT_SIGNED_IN");
     if (!FOR_SALE.has(plan)) throw new Error("PLAN_NOT_FOR_SALE");
+    if (plan === LAUNCH.plan) {
+      if (Date.now() > LAUNCH.endsAt) throw new Error("LAUNCH_CLOSED");
+      const left: number = await ctx.runQuery(internal.payments.launchSeatsLeftInternal, {});
+      if (left <= 0) throw new Error("LAUNCH_FULL");
+    }
     if (plan === "vip") {
       const left: number = await ctx.runQuery(internal.payments.vipSeatsLeftInternal, {});
       if (left <= 0) throw new Error("VIP_FULL");
@@ -188,13 +215,13 @@ export const grantFromCheckout = internalMutation({
     const samePlanEnd = Math.max(now, ...rows.filter((m) => m.status === "active" && m.plan === a.plan).map((m) => m.expiresAt));
     const startsAt = samePlanEnd;
 
-    let indicatorBonus = a.plan === "vip";
-    if (a.plan === "yearly") {
+    let indicatorBonus = false;
+    if (a.plan === "vip") {
       const given = await ctx.db
         .query("memberships")
-        .withIndex("by_plan_and_indicatorBonus", (q) => q.eq("plan", "yearly").eq("indicatorBonus", true))
+        .withIndex("by_plan_and_indicatorBonus", (q) => q.eq("plan", "vip").eq("indicatorBonus", true))
         .take(1000);
-      // นับเป็น "คน" ที่ยังได้สิทธิ์อยู่ — รายการที่คืนเงิน/ยกเลิกแล้วไม่กินโควตา 50 คน · ต่ออายุรายปี = ได้ต่อโดยไม่นับเพิ่ม
+      // นับเป็น "คน" ที่ยังได้สิทธิ์อยู่ — รายการที่คืนเงิน/ยกเลิกแล้วไม่กินโควตา 10 คน · ต่ออายุ = ได้ต่อโดยไม่นับเพิ่ม
       const holders = new Set(given.filter((m) => m.status === "active").map((m) => m.userId));
       indicatorBonus = holders.has(userId) || holders.size < INDICATOR_BONUS_LIMIT;
     }

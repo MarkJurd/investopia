@@ -46,7 +46,7 @@ export default function SalesTab() {
           <div className="card"><span>{A.thisMonth}</span><b>{baht(sum.thisMonth.revenue)}</b><small>{sum.thisMonth.count} {A.orders}</small></div>
           <div className="card"><span>{A.lastMonth}</span><b>{baht(sum.lastMonth.revenue)}</b><small>{sum.lastMonth.count} {A.orders}</small></div>
           <div className="card"><span>{A.allTime}</span><b>{baht(sum.allTime.revenue)}</b><small>{sum.allTime.count} {A.orders} · {A.refunded} {baht(sum.allTime.refunded)}</small></div>
-          <div className="card"><span>{A.activeMembers}</span><b>{sum.activeMembers}</b><small>{A.indicatorGiven}: {sum.indicatorGiven}/50</small></div>
+          <div className="card"><span>{A.activeMembers}</span><b>{sum.activeMembers}</b><small>{A.indicatorGiven}: {sum.indicatorGiven}/10</small></div>
         </div>
       )}
       {sum?.capped && <p className="adm-sub">{A.capped}</p>}

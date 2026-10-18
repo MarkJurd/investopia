@@ -1,36 +1,117 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# INVESTOPIA 📈
 
-## Getting Started
+เว็บขายคอร์สออนไลน์สอนการลงทุนสำหรับมือใหม่ แบรนด์ `INVESTOPIA` ผู้สอน/เจ้าของ: มาร์ค
 
-First, run the development server:
+สร้างด้วย **Next.js 16 (App Router) + TypeScript + Convex (backend) + Stripe (ชำระเงิน)**
+
+> คู่มือทำงานฉบับเต็ม + แผนพัฒนา + กติกาสำหรับ AI → อ่าน **`CLAUDE.md`**
+
+---
+
+## 🚀 วิธีเปิดดูเว็บ (สำหรับมือใหม่)
+
+ต้องติดตั้ง [Node.js](https://nodejs.org) ก่อน แล้วเปิด terminal ในโฟลเดอร์นี้พิมพ์:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install     # ครั้งแรกครั้งเดียว — โหลดโปรแกรมที่ต้องใช้
+npm run dev     # เปิดเซิร์ฟเวอร์ (ต้องเปิดค้างไว้)
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+แล้วเปิดเบราว์เซอร์ไปที่ **http://localhost:3000**
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- เว็บจะค้างอยู่นานเท่าที่ terminal ยังเปิดอยู่ → ปิด terminal = เว็บหยุด
+- แก้ไฟล์เนื้อหาแล้วกดบันทึก (Ctrl+S) → หน้าเว็บอัปเดตให้เองทันที
+- เว็บจริงบนอินเทอร์เน็ตจะอัปเดตเองเมื่อ push ขึ้น GitHub (Vercel ทำให้)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## 📂 โฟลเดอร์แต่ละอันคืออะไร
 
-To learn more about Next.js, take a look at the following resources:
+ชื่อพวกนี้ดูงงในตอนแรก แต่จริง ๆ ความหมายสั้น ๆ คือ:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### ส่วนที่เป็น "โค้ดเว็บ" หลัก 4 ที่
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| โฟลเดอร์ | คืออะไร | ถ้าอยากแก้อะไร ไปที่นี่ |
+|---|---|---|
+| **`app/`** | **หน้าเว็บแต่ละหน้า** — URL ที่คนพิมพ์ | เพิ่ม/แก้หน้าเว็บ |
+| **`components/`** | **ชิ้นส่วนที่ใช้ซ้ำ** (ปุ่ม การ์ดราคา วิดีโอ) | แก้หน้าตา/ลูกเล่น |
+| **`lib/`** | **ข้อความทั้งหมดของเว็บ** ⭐ | **แก้ข้อความเว็บ = ที่นี่** |
+| **`public/`** | **รูปภาพ โลโก้ ไฟล์แนบ** | ใส่รูปใหม่ |
 
-## Deploy on Vercel
+> 💡 **จำง่าย ๆ:** อยากแก้ **"คำพูด"** → ไปที่ `lib/` · อยากแก้ **"หน้าตา"** → ไปที่ `components/` · อยากแก้ **"หน้าเว็บ"** → ไปที่ `app/`
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### ส่วนที่เป็น "ระบบเบื้องหลัง"
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| โฟลเดอร์/ไฟล์ | คืออะไร |
+|---|---|
+| **`convex/`** | **ฐานข้อมูล + ระบบล็อกอิน + รับเงิน** — ส่วนที่ "คิดเอง" ของเว็บ เช่น เช็กว่าใครจ่ายเงินแล้วบ้าง |
+| **`app/globals.css`** | สีและสไตล์ทั้งหมดของเว็บ (ไม่ใช้ Tailwind) |
+| **`.env.local`** | ค่าลับที่ต่อระบบภายนอก (ห้ามส่งไฟล์นี้ให้ใคร) |
+
+### ส่วนที่ "ไม่ใช้แล้ว / เก็บไว้อ้างอิง" (ไม่ต้องแตะ)
+
+| โฟลเดอร์/ไฟล์ | คืออะไร |
+|---|---|
+| **`_archive/`** | ของเก่าทั้งหมด — เว็บ HTML เก่า, แบบดีไซน์, mockup |
+| **`README.md`** | ไฟล์นี้เอง |
+| **`CLAUDE.md`** | คู่มือส่งต่องานฉบับเต็ม |
+| **`AGENTS.md`** | ไฟล์ที่ Next.js สร้างให้ AI อัตโนมัติ (ห้ามลบ) |
+
+### ของที่ "ห้ามย้าย/ห้ามลบ" เพราะเป็นของที่ระบบสร้างให้
+
+`node_modules/` (โปรแกรมที่ติดตั้ง) · `.next/` (ไฟล์ชั่วคราวตอนรัน) · `convex/_generated/` (โค้ดที่ Convex สร้างให้) · `.agents/` + `.claude/` (สกิลที่ Convex ติดตั้งให้ AI)
+
+---
+
+## 🧭 โครงสร้างไฟล์จริง
+
+```
+app/
+├── page.tsx           หน้าแรก (ภาษาไทย)          → เว็บ /
+├── layout.tsx         ตั้งค่าทั้งเว็บ (ฟอนต์ Anuphan)
+├── globals.css        สี + สไตล์ทั้งหมด
+├── icon.svg           รูป favicon (= โลโก้)
+├── learn/             ห้องเรียน (ภาษาไทย)         → เว็บ /learn
+└── en/                หน้าเว็บภาษาอังกฤษ          → เว็บ /en
+    ├── page.tsx       หน้าแรก (อังกฤษ)
+    └── learn/         ห้องเรียน (อังกฤษ)          → เว็บ /en/learn
+
+lib/
+├── content.ts         ⭐ ข้อความภาษาไทย (หน้าแรก)
+├── content.en.ts      ⭐ ข้อความภาษาอังกฤษ
+├── course.ts          เนื้อหาห้องเรียนไทย (บทเรียน+แบบทดสอบ)
+└── course.en.ts       เนื้อหาห้องเรียนอังกฤษ
+
+components/
+├── HomePage.tsx       หน้าแรก (ใช้ร่วม 2 ภาษา)
+├── Pricing.tsx        การ์ดราคา
+├── HeroVideo.tsx      วิดีโอแนะนำตัว
+├── Curriculum.tsx     หลักสูตร
+├── Effects.tsx        เอฟเฟกต์ต่าง ๆ
+└── learn/             หน้าห้องเรียน (Dashboard, LessonView, QuizView...)
+
+convex/
+├── schema.ts          โครงสร้างฐานข้อมูล
+├── auth.ts            ระบบล็อกอิน Google
+├── payments.ts        ระบบ Stripe (รับเงิน)
+├── plans.ts           แพ็กเกจราคา
+├── learn.ts           ระบบห้องเรียน
+└── users.ts           ข้อมูลผู้ใช้
+```
+
+---
+
+## 📌 กฎสำคัญ 3 ข้อ
+
+1. **ห้าม hardcode ข้อความใน `.tsx`** — ทุกคำพูดต้องมาจาก `lib/content.ts` (ไทย) และ `lib/content.en.ts` (อังกฤษ) — **แก้ข้อความต้องแก้ทั้ง 2 ไฟล์**
+2. **`lib/course.ts` ห้าม import ในหน้าเว็บ** — หน้าเว็บได้เนื้อหานี้ผ่าน `convex/` เท่านั้น
+3. **ห้ามมีข้อความรับประกันกำไร / สัญญาณซื้อขาย / แนะนำหุ้น** — ต้องคง disclaimer ใน footer (ดูกฎหมายใน `CLAUDE.md`)
+
+---
+
+## 🔗 ลิงก์สำคัญ
+
+- **GitHub:** github.com/MarkJurd/investopia
+- **หน้าแรก:** http://localhost:3000 (ไทย) · http://localhost:3000/en (อังกฤษ)
+- **ห้องเรียน:** http://localhost:3000/learn
+- **คู่มือฉบับเต็ม:** `CLAUDE.md`

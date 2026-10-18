@@ -38,6 +38,14 @@ export default function Pricing() {
   const { signIn } = useAuthActions();
   const createCheckout = useAction(api.payments.createCheckout);
   const vipLeft = useQuery(api.payments.vipSeatsLeft);
+  const launch = useQuery(api.payments.launchStatus);
+  // ปิดรอบตามเวลา — อ่านเวลาใน timeout เท่านั้น (หน้านี้ถูก prerender)
+  const [launchOver, setLaunchOver] = useState(false);
+  useEffect(() => {
+    if (!launch) return;
+    const t = setTimeout(() => setLaunchOver(Date.now() > launch.endsAt), 0);
+    return () => clearTimeout(t);
+  }, [launch]);
   const [busy, setBusy] = useState<PlanId | null>(null);
   const [msg, setMsg] = useState("");
   const [codeInput, setCodeInput] = useState("");
@@ -61,7 +69,7 @@ export default function Pricing() {
     } catch (e) {
       setBusy(null);
       const code = e instanceof ConvexError && typeof e.data === "string" ? e.data : String(e);
-      setMsg(code.includes("VIP_FULL") ? K.vipFull : code.startsWith("COUPON_") ? couponError(code, K) : K.error);
+      setMsg(code.includes("VIP_FULL") ? K.vipFull : code.includes("LAUNCH_CLOSED") ? K.launchClosed : code.includes("LAUNCH_FULL") ? K.launchFull : code.startsWith("COUPON_") ? couponError(code, K) : K.error);
     }
   }, [createCheckout, K]);
 
@@ -104,7 +112,10 @@ export default function Pricing() {
       <div className="price-grid">
         {P.packages.map((p, i) => {
           const id = p.id as PlanId;
-          const full = id === "vip" && vipLeft === 0;
+          const launchFull = id === "yearly" && launch !== undefined && launch.seatsLeft <= 0;
+          const launchClosed = id === "yearly" && launchOver;
+          const full = (id === "vip" && vipLeft === 0) || launchFull || launchClosed;
+          const fullLabel = id === "vip" ? K.vipFull : launchClosed ? K.launchClosed : K.launchFull;
           return (
             <div key={p.name} className={`price-card reveal${p.featured ? " featured" : ""}`} style={{ "--d": `${i * 0.08}s` } as React.CSSProperties}>
               {p.badge && <span className={p.badgeType === "limited" ? "badge-limited" : "badge-best"}>{p.badge}</span>}
@@ -117,6 +128,12 @@ export default function Pricing() {
                   : <div className="price-num">฿{p.num}{p.numStrike && <span className="strike">{p.numStrike}</span>}</div>;
               })()}
               <div className="price-per">{p.per}</div>
+              {id === "yearly" && (
+                <div className="price-per" role="status">
+                  <strong>{P.launch.deadline}</strong>
+                  {launch !== undefined && launch.seatsLeft > 0 && !launchOver && <> · {P.launch.seats.replace("{n}", String(launch.seatsLeft))}</>}
+                </div>
+              )}
               <ul className="price-feats">
                 {p.feats.map((f) => <li key={f.text} className={f.off ? "off" : undefined}>{f.text}</li>)}
               </ul>
@@ -125,7 +142,7 @@ export default function Pricing() {
                 disabled={full || busy !== null}
                 onClick={() => void choose(id)}
               >
-                {full ? K.vipFull : busy === id ? K.redirecting : p.btn}
+                {full ? fullLabel : busy === id ? K.redirecting : p.btn}
               </button>
             </div>
           );
@@ -140,6 +157,7 @@ export default function Pricing() {
       <p className="secure-note legal-agree">
         {CONTENT.legal.checkoutAgreeBefore} <a href="/terms">{CONTENT.legal.footerTerms}</a> {CONTENT.legal.checkoutAgreeAnd} <a href="/privacy">{CONTENT.legal.footerPrivacy}</a>
       </p>
+      <p style={{ textAlign: "center", fontSize: 13, color: "var(--muted)", marginTop: 10 }}>{P.rolling}</p>
       <p style={{ textAlign: "center", fontSize: 13, color: "var(--muted)", marginTop: 10 }}>{P.note}</p>
     </>
   );
