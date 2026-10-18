@@ -28,7 +28,7 @@ export default function Curriculum() {
             <circle className="rg-bg" cx="110" cy="110" r="95" />
             <circle className="rg-fg" cx="110" cy="110" r="95" style={{ strokeDashoffset: RING * (1 - (active + 1) / M.length) }} />
           </svg>
-          <div className="num"><span key={active}>{active}</span></div>
+          <div className="num"><span key={active}>{active + 1}</span></div>
         </div>
         <div className="p-tag">{M[active].tag}</div>
         <div className="p-title">{M[active].title}</div>

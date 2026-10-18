@@ -6,7 +6,7 @@ import type { Doc, Id } from "./_generated/dataModel";
 import { v } from "convex/values";
 import { COURSE, INDICATOR_ONLY_LESSONS } from "../lib/course";
 
-export const MODULE_TAG = "โมดูล";          // ป้ายหน้าชื่อโมดูล → "โมดูล 0", "โมดูล 1", ... (เลขตามลำดับที่แสดง)
+export const MODULE_TAG = "โมดูล";          // ป้ายหน้าชื่อโมดูล → "โมดูล 1", "โมดูล 2", ... (เลขตามลำดับที่แสดง)
 export const NEW_LESSON_DAYS = 14;          // ป้าย "ใหม่" แสดงกี่วัน
 export const MAX_FILE_MB = 50;              // ขนาดไฟล์แนบสูงสุดต่อไฟล์
 
@@ -63,7 +63,7 @@ export async function loadCourse(ctx: QueryCtx): Promise<{ fromDb: boolean; modu
 export function visibleModules(modules: CourseModule[]): (CourseModule & { tag: string })[] {
   return modules
     .filter((m) => !m.hidden)
-    .map((m, i) => ({ ...m, tag: `${MODULE_TAG} ${i}`, lessons: m.lessons.filter((l) => !l.hidden) }));
+    .map((m, i) => ({ ...m, tag: `${MODULE_TAG} ${i + 1}`, lessons: m.lessons.filter((l) => !l.hidden) }));
 }
 
 /** หาบทจาก key (ใช้ตอนผู้เรียนกดเรียนจบ / ขอลิงก์วิดีโอ) — บทที่ซ่อนหรือโมดูลที่ซ่อน = ไม่พบ */
