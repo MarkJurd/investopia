@@ -30,13 +30,13 @@ export const vipSeatsLeftInternal = internalQuery({
   handler: async (ctx) => countVipSeatsLeft(ctx),
 });
 
-/* ---------- รอบเปิดตัว: ที่นั่งรายปีที่เหลือ (นับคนที่จ่ายผ่าน Stripe และสิทธิ์ยังใช้งานอยู่) ---------- */
+/* ---------- รอบเปิดตัว: ที่นั่งรายปีที่เหลือ (นับทุกคนที่จ่ายผ่าน Stripe หลังเริ่มรอบ — คืนเงิน/ยกเลิกแล้วที่นั่งก็ไม่กลับมา) ---------- */
 async function countLaunchSeatsLeft(ctx: QueryCtx): Promise<number> {
   const rows = await ctx.db
     .query("memberships")
     .withIndex("by_plan_and_monthKey", (q) => q.eq("plan", LAUNCH.plan))
     .take(2000);
-  const people = new Set(rows.filter((m) => m.status === "active" && m.source !== "manual").map((m) => m.userId));
+  const people = new Set(rows.filter((m) => m.source !== "manual" && m._creationTime >= LAUNCH.countFrom).map((m) => m.userId));
   return Math.max(0, LAUNCH.seats - people.size);
 }
 
