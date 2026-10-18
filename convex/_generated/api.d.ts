@@ -17,7 +17,6 @@ import type * as community from "../community.js";
 import type * as course from "../course.js";
 import type * as http from "../http.js";
 import type * as learn from "../learn.js";
-import type * as maintenance from "../maintenance.js";
 import type * as payments from "../payments.js";
 import type * as plans from "../plans.js";
 import type * as telegram from "../telegram.js";
@@ -39,7 +38,6 @@ declare const fullApi: ApiFromModules<{
   course: typeof course;
   http: typeof http;
   learn: typeof learn;
-  maintenance: typeof maintenance;
   payments: typeof payments;
   plans: typeof plans;
   telegram: typeof telegram;
