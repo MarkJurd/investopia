@@ -30,7 +30,7 @@ export const INDICATOR_BONUS_LIMIT = 10;   // VIP N คนแรกได้ Ind
 
 /** รอบเปิดตัว: รายปี ฿3,990 จำกัด 15 ที่ และถึง 31 ต.ค. 2569 (= ค.ศ. 2026) 23:59 เวลาไทย (= 16:59 UTC) */
 /** price = ราคาปล่อยตัวระหว่างรอบ · หลังหมดเวลา/เต็ม ขายต่อที่ราคาเต็ม PLANS.yearly.amount (฿4,990 — เจ้าของยืนยัน 2026-10-18) */
-export const LAUNCH = { plan: "yearly" as PlanId, price: 3990, seats: 10, countFrom: 1792315022000 /* นับเฉพาะการซื้อหลังเวลานี้ (ตัดรายการทดสอบก่อนเปิดรอบ) */, endsAt: Date.UTC(2026, 9, 31, 16, 59, 0) };
+export const LAUNCH = { plan: "yearly" as PlanId, price: 3990, seats: 15, countFrom: 1792315022000 /* นับเฉพาะการซื้อหลังเวลานี้ (ตัดรายการทดสอบก่อนเปิดรอบ) */, endsAt: Date.UTC(2026, 9, 31, 16, 59, 0) };
 
 const DAY = 24 * 60 * 60 * 1000;
 export const daysToMs = (d: number) => d * DAY;
