@@ -145,6 +145,25 @@ export default function HomePage({ C }: { C: Content }) {
         </div>
       </section>
 
+      {/* FIT */}
+      <section className="section" id="fit">
+        <div className="container">
+          <div className="section-head">
+            <span className="eyebrow">{C.fit.eyebrow}</span><h2>{C.fit.title}</h2><p>{C.fit.sub}</p>
+          </div>
+          <div className="fit-grid">
+            <div className="card fit-card yes reveal">
+              <h3>{C.fit.yesTitle}</h3>
+              <ul>{C.fit.yes.map((t) => <li key={t}>{t}</li>)}</ul>
+            </div>
+            <div className="card fit-card no reveal" style={{ "--d": "0.1s" } as Vars}>
+              <h3>{C.fit.noTitle}</h3>
+              <ul>{C.fit.no.map((t) => <li key={t}>{t}</li>)}</ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* CURRICULUM */}
       <section className="section" id="curriculum">
         <div className="container">

@@ -887,3 +887,19 @@ fieldset:disabled .quiz-choice{cursor:default}
   .les-row{padding:16px;gap:12px}
   .les-status{font-size:12px}
 }
+
+/* ราคา: ราคาเดิมขีดฆ่า + ราคาใหม่แดงหนา */
+.price-num .old-price{display:block;font-size:20px;font-weight:600;color:var(--muted);text-decoration:line-through;text-decoration-thickness:2px;letter-spacing:0;margin-bottom:6px}
+.price-num .new-price{color:#DC2626;font-weight:800;font-size:46px}
+/* เหมาะ / ไม่เหมาะ */
+.fit-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px}
+.fit-card{padding:28px}
+.fit-card h3{font-size:19px;margin:0 0 14px}
+.fit-card ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
+.fit-card li{position:relative;padding-left:30px;line-height:1.55}
+.fit-card li::before{position:absolute;left:0;top:0;font-weight:800}
+.fit-card.yes{border-color:#BBF7D0}
+.fit-card.yes li::before{content:"✓";color:#15803D}
+.fit-card.no{border-color:#FECACA}
+.fit-card.no li::before{content:"✕";color:#DC2626}
+@media(max-width:860px){.fit-grid{grid-template-columns:1fr}}

@@ -127,7 +127,7 @@ export default function Pricing() {
                 return q?.ok && q.code
                   ? <div className="price-num">฿{q.amount.toLocaleString("en-US")}<span className="strike">{q.listAmount.toLocaleString("en-US")}</span><span className="coupon-tag">{K.couponAfter}</span></div>
                   
-                  : <div className="price-num">฿{regular ? P.regular.num : p.num}{p.numStrike && <span className="strike">{p.numStrike}</span>}</div>;
+                  : <div className="price-num">{p.numStrike && !regular && <span className="old-price">฿{p.numStrike}</span>}<span className={p.numStrike && !regular ? "new-price" : undefined}>฿{regular ? P.regular.num : p.num}</span></div>;
               })()}
               <div className="price-per">{regular ? P.regular.per : p.per}</div>
               {id === "yearly" && !regular && (
