@@ -69,7 +69,7 @@ export default function Pricing() {
     } catch (e) {
       setBusy(null);
       const code = e instanceof ConvexError && typeof e.data === "string" ? e.data : String(e);
-      setMsg(code.includes("VIP_FULL") ? K.vipFull : code.includes("LAUNCH_CLOSED") ? K.launchClosed : code.includes("LAUNCH_FULL") ? K.launchFull : code.startsWith("COUPON_") ? couponError(code, K) : K.error);
+      setMsg(code.includes("VIP_FULL") ? K.vipFull : code.startsWith("COUPON_") ? couponError(code, K) : K.error);
     }
   }, [createCheckout, K]);
 
@@ -114,21 +114,23 @@ export default function Pricing() {
           const id = p.id as PlanId;
           const launchFull = id === "yearly" && launch !== undefined && launch.seatsLeft <= 0;
           const launchClosed = id === "yearly" && launchOver;
-          const full = (id === "vip" && vipLeft === 0) || launchFull || launchClosed;
-          const fullLabel = id === "vip" ? K.vipFull : launchClosed ? K.launchClosed : K.launchFull;
+          const regular = launchFull || launchClosed;   // จบรอบเปิดตัว → ขายต่อที่ราคาปกติ
+          const full = id === "vip" && vipLeft === 0;
+          const fullLabel = K.vipFull;
           return (
             <div key={p.name} className={`price-card reveal${p.featured ? " featured" : ""}`} style={{ "--d": `${i * 0.08}s` } as React.CSSProperties}>
-              {p.badge && <span className={p.badgeType === "limited" ? "badge-limited" : "badge-best"}>{p.badge}</span>}
+              {(regular ? P.regular.badge : p.badge) && <span className={p.badgeType === "limited" ? "badge-limited" : "badge-best"}>{regular ? P.regular.badge : p.badge}</span>}
               <div className="price-name">{p.name}</div>
               <div className="price-for">{p.for}</div>
               {(() => {
                 const q = quotes[id];
                 return q?.ok && q.code
-                  ? <div className="price-num">฿{q.amount.toLocaleString("en-US")}<span className="strike">{p.num}</span><span className="coupon-tag">{K.couponAfter}</span></div>
-                  : <div className="price-num">฿{p.num}{p.numStrike && <span className="strike">{p.numStrike}</span>}</div>;
+                  ? <div className="price-num">฿{q.amount.toLocaleString("en-US")}<span className="strike">{q.listAmount.toLocaleString("en-US")}</span><span className="coupon-tag">{K.couponAfter}</span></div>
+                  
+                  : <div className="price-num">฿{regular ? P.regular.num : p.num}{p.numStrike && <span className="strike">{p.numStrike}</span>}</div>;
               })()}
-              <div className="price-per">{p.per}</div>
-              {id === "yearly" && (
+              <div className="price-per">{regular ? P.regular.per : p.per}</div>
+              {id === "yearly" && !regular && (
                 <div className="price-per" role="status">
                   <strong>{P.launch.deadline}</strong>
                   {launch !== undefined && launch.seatsLeft > 0 && !launchOver && <> · {P.launch.seats.replace("{n}", String(launch.seatsLeft))}</>}

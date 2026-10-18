@@ -5,7 +5,7 @@ import { v } from "convex/values";
 export const PLANS = {
   monthly:   { name: "INVESTOPIA รายเดือน",       nameEn: "INVESTOPIA Monthly",        amount: 990,   days: 30,  rank: 1 },
   quarterly: { name: "INVESTOPIA 3 เดือน",        nameEn: "INVESTOPIA 3 Months",       amount: 2490,  days: 90,  rank: 2 },
-  yearly:    { name: "INVESTOPIA รายปี",          nameEn: "INVESTOPIA Yearly",         amount: 1990,  days: 365, rank: 3 },
+  yearly:    { name: "INVESTOPIA รายปี",          nameEn: "INVESTOPIA Yearly",         amount: 4990,  days: 365, rank: 3 },
   vip:       { name: "INVESTOPIA Exclusive VIP ติว 1:1",  nameEn: "INVESTOPIA Exclusive VIP 1:1 Coaching", amount: 13990, days: 365, rank: 4 },
 } as const;
 
@@ -29,7 +29,8 @@ export const VIP_SEATS_PER_MONTH = 3;      // VIP รับกี่คนต่
 export const INDICATOR_BONUS_LIMIT = 10;   // VIP N คนแรกได้ Indicator (รายปีไม่ได้แล้ว — เจ้าของเปลี่ยน 2026-10-18)
 
 /** รอบเปิดตัว: รายปี ฿1,990 จำกัด 50 ที่ และถึง 31 ต.ค. 2569 (= ค.ศ. 2026) 23:59 เวลาไทย (= 16:59 UTC) */
-export const LAUNCH = { plan: "yearly" as PlanId, seats: 50, endsAt: Date.UTC(2026, 9, 31, 16, 59, 0) };
+/** price = ราคาปล่อยตัวระหว่างรอบ · หลังหมดเวลา/เต็ม ขายต่อที่ราคาเต็ม PLANS.yearly.amount (฿4,990 — เจ้าของยืนยัน 2026-10-18) */
+export const LAUNCH = { plan: "yearly" as PlanId, price: 1990, seats: 50, endsAt: Date.UTC(2026, 9, 31, 16, 59, 0) };
 
 const DAY = 24 * 60 * 60 * 1000;
 export const daysToMs = (d: number) => d * DAY;

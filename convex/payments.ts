@@ -95,7 +95,8 @@ const MIN_PRICE = 20;   // ราคาหลังลดต่ำสุด (บ
 type Quote = { ok: true; code: string | null; listAmount: number; amount: number } | { ok: false; error: string };
 
 async function quote(ctx: QueryCtx, plan: PlanId, rawCode: string | undefined, now: number): Promise<Quote> {
-  const listAmount = PLANS[plan].amount;
+  let listAmount: number = PLANS[plan].amount;
+  if (plan === LAUNCH.plan && now <= LAUNCH.endsAt && (await countLaunchSeatsLeft(ctx)) > 0) listAmount = LAUNCH.price;
   const code = (rawCode ?? "").trim().toUpperCase();
   if (!code) return { ok: true, code: null, listAmount, amount: listAmount };
   const c = await ctx.db.query("coupons").withIndex("by_code", (q) => q.eq("code", code)).first();
@@ -133,11 +134,6 @@ export const createCheckout = action({
     const userId = await getAuthUserId(ctx);
     if (userId === null) throw new Error("NOT_SIGNED_IN");
     if (!FOR_SALE.has(plan)) throw new Error("PLAN_NOT_FOR_SALE");
-    if (plan === LAUNCH.plan) {
-      if (Date.now() > LAUNCH.endsAt) throw new Error("LAUNCH_CLOSED");
-      const left: number = await ctx.runQuery(internal.payments.launchSeatsLeftInternal, {});
-      if (left <= 0) throw new Error("LAUNCH_FULL");
-    }
     if (plan === "vip") {
       const left: number = await ctx.runQuery(internal.payments.vipSeatsLeftInternal, {});
       if (left <= 0) throw new Error("VIP_FULL");

@@ -57,10 +57,12 @@ http.route({
         return new Response("bad session data", { status: 400 });
       }
       // ยอดที่ต้องได้รับ = ราคาหลังส่วนลดที่ server ของเราใส่ไว้ตอนสร้างหน้าจ่ายเงิน (ไม่เกินราคาเต็ม)
-      const listAmount = PLANS[plan].amount;
+      const fullPrice = PLANS[plan].amount;
+      const metaList = typeof meta.listAmount === "string" ? Number(meta.listAmount) : NaN;
+      const listAmount = Number.isFinite(metaList) && metaList > 0 && metaList <= fullPrice ? metaList : fullPrice;
       const expected = typeof meta.amount === "string" && meta.amount !== "" ? Number(meta.amount) : listAmount;
       const coupon = typeof meta.coupon === "string" && meta.coupon !== "" ? meta.coupon : undefined;
-      if (!Number.isFinite(expected) || expected > listAmount || amountTotal !== expected * 100 || obj.currency !== "thb") {
+      if (!Number.isFinite(expected) || expected > fullPrice || amountTotal !== expected * 100 || obj.currency !== "thb") {
         console.error("amount mismatch", sessionId, plan, amountTotal);
         return new Response("amount mismatch", { status: 400 });
       }
