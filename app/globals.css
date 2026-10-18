@@ -847,3 +847,12 @@ fieldset:disabled .quiz-choice{cursor:default}
 .legal-links a{color:var(--body);text-decoration:underline}
 .legal-agree a{text-decoration:underline}
 @media (max-width:600px){.legal h1{font-size:24px}}
+
+/* ลากวางเรียงลำดับในคอนโซล */
+.adm-drag-handle{cursor:grab;color:var(--muted);font-size:16px;line-height:1;padding:2px 4px;user-select:none}
+.adm-mod-head[draggable=true],.adm-lesson-row[draggable=true]{cursor:grab}
+.adm-mod-head[draggable=true]:active,.adm-lesson-row[draggable=true]:active{cursor:grabbing}
+.is-dragging{opacity:.45}
+.drop-above{box-shadow:0 -3px 0 0 var(--blue)}
+.drop-below{box-shadow:0 3px 0 0 var(--blue)}
+@media (hover:none){.adm-drag-handle{display:none}}

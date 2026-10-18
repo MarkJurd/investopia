@@ -28,6 +28,51 @@ function move<T>(arr: T[], i: number, dir: -1 | 1): T[] {
   return out;
 }
 
+function moveTo<T>(arr: T[], from: number, to: number): T[] {
+  const out = [...arr];
+  const [x] = out.splice(from, 1);
+  out.splice(to, 0, x);
+  return out;
+}
+
+/** ลากวางเพื่อเรียงลำดับ (ลากที่แถบหัวแถว แล้วปล่อยบนแถวที่ต้องการ)
+ *  ระหว่างรอเซิร์ฟเวอร์บันทึก จะแสดงลำดับใหม่ไปก่อน · บนมือถือที่ลากไม่ได้ ใช้ปุ่ม ▲▼ แทน */
+function useDragOrder<T>(items: T[], keyOf: (t: T) => string, save: (ordered: T[]) => Promise<unknown>) {
+  const [drag, setDrag] = useState<number | null>(null);
+  const [over, setOver] = useState<number | null>(null);
+  const [pending, setPending] = useState<string[] | null>(null);
+  const order = pending
+    ? pending.map((k) => items.find((t) => keyOf(t) === k)).filter((t): t is T => t !== undefined)
+    : items;
+  const commit = (next: T[]) => {
+    setPending(next.map(keyOf));
+    void save(next).finally(() => setPending(null));
+  };
+  const handle = (i: number) => ({
+    draggable: true,
+    onDragStart: (e: React.DragEvent) => { e.stopPropagation(); setDrag(i); e.dataTransfer.effectAllowed = "move"; e.dataTransfer.setData("text/plain", String(i)); },
+    onDragEnd: () => { setDrag(null); setOver(null); },
+  });
+  const target = (i: number) => ({
+    onDragOver: (e: React.DragEvent) => { if (drag === null) return; e.preventDefault(); e.stopPropagation(); if (over !== i) setOver(i); },
+    onDrop: (e: React.DragEvent) => {
+      if (drag === null) return;
+      e.preventDefault();
+      e.stopPropagation();
+      if (drag !== i) commit(moveTo(order, drag, i));
+      setDrag(null);
+      setOver(null);
+    },
+  });
+  const cls = (i: number) => (drag === i ? " is-dragging" : over === i && drag !== null ? (drag < i ? " drop-below" : " drop-above") : "");
+  return { order, handle, target, cls, commit };
+}
+
+function DragHandle() {
+  const A = useContent().admin;
+  return <span className="adm-drag-handle" aria-hidden="true" title={A.dragHandle}>⠿</span>;
+}
+
 /** ปุ่มที่รอผลจากเซิร์ฟเวอร์ + แสดง error ของตัวเอง */
 function useRun() {
   const C = useContent();
@@ -56,10 +101,7 @@ export default function CourseTab() {
   const A = C.admin;
   const tree = useQuery(api.adminCourse.tree);
   const importCourse = useMutation(api.adminCourse.importCourse);
-  const addModule = useMutation(api.adminCourse.addModule);
-  const reorder = useMutation(api.adminCourse.reorderModules);
   const { busy, msg, run } = useRun();
-  const [open, setOpen] = useState<string | null>(null);
 
   if (tree === undefined) return <p className="learn-loading">{A.loading}</p>;
   if (!tree.fromDb) {
@@ -73,17 +115,28 @@ export default function CourseTab() {
     );
   }
 
-  const ids = tree.modules.map((m) => m.id as Id<"courseModules">);
+  return <CourseList tree={tree} />;
+}
+
+function CourseList({ tree }: { tree: Tree }) {
+  const C = useContent();
+  const A = C.admin;
+  const addModule = useMutation(api.adminCourse.addModule);
+  const reorder = useMutation(api.adminCourse.reorderModules);
+  const { busy, msg, run } = useRun();
+  const [open, setOpen] = useState<string | null>(null);
+  const dnd = useDragOrder(tree.modules, (m) => m.key, (next) => run(() => reorder({ ids: next.map((m) => m.id as Id<"courseModules">) })));
   let visibleIndex = 0;
   return (
     <div className="adm-course">
       <p className="adm-hint">{A.courseHint}</p>
-      {tree.modules.map((m, i) => {
+      {dnd.order.map((m, i) => {
         const tag = m.hidden ? A.hiddenBadge : `${A.moduleTag} ${visibleIndex++}`;
         return (
           <ModuleCard key={m.key} mod={m} tag={tag} modules={tree.modules} bunnyReady={tree.bunnyListReady}
             open={open === m.key} onToggle={() => setOpen(open === m.key ? null : m.key)}
-            arrows={<Arrows disabled={busy} onUp={() => void run(() => reorder({ ids: move(ids, i, -1) }))} onDown={() => void run(() => reorder({ ids: move(ids, i, 1) }))} />} />
+            dragProps={dnd.handle(i)} dropProps={dnd.target(i)} dragCls={dnd.cls(i)}
+            arrows={<Arrows disabled={busy} onUp={() => dnd.commit(move(dnd.order, i, -1))} onDown={() => dnd.commit(move(dnd.order, i, 1))} />} />
         );
       })}
       <button className="btn btn-ghost" disabled={busy} onClick={() => void run(() => addModule({ title: A.newModuleTitle }))}>{A.addModule}</button>
@@ -92,8 +145,12 @@ export default function CourseTab() {
   );
 }
 
-function ModuleCard({ mod, tag, modules, bunnyReady, open, onToggle, arrows }: {
+type DragProps = ReturnType<ReturnType<typeof useDragOrder>["handle"]>;
+type DropProps = ReturnType<ReturnType<typeof useDragOrder>["target"]>;
+
+function ModuleCard({ mod, tag, modules, bunnyReady, open, onToggle, arrows, dragProps, dropProps, dragCls }: {
   mod: Mod; tag: string; modules: Mod[]; bunnyReady: boolean; open: boolean; onToggle: () => void; arrows: React.ReactNode;
+  dragProps: DragProps; dropProps: DropProps; dragCls: string;
 }) {
   const C = useContent();
   const A = C.admin;
@@ -109,12 +166,13 @@ function ModuleCard({ mod, tag, modules, bunnyReady, open, onToggle, arrows }: {
   const [now] = useState(() => Date.now());
   const { busy, msg, run } = useRun();
   const id = mod.id as Id<"courseModules">;
-  const lessonIds = mod.lessons.map((l) => l.id as Id<"courseLessons">);
   const dirty = title !== mod.title || practice !== mod.practice || hidden !== mod.hidden;
+  const lessons = useDragOrder(mod.lessons, (l) => l.key, (next) => run(() => reorderLessons({ moduleId: id, ids: next.map((l) => l.id as Id<"courseLessons">) })));
 
   return (
-    <section className={`card adm-mod${mod.hidden ? " is-hidden" : ""}`}>
-      <div className="adm-mod-head">
+    <section className={`card adm-mod${mod.hidden ? " is-hidden" : ""}${dragCls}`} {...dropProps}>
+      <div className="adm-mod-head" {...dragProps}>
+        <DragHandle />
         {arrows}
         <button type="button" className="adm-mod-title" onClick={onToggle} aria-expanded={open}>
           <span className="lo-tag">{tag}</span> <b>{mod.title}</b>
@@ -140,12 +198,13 @@ function ModuleCard({ mod, tag, modules, bunnyReady, open, onToggle, arrows }: {
           {quizOpen && <QuizEditor moduleId={id} quiz={mod.quiz} onClose={() => setQuizOpen(false)} />}
 
           <ol className="adm-lessons">
-            {mod.lessons.map((l, i) => (
-              <li key={l.key}>
-                <div className="adm-lesson-row">
+            {lessons.order.map((l, i) => (
+              <li key={l.key} className={lessons.cls(i)} {...lessons.target(i)}>
+                <div className="adm-lesson-row" {...lessons.handle(i)}>
+                  <DragHandle />
                   <Arrows disabled={busy}
-                    onUp={() => void run(() => reorderLessons({ moduleId: id, ids: move(lessonIds, i, -1) }))}
-                    onDown={() => void run(() => reorderLessons({ moduleId: id, ids: move(lessonIds, i, 1) }))} />
+                    onUp={() => lessons.commit(move(lessons.order, i, -1))}
+                    onDown={() => lessons.commit(move(lessons.order, i, 1))} />
                   <button type="button" className="adm-lesson-title" onClick={() => setEditLesson(editLesson === l.key ? null : l.key)} aria-expanded={editLesson === l.key}>
                     <span>{l.title}</span>
                     <span className="adm-badges">
