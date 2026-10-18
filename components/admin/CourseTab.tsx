@@ -188,9 +188,11 @@ function ModuleCard({ mod, tag, modules, bunnyReady, open, onToggle, arrows, dra
             <div className="adm-row">
               <button className="btn btn-primary btn-sm" disabled={busy || !dirty} onClick={() => void run(() => saveModule({ id, title, practice, hidden }), A.saved)}>{busy ? A.saving : A.save}</button>
               <button className="btn btn-ghost btn-sm" onClick={() => setQuizOpen((o) => !o)}>{A.editQuiz} ({mod.quiz.length})</button>
-              {mod.lessons.length === 0 && (
-                <button className="btn btn-ghost btn-sm adm-danger" disabled={busy} onClick={() => { if (confirm(A.confirmDelete)) void run(() => deleteModule({ id })); }}>{A.deleteModule}</button>
-              )}
+              <button className="btn btn-ghost btn-sm adm-danger" disabled={busy} onClick={() => {
+                const n = mod.lessons.length;
+                const text = n === 0 ? A.confirmDelete : A.confirmDeleteModule.replace("{title}", mod.title).replace("{n}", String(n));
+                if (confirm(text)) void run(() => deleteModule({ id, deleteLessons: n > 0 }));
+              }}>{A.deleteModule}</button>
               {msg && <span className="adm-msg">{msg}</span>}
             </div>
           </div>

@@ -119,15 +119,26 @@ export const saveModule = mutation({
   },
 });
 
+/** ลบโมดูล: ถ้ามีบทข้างใน ต้องส่ง deleteLessons: true (หน้าเว็บถามยืนยันก่อน) → ลบบททั้งหมด + ไฟล์แนบของบทเหล่านั้นด้วย
+ *  ความคืบหน้า/ผลแบบทดสอบเดิมของผู้เรียนไม่ถูกลบ แต่จะไม่แสดงอีก (ไม่มีบท/โมดูลนั้นแล้ว) */
 export const deleteModule = mutation({
-  args: { id: v.id("courseModules") },
-  returns: v.null(),
-  handler: async (ctx, { id }) => {
+  args: { id: v.id("courseModules"), deleteLessons: v.optional(v.boolean()) },
+  returns: v.object({ lessons: v.number(), files: v.number() }),
+  handler: async (ctx, { id, deleteLessons }) => {
     await requireAdmin(ctx);
-    const one = await ctx.db.query("courseLessons").withIndex("by_moduleId_and_order", (q) => q.eq("moduleId", id)).first();
-    if (one !== null) throw new ConvexError("HAS_LESSONS");
+    const lessons = await ctx.db.query("courseLessons").withIndex("by_moduleId_and_order", (q) => q.eq("moduleId", id)).take(500);
+    if (lessons.length > 0 && deleteLessons !== true) throw new ConvexError("HAS_LESSONS");
+    let files = 0;
+    for (const l of lessons) {
+      for (const f of await ctx.db.query("lessonFiles").withIndex("by_lessonId", (q) => q.eq("lessonId", l._id)).take(50)) {
+        await ctx.storage.delete(f.storageId);
+        await ctx.db.delete("lessonFiles", f._id);
+        files++;
+      }
+      await ctx.db.delete("courseLessons", l._id);
+    }
     await ctx.db.delete("courseModules", id);
-    return null;
+    return { lessons: lessons.length, files };
   },
 });
 
