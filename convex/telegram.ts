@@ -123,7 +123,7 @@ export const notifySale = internalAction({
       `💰 ขายได้! ${s.plan} ${baht(s.amount)}` +
       (s.coupon ? ` (โค้ด ${s.coupon} ลดจาก ${baht(s.listAmount)})` : "") +
       `\n👤 ${s.name} · ${s.email}` +
-      (s.indicator ? "\n🎁 ได้ Indicator — ส่งให้ลูกค้าด้วย" : "") +
+      (s.indicator ? "\n🎁 ได้สิทธิ์ Indicator — ลูกค้าจะทักไลน์ @investopia มารับ" : "") +
       `\n📈 เดือนนี้: ${s.monthCount} รายการ รวม ${baht(s.monthRevenue)}` +
       `\n🔗 ${site}/admin`;
     await sendMessage(token, chatId, message);

@@ -401,7 +401,7 @@ export const CONTENT = {
       { text: "investopia.admin@gmail.com", href: "mailto:investopia.admin@gmail.com" },
       { text: "Facebook",     href: "#" },
       { text: "YouTube",      href: "#" },
-      { text: "LINE Official", href: "#" }
+      { text: "LINE Official", href: "https://line.me/R/ti/p/@investopia" }
     ],
     disclaimerLabel: "ข้อจำกัดความรับผิดชอบ:",
     disclaimer: "เว็บไซต์นี้จัดทำขึ้นเพื่อวัตถุประสงค์ทางการศึกษาทั่วไปด้านการลงทุนเท่านั้น ไม่ถือเป็นคำแนะนำการลงทุน คำเสนอซื้อขาย หรือการชักชวนซื้อหลักทรัพย์ใด ๆ การลงทุนมีความเสี่ยง ผู้ลงทุนควรตัดสินใจด้วยตนเองและรับผลที่ตามมา การผันผวนของราคาและผลตอบแทนในอดีตไม่อาจรับประกันผลในอนาคต",
@@ -423,7 +423,7 @@ export const CONTENT = {
     successTitle: "ชำระเงินสำเร็จ! ยินดีต้อนรับสู่ INVESTOPIA 🎉",
     successText: "สิทธิ์ของคุณ:",
     until: "ถึง",
-    indicatorNote: "🎁 คุณได้รับ Indicator ช่วยอ่านเทรนด์ — เราจะติดต่อไปทางอีเมลเพื่อส่งให้",
+    indicatorNote: "🎁 คุณได้รับสิทธิ์ Indicator ช่วยอ่านเทรนด์ — ทักไลน์ @investopia เพื่อรับ Indicator",
     goLearn: "เข้าห้องเรียน →",
     cancelText: "ยกเลิกการชำระเงินแล้ว — ยังไม่มีการตัดเงิน เลือกแพ็กเกจใหม่ได้ทุกเมื่อ",
     close: "ปิด",
