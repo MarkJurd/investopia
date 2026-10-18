@@ -37,7 +37,7 @@ async function requireImported(ctx: MutationCtx) {
 const fileOut = v.object({ id: v.union(v.id("lessonFiles"), v.null()), name: v.string(), size: v.number(), url: v.union(v.string(), v.null()) });
 const lessonOut = v.object({
   id: v.union(v.id("courseLessons"), v.null()), key: v.string(), title: v.string(), notes: v.string(), videoId: v.string(),
-  minutes: v.number(), hidden: v.boolean(), indicatorOnly: v.boolean(), newSince: v.union(v.number(), v.null()), files: v.array(fileOut),
+  minutes: v.number(), hidden: v.boolean(), indicatorOnly: v.boolean(), free: v.boolean(), newSince: v.union(v.number(), v.null()), files: v.array(fileOut),
 });
 const moduleOut = v.object({
   id: v.union(v.id("courseModules"), v.null()), key: v.string(), title: v.string(), practice: v.string(), hidden: v.boolean(),
@@ -193,7 +193,7 @@ export const addLesson = mutation({
 export const saveLesson = mutation({
   args: {
     id: v.id("courseLessons"), title: v.string(), notes: v.string(), videoId: v.string(),
-    minutes: v.number(), hidden: v.boolean(), indicatorOnly: v.boolean(),
+    minutes: v.number(), hidden: v.boolean(), indicatorOnly: v.boolean(), free: v.optional(v.boolean()),
   },
   returns: v.null(),
   handler: async (ctx, a) => {
@@ -205,6 +205,7 @@ export const saveLesson = mutation({
     await ctx.db.patch("courseLessons", a.id, {
       title: t, notes: clean(a.notes, MAX_TEXT), videoId: videoId.toLowerCase(),
       minutes: Math.max(0, Math.min(600, Math.round(a.minutes))), hidden: a.hidden, indicatorOnly: a.indicatorOnly,
+      ...(a.free !== undefined ? { free: a.free } : {}),
     });
     return null;
   },

@@ -55,7 +55,7 @@ function Body() {
       } />
     );
   }
-  if (!data || data.status === "noMembership") {
+  if (!data || data.status !== "ok") {
     return <Gate title={L.noMemberTitle} text={L.noMemberText} action={<a href={pricingPath(C)} className="btn btn-primary">{L.seePlans}</a>} />;
   }
 

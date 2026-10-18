@@ -76,6 +76,7 @@ export default defineSchema({
     minutes: v.number(),
     hidden: v.boolean(),
     indicatorOnly: v.boolean(),               // เปิดเฉพาะผู้ได้ Indicator + แอดมิน
+    free: v.optional(v.boolean()),            // บทเรียนฟรี: คนที่ล็อกอิน Google (ยังไม่ซื้อ) ดูได้ — แก้ที่ /admin
     newSince: v.optional(v.number()),         // ป้าย "ใหม่" นับจากเวลานี้
   })
     .index("by_moduleId_and_order", ["moduleId", "order"])

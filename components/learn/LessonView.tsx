@@ -42,10 +42,10 @@ export default function LessonView({ steps, index }: { steps: Step[]; index: num
       <article className="learn-content">
         {lesson.locked ? (
           <div className="card locked-card">
-            <span className="lo-soon">🔒 {L.lockedBadge}</span>
+            <span className="lo-soon">🔒 {lesson.paywalled ? L.paywallBadge : L.lockedBadge}</span>
             <h1 className="learn-h1">{lesson.title}</h1>
-            <h2>{L.lockedTitle}</h2>
-            <p>{L.lockedText}</p>
+            <h2>{lesson.paywalled ? L.paywallTitle : L.lockedTitle}</h2>
+            <p>{lesson.paywalled ? L.paywallText : L.lockedText}</p>
             <Link href={pricingPath(C)} className="btn btn-primary btn-sm">{L.seePlans}</Link>
           </div>
         ) : (
@@ -53,7 +53,7 @@ export default function LessonView({ steps, index }: { steps: Step[]; index: num
         <LessonVideo key={lesson.id} lessonId={lesson.id} title={lesson.title} hasVideo={lesson.hasVideo} />
 
         <p className="learn-kicker"><Link href={learnPath(C, moduleStepId(module.id))}>← {module.tag} · {module.title}</Link></p>
-        <h1 className="learn-h1">{lesson.title}{lesson.isNew && <span className="new-badge">{L.newBadge}</span>}</h1>
+        <h1 className="learn-h1">{lesson.title}{lesson.free && <span className="new-badge">{L.freeBadge}</span>}{lesson.isNew && <span className="new-badge">{L.newBadge}</span>}</h1>
         {lesson.minutes > 0 && <p className="learn-meta">{lesson.minutes} {L.minutesUnit}</p>}
 
         {lesson.files.length > 0 && (

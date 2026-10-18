@@ -28,8 +28,9 @@ export default function Dashboard({ data, steps, now }: { data: Overview; steps:
   const percent = counted.length ? Math.round((doneCount / counted.length) * 100) : 0;
   const next = counted.find((s) => !s.done);
   const newLessons = steps.filter((s) => s.kind === "lesson" && s.lesson.isNew && !s.lesson.locked);
-  const daysLeft = Math.ceil((data.membership.expiresAt - now) / DAY);
-  const until = new Date(data.membership.expiresAt).toLocaleDateString(C.locale.dateLocale, { day: "numeric", month: "long", year: "numeric" });
+  const mem = data.membership;   // null = ทดลองเรียนฟรี
+  const daysLeft = mem ? Math.ceil((mem.expiresAt - now) / DAY) : Infinity;
+  const until = mem ? new Date(mem.expiresAt).toLocaleDateString(C.locale.dateLocale, { day: "numeric", month: "long", year: "numeric" }) : "";
 
   return (
     <div className="learn-dash">
@@ -37,10 +38,17 @@ export default function Dashboard({ data, steps, now }: { data: Overview; steps:
         <div>
           <h1 className="learn-h1">{L.welcome}</h1>
           <p className="learn-meta">
-            <span className="plan-badge">{C.planLabels[data.membership.plan]}</span> {L.validUntil} {until}
+            {mem ? <><span className="plan-badge">{C.planLabels[mem.plan]}</span> {L.validUntil} {until}</> : <span className="plan-badge">{L.previewBadge}</span>}
           </p>
         </div>
       </div>
+
+      {!mem && (
+        <div className="renew-bar" role="status">
+          <span>{L.previewText}</span>
+          <a href={pricingPath(C)} className="btn btn-primary btn-sm">{L.seePlans}</a>
+        </div>
+      )}
 
       {daysLeft <= WARN_DAYS && (
         <div className="renew-bar" role="status">

@@ -26,13 +26,14 @@ export default function ModuleView({ module, steps }: { module: Module; steps: S
         {own.map((s) => {
           const soon = isSoon(s), locked = isLocked(s);
           if (s.kind === "lesson") n++;
-          const label = locked ? `🔒 ${L.lockedBadge}` : soon ? L.comingSoon : s.done ? L.doneLabel : L.openNow;
+          const label = s.kind === "lesson" && s.lesson.paywalled ? `🔒 ${L.paywallBadge}` : locked ? `🔒 ${L.lockedBadge}` : soon ? L.comingSoon : s.done ? L.doneLabel : L.openNow;
           return (
             <li key={s.id}>
               <Link href={learnPath(C, s.id)} className={`les-row card${s.done ? " done" : ""}${soon ? " soon" : ""}`}>
                 <span className="les-n" aria-hidden="true">{s.done ? "✓" : s.kind === "lesson" ? n : "?"}</span>
                 <span className="les-title">
                   {s.kind === "lesson" ? s.lesson.title : L.quizTitle}
+                  {s.kind === "lesson" && s.lesson.free && <span className="new-badge sm">{L.freeBadge}</span>}
                   {s.kind === "lesson" && s.lesson.isNew && !locked && <span className="new-badge sm">{L.newBadge}</span>}
                 </span>
                 <span className="les-status">{label}</span>

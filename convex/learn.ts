@@ -64,6 +64,8 @@ const lessonOut = v.object({
   id: v.string(), title: v.string(), notes: v.string(), minutes: v.number(),
   hasVideo: v.boolean(),                        // false = ยังไม่มีวิดีโอ → แสดง "เร็วๆ นี้"
   locked: v.boolean(),                          // true = บทนี้สำหรับผู้ที่ได้ Indicator เท่านั้น (ไม่ส่งเนื้อหา)
+  paywalled: v.boolean(),                       // true = ผู้ทดลองเรียนฟรีเปิดบทนี้ไม่ได้ (ต้องซื้อแพ็กเกจ — ไม่ส่งเนื้อหา)
+  free: v.boolean(),                            // บทเรียนฟรี (ป้าย "ฟรี")
   isNew: v.boolean(),                           // ป้าย "ใหม่"
   files: v.array(fileOut),                      // ไฟล์แนบใต้คลิป (ว่างถ้าล็อก)
 });
@@ -85,7 +87,8 @@ export const overview = query({
     v.object({ status: v.literal("noMembership") }),
     v.object({
       status: v.literal("ok"),
-      membership: v.object({ plan: planValidator, expiresAt: v.number() }),
+      // null = ล็อกอินแล้วแต่ยังไม่ซื้อ → โหมดทดลองเรียน (เห็นเฉพาะบทฟรี)
+      membership: v.union(v.null(), v.object({ plan: planValidator, expiresAt: v.number() })),
       modules: v.array(moduleOut),
       doneLessonIds: v.array(v.string()),
       quizzes: v.array(quizOut),
@@ -97,33 +100,34 @@ export const overview = query({
     if (userId === null) return { status: "signedOut" as const };
     const now = Math.max(clientNow, Date.now());
     const membership = await getAccess(ctx, userId, now);
-    if (membership === null) return { status: "noMembership" as const };
+    const preview = membership === null;
 
     const { lessons, quizzes } = await loadProgress(ctx, userId);
     const videosOn = bunnyReady();
-    const canIndicator = await canSeeIndicator(ctx, userId, membership.indicatorBonus);
+    const canIndicator = membership !== null && (await canSeeIndicator(ctx, userId, membership.indicatorBonus));
     const modules = [];
     for (const m of visibleModules((await loadCourse(ctx)).modules)) {
       const outLessons = [];
       for (const l of m.lessons) {
         const locked = l.indicatorOnly && !canIndicator;
+        const paywalled = !locked && preview && !l.free;
         const files = [];
-        if (!locked) for (const f of l.files) files.push({ name: f.name, size: f.size, url: await ctx.storage.getUrl(f.storageId) });
+        if (!locked && !paywalled) for (const f of l.files) files.push({ name: f.name, size: f.size, url: await ctx.storage.getUrl(f.storageId) });
         outLessons.push({
-          id: l.key, title: l.title, notes: locked ? "" : l.notes, minutes: l.minutes, locked,
-          hasVideo: !locked && videosOn && l.videoId !== "",
+          id: l.key, title: l.title, notes: locked || paywalled ? "" : l.notes, minutes: l.minutes, locked, paywalled, free: l.free,
+          hasVideo: !locked && !paywalled && videosOn && l.videoId !== "",
           isNew: l.newSince !== null && now - l.newSince < NEW_LESSON_DAYS * DAY,
           files,
         });
       }
       modules.push({
         id: m.key, tag: m.tag, title: m.title, practice: m.practice, lessons: outLessons,
-        quiz: m.quiz.map((q) => ({ q: q.q, choices: q.choices })),  // ไม่ส่งเฉลย/คำอธิบาย
+        quiz: preview ? [] : m.quiz.map((q) => ({ q: q.q, choices: q.choices })),  // ไม่ส่งเฉลย/คำอธิบาย (ผู้ทดลองเรียนไม่มีแบบทดสอบ)
       });
     }
     return {
       status: "ok" as const,
-      membership: { plan: membership.plan, expiresAt: membership.expiresAt },
+      membership: membership === null ? null : { plan: membership.plan, expiresAt: membership.expiresAt },
       modules,
       doneLessonIds: lessons.map((l) => l.lessonId),
       quizzes: quizzes.map((r) => ({
@@ -140,9 +144,13 @@ export const setLessonDone = mutation({
   returns: v.null(),
   handler: async (ctx, { lessonId, done }) => {
     const now = Date.now();
-    const userId = await requireMember(ctx, now);
+    const authed = await getAuthUserId(ctx);
+    if (authed === null) throw new ConvexError("NOT_SIGNED_IN");
     const lesson = await findVisibleLesson(ctx, lessonId);
     if (lesson === null) throw new ConvexError("UNKNOWN_LESSON");
+    // ผู้ยังไม่ซื้อ: กดเรียนจบได้เฉพาะบทฟรี
+    const isFreeOpen = lesson.free && !lesson.indicatorOnly;
+    const userId = isFreeOpen ? authed : await requireMember(ctx, now);
     if (lesson.indicatorOnly) {
       const m = await getAccess(ctx, userId, now);
       if (!(await canSeeIndicator(ctx, userId, m?.indicatorBonus ?? false))) throw new ConvexError("LOCKED");
@@ -200,9 +208,9 @@ export const videoIdForMember = internalQuery({
   returns: v.union(v.string(), v.null()),
   handler: async (ctx, { userId, lessonId }) => {
     const m = await getAccess(ctx, userId, Date.now());
-    if (m === null) return null;
     const lesson = await findVisibleLesson(ctx, lessonId);
     if (lesson === null || lesson.videoId === "") return null;
+    if (m === null) return lesson.free && !lesson.indicatorOnly ? lesson.videoId : null;   // ผู้ทดลองเรียน: เฉพาะบทฟรี
     if (lesson.indicatorOnly && !(await canSeeIndicator(ctx, userId, m.indicatorBonus))) return null;
     return lesson.videoId;
   },

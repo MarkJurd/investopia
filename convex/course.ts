@@ -28,6 +28,7 @@ export type CourseLesson = {
   minutes: number;
   hidden: boolean;
   indicatorOnly: boolean;
+  free: boolean;
   newSince: number | null;
   files: CourseFile[];
 };
@@ -88,7 +89,7 @@ export async function findVisibleModule(ctx: QueryCtx, key: string): Promise<Cou
 function lessonFields(l: Doc<"courseLessons">): Omit<CourseLesson, "files"> {
   return {
     id: l._id, key: l.key, title: l.title, notes: l.notes, videoId: l.videoId, minutes: l.minutes,
-    hidden: l.hidden, indicatorOnly: l.indicatorOnly, newSince: l.newSince ?? null,
+    hidden: l.hidden, indicatorOnly: l.indicatorOnly, free: l.free ?? false, newSince: l.newSince ?? null,
   };
 }
 
@@ -104,7 +105,7 @@ export function codeCourse(): CourseModule[] {
     quiz: m.quiz.map((q) => ({ q: q.q, choices: [...q.choices], answer: q.answer, explain: q.explain })),
     lessons: m.lessons.map((l) => ({
       id: null, key: l.id, title: l.title, notes: l.notes, videoId: l.videoId, minutes: l.minutes,
-      hidden: false, indicatorOnly: INDICATOR_ONLY_LESSONS.has(l.id), newSince: null, files: [],
+      hidden: false, indicatorOnly: INDICATOR_ONLY_LESSONS.has(l.id), free: false, newSince: null, files: [],
     })),
   }));
 }
