@@ -735,10 +735,10 @@ export const CONTENT = {
    *     แต่ละหัวข้อ: h = หัวข้อ · p = ย่อหน้า · list = รายการจุด
    * ------------------------------------------------------------------------ */
   legal: {
-    operator: "มาร์ค ผู้ก่อตั้งและผู้สอน INVESTOPIA",
+    operator: "ณภัทร เจิดวิจิตร (Naphat Jurdwichit) ผู้ก่อตั้งและผู้สอน INVESTOPIA",
     email: "investopia.admin@gmail.com",
     updatedLabel: "ปรับปรุงล่าสุด",
-    updated: "16 ตุลาคม 2569",
+    updated: "18 ตุลาคม 2569",
     chip: "ข้อมูลทางกฎหมาย",
     backHome: "← กลับหน้าแรก",
     footerPrivacy: "นโยบายความเป็นส่วนตัว",
