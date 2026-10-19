@@ -3,7 +3,7 @@
 /* หน้าแรกของห้องเรียน: วันหมดอายุ · ความคืบหน้า % · เรียนต่อจากที่ค้าง · รายการโมดูล */
 import Link from "next/link";
 import { useContent } from "@/components/ContentContext";
-import { countable, learnPath, moduleStepId, pricingPath, type Overview, type Step } from "@/components/learn/steps";
+import { COURSE_CHART_STEP, countable, learnPath, pricingPath, type Overview, type Step } from "@/components/learn/steps";
 
 const DAY = 24 * 60 * 60 * 1000;
 const WARN_DAYS = 7;   // เตือนต่ออายุเมื่อเหลือไม่เกินกี่วัน
@@ -28,6 +28,7 @@ export default function Dashboard({ data, steps, now }: { data: Overview; steps:
   const percent = counted.length ? Math.round((doneCount / counted.length) * 100) : 0;
   const next = counted.find((s) => !s.done);
   const newLessons = steps.filter((s) => s.kind === "lesson" && s.lesson.isNew && !s.lesson.locked);
+  const freeCount = data.modules.reduce((n, m) => n + m.lessons.filter((l) => l.free).length, 0);
   const mem = data.membership;   // null = ทดลองเรียนฟรี
   const daysLeft = mem ? Math.ceil((mem.expiresAt - now) / DAY) : Infinity;
   const until = mem ? new Date(mem.expiresAt).toLocaleDateString(C.locale.dateLocale, { day: "numeric", month: "long", year: "numeric" }) : "";
@@ -92,31 +93,25 @@ export default function Dashboard({ data, steps, now }: { data: Overview; steps:
         <section>
           <h2 className="dash-h2">{L.coursesTitle}</h2>
           <div className="course-pick">
-            <a href="#chart-modules" className="card course-card on"><b>{L.chartCourse}</b><span>{L.chartCourseSub}</span></a>
-            <div className="card course-card soon" aria-disabled="true"><b>{L.fsCourse}</b><span>{L.fsCourseSub}</span></div>
-          </div>
-          <h2 className="dash-h2" id="chart-modules">{L.modulesTitle}</h2>
-          <div className="mod-list">
-            {data.modules.map((m, n) => {
-              const own = counted.filter((s) => s.module.id === m.id);
-              const done = own.filter((s) => s.done).length;
-              const total = m.lessons.length;
-              const open = m.lessons.filter((l) => !l.locked && l.hasVideo).length;
-              return (
-                <Link key={m.id} href={learnPath(C, moduleStepId(m.id))} className={`mod-card card${own.length > 0 && done === own.length ? " complete" : ""}`}>
-                  <span className="mc-num" aria-hidden="true">{n + 1}</span>
-                  <span className="mc-body">
-                    <span className="mc-tag">{m.tag}</span>
-                    <b className="mc-title">{m.title}</b>
-                    <span className="mc-meta">
-                      {total} {L.lessonsUnit} · {open > 0 ? `${L.openLessons} ${open}` : L.comingSoon}
-                    </span>
-                    {own.length > 0 && <span className="pc-bar sm"><i style={{ width: `${Math.round((done / own.length) * 100)}%` }} /></span>}
-                  </span>
-                  <span className="mc-go" aria-hidden="true">›</span>
-                </Link>
-              );
-            })}
+            <Link href={learnPath(C, COURSE_CHART_STEP)} className="card course-card on">
+              <span className="cc-art"><img src="/courses/card-chart.jpg" alt="" /></span>
+              <span className="cc-body">
+                <span className="badge-soft">{L.courseLevel}</span>
+                <b>{L.chartCourse}</b>
+                <span>{L.chartCourseSub}</span>
+                {freeCount > 0 && <span className="free-pill">{L.courseHasFree}</span>}
+                <span className="btn btn-primary btn-sm">{L.courseEnter}</span>
+              </span>
+            </Link>
+            <div className="card course-card soon" aria-disabled="true">
+              <span className="cc-art"><img src="/courses/card-fs.jpg" alt="" /></span>
+              <span className="cc-body">
+                <span className="badge-soft">{L.courseLevel}</span>
+                <b>{L.fsCourse}</b>
+                <span>{L.fsCourseSub}</span>
+                <span className="soon-pill">{L.comingSoon}</span>
+              </span>
+            </div>
           </div>
         </section>
       </div>

@@ -13,6 +13,8 @@ export type Step =
   | { kind: "quiz"; id: string; module: Module; result: QuizResult | null; done: boolean };
 
 /** หน้ารวมบทของโมดูล: /learn/module-<id> */
+/** หน้ารวมโมดูลของคอร์สกราฟ: /learn/course-chart */
+export const COURSE_CHART_STEP = "course-chart";
 export const MODULE_PREFIX = "module-";
 export const moduleStepId = (moduleId: string) => `${MODULE_PREFIX}${moduleId}`;
 /** บทที่ยังไม่มีวิดีโอ = "เร็วๆ นี้" (ยังเรียนไม่ได้ จึงไม่นับในความคืบหน้า) */

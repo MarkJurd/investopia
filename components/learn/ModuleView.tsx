@@ -3,7 +3,7 @@
 /* หน้ารวมบทของโมดูลเดียว (/learn/module-<id>): แถวใหญ่ อ่านง่าย บอกสถานะแต่ละบท */
 import Link from "next/link";
 import { useContent } from "@/components/ContentContext";
-import { countable, isLocked, isSoon, learnPath, type Module, type Step } from "@/components/learn/steps";
+import { COURSE_CHART_STEP, countable, isLocked, isSoon, learnPath, type Module, type Step } from "@/components/learn/steps";
 
 export default function ModuleView({ module, steps }: { module: Module; steps: Step[] }) {
   const C = useContent();
@@ -16,7 +16,7 @@ export default function ModuleView({ module, steps }: { module: Module; steps: S
 
   return (
     <div className="learn-modpage">
-      <Link href={learnPath(C)} className="back-link">{L.backToClassroom}</Link>
+      <Link href={learnPath(C, COURSE_CHART_STEP)} className="back-link">{L.backToCourse}</Link>
       <p className="learn-kicker">{module.tag}</p>
       <h1 className="learn-h1">{module.title}</h1>
       {counted.length > 0 && (
