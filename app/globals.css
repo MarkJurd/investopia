@@ -911,3 +911,19 @@ fieldset:disabled .quiz-choice{cursor:default}
 .course-card.on{border-color:var(--blue-line);box-shadow:var(--shadow)}
 .course-card.soon{opacity:.6;border-style:dashed}
 @media(max-width:640px){.course-pick{grid-template-columns:1fr}}
+
+/* ผู้สอน: รูปตัดพื้นหลังเด้งขึ้น + ข้อความพิมพ์ */
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.ins-pop{grid-template-columns:minmax(220px,300px) 1fr;align-items:end;overflow:hidden}
+.ins-photo{position:relative;align-self:end;display:flex;justify-content:center;min-height:300px}
+.ins-photo img{position:relative;z-index:1;display:block;width:100%;max-width:300px;height:auto;opacity:0;transform:translateY(60px) scale(.82);transform-origin:50% 100%}
+.ins-disc{position:absolute;left:50%;bottom:0;width:86%;aspect-ratio:1;border-radius:50%;background:var(--blue-soft);transform:translateX(-50%) scale(.5);opacity:0;transition:transform .6s cubic-bezier(.34,1.56,.64,1),opacity .4s}
+.ins-photo.on .ins-disc{transform:translateX(-50%) scale(1);opacity:1}
+.ins-photo.on img{animation:insPop .75s cubic-bezier(.34,1.56,.64,1) .12s forwards}
+@keyframes insPop{to{opacity:1;transform:none}}
+.ins-bio{font-size:15px;margin-bottom:18px;line-height:1.75}
+.ins-ghost{visibility:hidden}
+.ins-caret{display:inline-block;width:2px;height:1.1em;background:var(--blue);margin-left:1px;vertical-align:-2px;animation:insBlink .8s steps(1) infinite}
+@keyframes insBlink{50%{opacity:0}}
+@media(max-width:640px){.ins-pop{grid-template-columns:1fr;justify-items:center;text-align:center}.ins-photo{min-height:0;width:70%}}
+@media(prefers-reduced-motion:reduce){.ins-photo img,.ins-disc{transition:none;animation:none!important;opacity:1;transform:none}.ins-disc{transform:translateX(-50%)}.ins-caret{animation:none}}

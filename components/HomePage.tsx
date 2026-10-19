@@ -1,5 +1,6 @@
 /* หน้าแรก — ข้อความมาจาก lib/content.ts
  * อย่าพิมพ์ข้อความลงไฟล์นี้ตรงๆ */
+import InstructorIntro from "@/components/InstructorIntro";
 import { ContentProvider, type Content } from "@/components/ContentContext";
 import Effects from "@/components/Effects";
 import HeroVideo from "@/components/HeroVideo";
@@ -178,17 +179,7 @@ export default function HomePage({ C }: { C: Content }) {
       <section className="section section-soft" id="instructor">
         <div className="container">
           <div className="section-head"><span className="eyebrow">{ins.eyebrow}</span><h2>{ins.title}</h2></div>
-          <div className="instructor reveal">
-            <div className={`avatar${ins.photo ? " has-photo" : ""}`}>
-              {ins.photo ? <img src={ins.photo} alt={ins.name} /> : ins.initial}
-            </div>
-            <div>
-              <h3 style={{ fontSize: 22, marginBottom: 4 }}>{ins.name}</h3>
-              <p style={{ color: "var(--blue)", fontWeight: 600, marginBottom: 14 }}>{ins.role}</p>
-              <p style={{ fontSize: 15, marginBottom: 18 }}>{ins.bio}</p>
-              <a href="#pricing" className="btn btn-primary">{ins.cta}</a>
-            </div>
-          </div>
+          <InstructorIntro />
         </div>
       </section>
 
