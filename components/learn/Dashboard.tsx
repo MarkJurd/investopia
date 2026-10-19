@@ -90,7 +90,12 @@ export default function Dashboard({ data, steps, now }: { data: Overview; steps:
 
       <div className="dash-grid">
         <section>
-          <h2 className="dash-h2">{L.modulesTitle}</h2>
+          <h2 className="dash-h2">{L.coursesTitle}</h2>
+          <div className="course-pick">
+            <a href="#chart-modules" className="card course-card on"><b>{L.chartCourse}</b><span>{L.chartCourseSub}</span></a>
+            <div className="card course-card soon" aria-disabled="true"><b>{L.fsCourse}</b><span>{L.fsCourseSub}</span></div>
+          </div>
+          <h2 className="dash-h2" id="chart-modules">{L.modulesTitle}</h2>
           <div className="mod-list">
             {data.modules.map((m, n) => {
               const own = counted.filter((s) => s.module.id === m.id);

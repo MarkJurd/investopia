@@ -903,3 +903,11 @@ fieldset:disabled .quiz-choice{cursor:default}
 .fit-card.no{border-color:#FECACA}
 .fit-card.no li::before{content:"✕";color:#DC2626}
 @media(max-width:860px){.fit-grid{grid-template-columns:1fr}}
+
+.course-pick{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-bottom:28px}
+.course-card{display:flex;flex-direction:column;gap:6px;padding:22px 24px;color:var(--ink)}
+.course-card b{font-size:19px}
+.course-card span{font-size:14px;color:var(--muted)}
+.course-card.on{border-color:var(--blue-line);box-shadow:var(--shadow)}
+.course-card.soon{opacity:.6;border-style:dashed}
+@media(max-width:640px){.course-pick{grid-template-columns:1fr}}
