@@ -1,7 +1,7 @@
 /* เนื้อหาคอร์ส (โมดูล / บทเรียน / แบบทดสอบ / ไฟล์แนบ) — เก็บในฐานข้อมูล แก้ได้จากหน้า /admin
  * ถ้าฐานข้อมูลยังว่าง (ยังไม่กด "นำเข้าคอร์ส" ในหน้าแอดมิน) จะใช้เนื้อหาจาก lib/course.ts แทน เว็บจึงไม่พัง
  * ⚠️ key ของบท/โมดูล (เช่น "m2-1") ผูกกับความคืบหน้าของผู้เรียน — ระบบไม่ให้แก้ */
-import type { QueryCtx } from "./_generated/server";
+import { query, type QueryCtx } from "./_generated/server";
 import type { Doc, Id } from "./_generated/dataModel";
 import { v } from "convex/values";
 import { COURSE, INDICATOR_ONLY_LESSONS } from "../lib/course";
@@ -117,3 +117,19 @@ export async function lessonTitle(ctx: QueryCtx, key: string): Promise<string | 
   for (const m of codeCourse()) for (const cl of m.lessons) if (cl.key === key) return cl.title;
   return null;
 }
+
+/* หน้าคอร์สสาธารณะ (/course/chart): ใครก็ดูรายชื่อโมดูล/บทได้ — ส่งเฉพาะชื่อ + ป้ายฟรี/เร็วๆ นี้ ไม่ส่งเนื้อหา/วิดีโอ/บท Indicator */
+export const publicOutline = query({
+  args: {},
+  returns: v.array(v.object({
+    id: v.string(), tag: v.string(), title: v.string(),
+    lessons: v.array(v.object({ id: v.string(), title: v.string(), free: v.boolean(), soon: v.boolean() })),
+  })),
+  handler: async (ctx) => {
+    const { modules } = await loadCourse(ctx);
+    return visibleModules(modules).map((m) => ({
+      id: m.key, tag: m.tag, title: m.title,
+      lessons: m.lessons.filter((l) => !l.indicatorOnly).map((l) => ({ id: l.key, title: l.title, free: l.free, soon: l.videoId === "" })),
+    }));
+  },
+});

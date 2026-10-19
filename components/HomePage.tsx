@@ -4,7 +4,7 @@ import InstructorIntro from "@/components/InstructorIntro";
 import { ContentProvider, type Content } from "@/components/ContentContext";
 import Effects from "@/components/Effects";
 import HeroVideo from "@/components/HeroVideo";
-import Curriculum from "@/components/Curriculum";
+import CourseCards from "@/components/CourseCards";
 import Pricing from "@/components/Pricing";
 import QABox from "@/components/QABox";
 import AuthButton from "@/components/AuthButton";
@@ -33,7 +33,6 @@ function Logo({ name }: { name: string }) {
 
 export default function HomePage({ C }: { C: Content }) {
   const H = C.hero;
-  const ins = C.instructor;
   const ticks = C.marquee.items.map((it) => (
     <span className="tick" key={it.sym}>
       <span className="tk">{"logo" in it && it.logo ? <img src={it.logo as string} alt="" /> : it.sym.charAt(0)}</span>
@@ -92,59 +91,8 @@ export default function HomePage({ C }: { C: Content }) {
       </div>
       <p className="marquee-note">{C.marquee.note}</p>
 
-      {/* แนะนำคอร์ส + กราฟแท่งเทียนวิ่ง */}
-      <section className="section" id="course">
-        <div className="container course-grid">
-          <div className="chart-card">
-            <div className="chart-head"><span className="live" /> <span>{H.chartCaption}</span></div>
-            <canvas id="chart" />
-            <div className="chart-legend">
-              {H.chartLegend.map((l) => (
-                <span key={l.text}><i className={`sw ${l.color === "ema" ? "sw-ema" : l.color === "up" ? "sw-up" : "sw-dn"}`} /> {l.text}</span>
-              ))}
-            </div>
-          </div>
-          <div>
-            <span className="eyebrow">{C.course.eyebrow}</span>
-            <h2>{C.course.title}</h2>
-            <p className="course-text">{C.course.text}</p>
-            <ul className="course-points">
-              {C.course.points.map((p) => <li key={p.text}><span className="ic">{p.icon}</span>{p.text}</li>)}
-            </ul>
-            <a href="#curriculum" className="btn btn-primary">{C.course.cta}</a>
-          </div>
-        </div>
-      </section>
-
-      {/* STATS */}
-      <section className="section" style={{ paddingTop: 0 }}>
-        <div className="container">
-          <div className="stats">
-            {C.stats.map((s, i) => (
-              <div className="stat reveal" key={s.label} style={{ "--d": `${i * 0.08}s` } as Vars}>
-                <div className="num" data-count={s.count} data-suffix={s.suffix}>0</div>
-                <div className="lbl">{s.label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* PAIN */}
-      <section className="section section-soft" id="pain">
-        <div className="container">
-          <div className="section-head">
-            <span className="eyebrow">{C.pain.eyebrow}</span><h2>{C.pain.title}</h2><p>{C.pain.sub}</p>
-          </div>
-          <div className="cards-3">
-            {C.pain.cards.map((c, i) => (
-              <div className="card reveal" key={c.title} style={{ "--d": `${i * 0.1}s` } as Vars}>
-                <div className="card-icon">{c.icon}</div><h3>{c.title}</h3><p>{c.text}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* เลือกคอร์ส */}
+      <CourseCards />
 
       {/* FIT */}
       <section className="section" id="fit">
@@ -165,22 +113,9 @@ export default function HomePage({ C }: { C: Content }) {
         </div>
       </section>
 
-      {/* CURRICULUM */}
-      <section className="section" id="curriculum">
-        <div className="container">
-          <div className="section-head">
-            <span className="eyebrow">{C.curriculum.eyebrow}</span><h2>{C.curriculum.title}</h2><p>{C.curriculum.sub}</p>
-          </div>
-          <Curriculum />
-        </div>
-      </section>
-
       {/* INSTRUCTOR */}
-      <section className="section section-soft" id="instructor">
-        <div className="container">
-          <div className="section-head"><span className="eyebrow">{ins.eyebrow}</span><h2>{ins.title}</h2></div>
-          <InstructorIntro />
-        </div>
+      <section className="ins-section" id="instructor">
+        <InstructorIntro />
       </section>
 
       {/* PRICING */}
