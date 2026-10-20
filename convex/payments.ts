@@ -130,7 +130,7 @@ export const quoteInternal = internalQuery({
 export const createCheckout = action({
   args: { plan: planValidator, lang: v.optional(v.union(v.literal("th"), v.literal("en"))), coupon: v.optional(v.string()) },
   returns: v.object({ url: v.string() }),
-  handler: async (ctx, { plan, coupon }): Promise<{ url: string }> => {
+  handler: async (ctx, { plan, lang, coupon }): Promise<{ url: string }> => {
     const userId = await getAuthUserId(ctx);
     if (userId === null) throw new Error("NOT_SIGNED_IN");
     if (!FOR_SALE.has(plan)) throw new Error("PLAN_NOT_FOR_SALE");
@@ -145,15 +145,16 @@ export const createCheckout = action({
     const q: Quote = await ctx.runQuery(internal.payments.quoteInternal, { plan, code: coupon });
     if (!q.ok) throw new ConvexError(q.error);
     const p = PLANS[plan];
-    const home = `${site}/`;
+    const en = lang === "en";
+    const home = en ? `${site}/en` : `${site}/`;   // กลับมาหน้าภาษาเดิมหลังจ่ายเงิน
     const email: string | null = await ctx.runQuery(internal.payments.userEmail, { userId });
     const form = new URLSearchParams({
       mode: "payment",
-      locale: "th",
+      locale: en ? "en" : "th",
       "line_items[0][quantity]": "1",
       "line_items[0][price_data][currency]": "thb",
       "line_items[0][price_data][unit_amount]": String(q.amount * 100), // สตางค์ (หลังหักส่วนลดแล้ว)
-      "line_items[0][price_data][product_data][name]": q.code ? `${p.name} (โค้ด ${q.code} ลดจาก ฿${q.listAmount.toLocaleString("en-US")})` : p.name,
+      "line_items[0][price_data][product_data][name]": en ? (q.code ? `${p.nameEn} (code ${q.code}, discounted from ฿${q.listAmount.toLocaleString("en-US")})` : p.nameEn) : q.code ? `${p.name} (โค้ด ${q.code} ลดจาก ฿${q.listAmount.toLocaleString("en-US")})` : p.name,
       success_url: `${home}?checkout=success`,
       cancel_url: `${home}?checkout=cancel#pricing`,
       client_reference_id: userId,

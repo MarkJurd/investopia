@@ -6,13 +6,13 @@ import type { Content } from "@/components/ContentContext";
 
 type Doc = Content["legal"]["privacy"];
 
-export default function LegalPage({ C, doc }: { C: Content; doc: Doc }) {
+export default function LegalPage({ C, doc, path }: { C: Content; doc: Doc; path: string }) {
   const L = C.legal;
   const fill = (s: string) => s.replaceAll("{operator}", L.operator).replaceAll("{email}", L.email);
   return (
-    <ToolsShell C={C} chip={L.chip}>
+    <ToolsShell C={C} path={path} chip={L.chip}>
       <article className="container legal">
-        <Link href="/" className="tool-back">{L.backHome}</Link>
+        <Link href={C.locale.base} className="tool-back">{L.backHome}</Link>
         <h1>{doc.title}</h1>
         <p className="legal-updated">{L.updatedLabel}: {L.updated}</p>
         <p className="legal-intro">{fill(doc.intro)}</p>

@@ -4,7 +4,9 @@ import Link from "next/link";
 import { ContentProvider, type Content } from "@/components/ContentContext";
 import AuthButton from "@/components/AuthButton";
 
-export default function ToolsShell({ C, chip, children }: { C: Content; path?: string; chip?: string; children: React.ReactNode }) {
+export default function ToolsShell({ C, path, chip, children }: { C: Content; path: string; chip?: string; children: React.ReactNode }) {
+  const prefix = C.locale.base === "/" ? "" : C.locale.base;               // "" (ไทย) หรือ "/en"
+  const otherBase = C.locale.switchHref === "/" ? "" : C.locale.switchHref;
   return (
     <ContentProvider value={C}>
       <div lang={C.locale.code} className="tool-shell">
@@ -18,6 +20,7 @@ export default function ToolsShell({ C, chip, children }: { C: Content; path?: s
               <span className="learn-chip">{chip ?? C.dividend.tools}</span>
             </div>
             <div className="nav-cta">
+              <a href={`${otherBase}${path}` || "/"} className="lang-switch" hrefLang={C.locale.code === "th" ? "en" : "th"}>{C.locale.switchLabel}</a>
               <AuthButton />
             </div>
           </div>
@@ -27,7 +30,7 @@ export default function ToolsShell({ C, chip, children }: { C: Content; path?: s
           <div className="container">
             <div className="disclaimer">
               <strong style={{ color: "var(--body)" }}>{C.footer.disclaimerLabel}</strong> {C.footer.disclaimer}<br /><br />
-              <span className="legal-links"><Link href="/privacy">{C.legal.footerPrivacy}</Link> · <Link href="/terms">{C.legal.footerTerms}</Link></span><br />
+              <span className="legal-links"><Link href={`${prefix}/privacy`}>{C.legal.footerPrivacy}</Link> · <Link href={`${prefix}/terms`}>{C.legal.footerTerms}</Link></span><br />
               {C.footer.copyright}
             </div>
           </div>

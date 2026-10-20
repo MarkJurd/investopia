@@ -5,8 +5,9 @@ import { CONTENT } from "@/lib/content";
 
 export const metadata: Metadata = {
   title: `${CONTENT.legal.terms.title} — ${CONTENT.brand.name}`,
+  alternates: { languages: { th: "/terms", en: "/en/terms" } },
 };
 
 export default function TermsPage() {
-  return <LegalPage C={CONTENT} doc={CONTENT.legal.terms} />;
+  return <LegalPage C={CONTENT} doc={CONTENT.legal.terms} path="/terms" />;
 }

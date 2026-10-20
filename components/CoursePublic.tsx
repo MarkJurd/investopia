@@ -11,6 +11,7 @@ import { useContent } from "@/components/ContentContext";
 
 export default function CoursePublic() {
   const C = useContent();
+  const home = C.locale.base === "/" ? "/" : C.locale.base;   // "/" หรือ "/en"
   const K = C.courses, P = K.page;
   const outline = useQuery(api.course.publicOutline);
   const { isAuthenticated } = useConvexAuth();
@@ -27,7 +28,7 @@ export default function CoursePublic() {
 
   return (
     <div className="container course-page">
-      <Link href="/#courses" className="back-link">{P.back}</Link>
+      <Link href={`${home}#courses`} className="back-link">{P.back}</Link>
       <div className="cp-head">
         <img src="/courses/card-chart.jpg" alt="" />
         <div>
@@ -60,11 +61,11 @@ export default function CoursePublic() {
         <div className="cp-note card" role="alert">
           <b>{P.memberNoteTitle}</b>
           <p>{P.memberNoteText}</p>
-          <Link href="/#pricing" className="btn btn-primary btn-sm">{P.seePlans}</Link>
+          <Link href={`${home}#pricing`} className="btn btn-primary btn-sm">{P.seePlans}</Link>
         </div>
       )}
       <div style={{ textAlign: "center", margin: "28px 0 60px" }}>
-        <Link href="/#pricing" className="btn btn-primary">{P.cta}</Link>
+        <Link href={`${home}#pricing`} className="btn btn-primary">{P.cta}</Link>
       </div>
     </div>
   );

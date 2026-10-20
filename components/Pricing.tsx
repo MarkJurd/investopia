@@ -34,6 +34,7 @@ function couponError(code: string, K: ReturnType<typeof useContent>["checkout"])
 export default function Pricing() {
   const CONTENT = useContent();
   const P = CONTENT.pricing, K = CONTENT.checkout;
+  const prefix = CONTENT.locale.base === "/" ? "" : CONTENT.locale.base;
   const { isAuthenticated } = useConvexAuth();
   const { signIn } = useAuthActions();
   const createCheckout = useAction(api.payments.createCheckout);
@@ -65,7 +66,7 @@ export default function Pricing() {
     setMsg("");
     setBusy(plan);
     try {
-      const { url } = await createCheckout({ plan, coupon: coupon || undefined });
+      const { url } = await createCheckout({ plan, coupon: coupon || undefined, lang: CONTENT.locale.code === "en" ? "en" : "th" });
       window.location.href = url;
     } catch (e) {
       setBusy(null);
@@ -84,7 +85,7 @@ export default function Pricing() {
       if (c) sessionStorage.setItem(COUPON_KEY, c); else sessionStorage.removeItem(COUPON_KEY);
     } catch { /* ไม่มี storage ก็แค่ต้องกดซ้ำหลังล็อกอิน */ }
     setMsg(K.signInFirst);
-    await signIn("google", { redirectTo: "/#pricing" });
+    await signIn("google", { redirectTo: `${CONTENT.locale.base}#pricing` });
   };
 
   // กลับมาจากล็อกอินแล้ว → ไปหน้าจ่ายเงินของแพ็กเกจที่กดไว้ต่อเลย
@@ -158,7 +159,7 @@ export default function Pricing() {
       </div>
       <p className="secure-note">{K.secureNote}</p>
       <p className="secure-note legal-agree">
-        {CONTENT.legal.checkoutAgreeBefore} <a href="/terms">{CONTENT.legal.footerTerms}</a> {CONTENT.legal.checkoutAgreeAnd} <a href="/privacy">{CONTENT.legal.footerPrivacy}</a>
+        {CONTENT.legal.checkoutAgreeBefore} <a href={`${prefix}/terms`}>{CONTENT.legal.footerTerms}</a> {CONTENT.legal.checkoutAgreeAnd} <a href={`${prefix}/privacy`}>{CONTENT.legal.footerPrivacy}</a>
       </p>
       <p style={{ textAlign: "center", fontSize: 13, color: "var(--muted)", marginTop: 10 }}>{P.rolling}</p>
       <p style={{ textAlign: "center", fontSize: 13, color: "var(--muted)", marginTop: 10 }}>{P.note}</p>

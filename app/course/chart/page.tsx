@@ -7,8 +7,9 @@ import { CONTENT } from "@/lib/content";
 export const metadata: Metadata = {
   title: `${CONTENT.courses.chart.title} — ${CONTENT.brand.name}`,
   description: CONTENT.courses.chart.desc,
+  alternates: { languages: { th: "/course/chart", en: "/en/course/chart" } },
 };
 
 export default function CourseChartPage() {
-  return <ToolsShell C={CONTENT} chip={CONTENT.courses.page.chip}><CoursePublic /></ToolsShell>;
+  return <ToolsShell C={CONTENT} path="/course/chart" chip={CONTENT.courses.page.chip}><CoursePublic /></ToolsShell>;
 }

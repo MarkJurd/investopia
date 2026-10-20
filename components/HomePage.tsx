@@ -1,6 +1,7 @@
 /* หน้าแรก — ข้อความมาจาก lib/content.ts
  * อย่าพิมพ์ข้อความลงไฟล์นี้ตรงๆ */
 import Link from "next/link";
+import { learnPath } from "@/components/learn/steps";
 import InstructorIntro from "@/components/InstructorIntro";
 import { ContentProvider, type Content } from "@/components/ContentContext";
 import Effects from "@/components/Effects";
@@ -35,6 +36,7 @@ function Logo({ name }: { name: string }) {
 
 export default function HomePage({ C }: { C: Content }) {
   const H = C.hero;
+  const prefix = C.locale.base === "/" ? "" : C.locale.base;   // "" (ไทย) หรือ "/en"
 
   return (
     <ContentProvider value={C}>
@@ -48,6 +50,7 @@ export default function HomePage({ C }: { C: Content }) {
           <Logo name={C.brand.name} />
           <nav className="nav-links">{C.nav.links.map((l) => <a key={l.href} href={l.href}>{l.text}</a>)}</nav>
           <div className="nav-cta">
+            <a href={C.locale.switchHref} className="lang-switch" hrefLang={C.locale.code === "th" ? "en" : "th"}>{C.locale.switchLabel}</a>
             <AuthButton />
             <a href="#pricing" className="btn btn-primary">{C.nav.primary}</a>
           </div>
@@ -70,7 +73,7 @@ export default function HomePage({ C }: { C: Content }) {
             <h1><span>{H.title.before}</span><span className="blue">{H.title.accent}</span><span>{H.title.after}</span></h1>
             <p className="lead">{H.lead}</p>
             <div className="hero-cta">
-              <Link href="/learn" className="btn btn-free btn-lg">▶ {H.ctaFree}</Link>
+              <Link href={learnPath(C)} className="btn btn-free btn-lg">▶ {H.ctaFree}</Link>
               <a href="#pricing" className="btn btn-ghost btn-lg">{H.ctaPrimary}</a>
               <span className="free-hint">{H.ctaFreeHint}</span>
             </div>
@@ -158,7 +161,7 @@ export default function HomePage({ C }: { C: Content }) {
           </div>
           <div className="disclaimer">
             <strong style={{ color: "var(--body)" }}>{C.footer.disclaimerLabel}</strong> {C.footer.disclaimer}<br /><br />
-            <span className="legal-links"><a href="/privacy">{C.legal.footerPrivacy}</a> · <a href="/terms">{C.legal.footerTerms}</a></span><br />
+            <span className="legal-links"><a href={`${prefix}/privacy`}>{C.legal.footerPrivacy}</a> · <a href={`${prefix}/terms`}>{C.legal.footerTerms}</a></span><br />
             {C.footer.copyright}
           </div>
         </div>
