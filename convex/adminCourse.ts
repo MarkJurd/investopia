@@ -7,7 +7,7 @@ import { internal } from "./_generated/api";
 import { ConvexError, v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { isAdminUser, requireAdmin } from "./admin";
-import { codeCourse, loadCourse, MAX_FILE_MB, quizItemValidator, type QuizItem } from "./course";
+import { codeCourse, lessonLinkValidator, loadCourse, MAX_FILE_MB, MAX_LINKS, quizItemValidator, type QuizItem } from "./course";
 
 const MAX_TITLE = 200;
 const MAX_TEXT = 5000;
@@ -37,7 +37,7 @@ async function requireImported(ctx: MutationCtx) {
 const fileOut = v.object({ id: v.union(v.id("lessonFiles"), v.null()), name: v.string(), size: v.number(), url: v.union(v.string(), v.null()) });
 const lessonOut = v.object({
   id: v.union(v.id("courseLessons"), v.null()), key: v.string(), title: v.string(), notes: v.string(), videoId: v.string(),
-  minutes: v.number(), hidden: v.boolean(), indicatorOnly: v.boolean(), free: v.boolean(), newSince: v.union(v.number(), v.null()), files: v.array(fileOut),
+  minutes: v.number(), hidden: v.boolean(), indicatorOnly: v.boolean(), free: v.boolean(), newSince: v.union(v.number(), v.null()), links: v.array(lessonLinkValidator), files: v.array(fileOut),
 });
 const moduleOut = v.object({
   id: v.union(v.id("courseModules"), v.null()), key: v.string(), title: v.string(), practice: v.string(), hidden: v.boolean(),
@@ -387,3 +387,33 @@ export const bunnyVideos = action({
 });
 
 export type AdminLessonId = Id<"courseLessons">;
+
+/* ---------- ลิงก์เว็บใต้คลิป ---------- */
+export const addLessonLink = mutation({
+  args: { lessonId: v.id("courseLessons"), title: v.string(), url: v.string() },
+  returns: v.null(),
+  handler: async (ctx, { lessonId, title, url }) => {
+    await requireAdmin(ctx);
+    const lesson = await ctx.db.get("courseLessons", lessonId);
+    if (lesson === null) throw new ConvexError("NOT_FOUND");
+    const u = url.trim();
+    if (!/^https?:\/\/[^\s]+$/i.test(u) || u.length > 2000) throw new ConvexError("BAD_URL");   // กัน javascript: ฯลฯ
+    const links = lesson.links ?? [];
+    if (links.length >= MAX_LINKS) throw new ConvexError("TOO_MANY_LINKS");
+    const t = title.trim().slice(0, 150) || u.replace(/^https?:\/\//i, "").slice(0, 80);
+    await ctx.db.patch("courseLessons", lessonId, { links: [...links, { title: t, url: u }] });
+    return null;
+  },
+});
+
+export const deleteLessonLink = mutation({
+  args: { lessonId: v.id("courseLessons"), index: v.number() },
+  returns: v.null(),
+  handler: async (ctx, { lessonId, index }) => {
+    await requireAdmin(ctx);
+    const lesson = await ctx.db.get("courseLessons", lessonId);
+    if (lesson === null) return null;
+    await ctx.db.patch("courseLessons", lessonId, { links: (lesson.links ?? []).filter((_, i) => i !== index) });
+    return null;
+  },
+});

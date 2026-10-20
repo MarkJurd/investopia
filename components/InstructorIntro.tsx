@@ -1,12 +1,13 @@
 "use client";
 
-/* ส่วนผู้สอน: ฉากหลังกราฟิกน้ำเงิน + รูปตัดพื้นหลังเด้งขึ้นมาตอนเลื่อนมาถึง + ข้อความแนะนำตัวพิมพ์ทีละตัวอักษร
- * ถ้าผู้ใช้เปิด "ลดการเคลื่อนไหว" จะแสดงทั้งหมดทันที */
+/* ส่วนผู้สอน: รูปตัดพื้นหลังโผล่จากวงกลมน้ำเงิน (ขอบล่างถูกตัดตามโค้ง → ไม่เห็นแขนที่ขาด) สลับรูปทุก 4 วินาที
+ * + ข้อความแนะนำตัวพิมพ์ทีละตัวอักษรตอนเลื่อนมาถึง · ถ้าผู้ใช้เปิด "ลดการเคลื่อนไหว" แสดงรูปแรกนิ่งๆ และข้อความทั้งหมดทันที */
 import { useEffect, useRef, useState } from "react";
 import { useContent } from "@/components/ContentContext";
 
 const STEP_MS = 28;      // พิมพ์ทุกกี่ ms
 const CHARS_PER_STEP = 3;
+const SWAP_MS = 4000;    // สลับรูปทุกกี่ ms
 
 /* กราฟแท่งเทียนประกอบฉากในวงกลมน้ำเงิน (ค่าคงที่ — ไม่ใช่ข้อมูลจริง) */
 const CANDLES = (() => {
@@ -27,6 +28,7 @@ export default function InstructorIntro() {
   const rootRef = useRef<HTMLDivElement>(null);
   const [shown, setShown] = useState(false);
   const [count, setCount] = useState(0);
+  const [pic, setPic] = useState(0);
 
   useEffect(() => {
     const el = rootRef.current;
@@ -57,22 +59,16 @@ export default function InstructorIntro() {
     return () => { clearTimeout(start); if (timer) clearInterval(timer); };
   }, [shown, ins.bio]);
 
+  useEffect(() => {
+    if (!shown || ins.photos.length < 2 || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const t = setInterval(() => setPic((n) => (n + 1) % ins.photos.length), SWAP_MS);
+    return () => clearInterval(t);
+  }, [shown, ins.photos.length]);
+
   const typing = shown && count < ins.bio.length;
 
   return (
     <div className="ins2" ref={rootRef}>
-      <div className="ins2-arc" aria-hidden="true">
-        <svg viewBox="0 0 780 780" preserveAspectRatio="none">
-          {CANDLES.map((c) => (
-            <g key={c.x} stroke="#fff" strokeWidth="2">
-              <line x1={c.x} x2={c.x} y1={c.hi} y2={c.lo} />
-              <rect x={c.x - 8} y={c.top} width="16" height={c.h} rx="2" fill={c.up ? "#fff" : "none"} />
-            </g>
-          ))}
-          <polyline fill="none" stroke="#FACC15" strokeWidth="4" points={CANDLES.map((c) => `${c.x},${c.top}`).join(" ")} />
-        </svg>
-      </div>
-      <span className="ins2-ring" aria-hidden="true" />
       <span className="ins2-dots" aria-hidden="true" />
       <span className="ins2-wm" aria-hidden="true">INVESTOPIA</span>
 
@@ -90,12 +86,25 @@ export default function InstructorIntro() {
         <a href="#pricing" className="btn btn-primary">{ins.cta}</a>
       </div>
 
-      <div className={`ins2-photo${shown ? " on" : ""}`}>
-        {ins.photo
-          ? <img src={ins.photo} alt={ins.name} />
-          : <span className="avatar">{ins.initial}</span>}
+      <div className={`portrait ins-por${shown ? " on" : ""}`}>
+        <span className="disc" aria-hidden="true">
+          <svg viewBox="0 0 780 780" preserveAspectRatio="none">
+            {CANDLES.map((c) => (
+              <g key={c.x} stroke="#fff" strokeWidth="2">
+                <line x1={c.x} x2={c.x} y1={c.hi} y2={c.lo} />
+                <rect x={c.x - 8} y={c.top} width="16" height={c.h} rx="2" fill={c.up ? "#fff" : "none"} />
+              </g>
+            ))}
+            <polyline fill="none" stroke="#FACC15" strokeWidth="4" points={CANDLES.map((c) => `${c.x},${c.top}`).join(" ")} />
+          </svg>
+        </span>
+        <div className="clip">
+          {ins.photos.map((src, i) => (
+            <img key={src} src={src} className={`ppl${i === pic ? " cur" : ""}`} alt={i === 0 ? ins.name : ""} aria-hidden={i === 0 ? undefined : true} />
+          ))}
+        </div>
+        <div className="pdots" aria-hidden="true">{ins.photos.map((src, i) => <i key={src} className={i === pic ? "on" : undefined} />)}</div>
       </div>
-      <div className="ins2-tag"><b aria-hidden="true">✓</b>{ins.tag}</div>
     </div>
   );
 }

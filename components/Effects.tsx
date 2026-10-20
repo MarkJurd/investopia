@@ -51,12 +51,11 @@ export default function Effects() {
     onScroll();
     cleanups.push(() => window.removeEventListener("scroll", onScroll));
 
-    /* ---- รูปทรงลอยหลัง Hero + แถบหุ้นวิ่ง (เร่งเมื่อเลื่อน) ---- */
+    /* ---- รูปทรงลอยหลัง Hero ---- */
     if (!reduce) {
       const shapes = document.querySelectorAll<HTMLElement>(".shape");
       const heroEl = document.getElementById("hero");
-      const mrow = document.getElementById("mRow");
-      let mx = 0, my = 0, mxs = 0, mys = 0, mx0 = 0, lastY = window.scrollY, boost = 0, raf = 0;
+      let mx = 0, my = 0, mxs = 0, mys = 0, raf = 0;
       const onMove = (e: MouseEvent) => {
         if (!heroEl) return;
         const r = heroEl.getBoundingClientRect();
@@ -70,11 +69,6 @@ export default function Effects() {
           const sp = +(el.dataset.s || 0), rt = +(el.dataset.r || 0);
           el.style.transform = `translate(${mxs * sp * 60}px,${y * sp + mys * sp * 60}px) rotate(${y * rt}deg)`;
         });
-        boost = boost * 0.9 + Math.abs(window.scrollY - lastY) * 0.1; lastY = window.scrollY;
-        if (mrow && mrow.scrollWidth) {
-          mx0 = (mx0 + 0.6 + boost * 0.8) % (mrow.scrollWidth / 2);
-          mrow.style.transform = `translateX(${-mx0}px)`;
-        }
         raf = requestAnimationFrame(loop);
       };
       raf = requestAnimationFrame(loop);

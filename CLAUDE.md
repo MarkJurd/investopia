@@ -25,8 +25,9 @@ app/layout.tsx        ฟอนต์ Anuphan (next/font) + metadata
 app/globals.css       สี (:root) + สไตล์ทั้งหมด
 app/icon.svg          favicon (= logo)
 public/logo.svg       โลโก้ Bar-i (ชั่วคราว)
-components/Effects.tsx     เอฟเฟกต์: scroll bar, reveal, count-up, รูปทรงลอย, แถบหุ้นวิ่ง, กราฟแท่งเทียน
-components/HeroVideo.tsx   วิดีโอแนะนำตัว (youtubeId / file / placeholder)
+components/Effects.tsx     เอฟเฟกต์: scroll bar, reveal, count-up, รูปทรงลอย, กราฟแท่งเทียน (แถบหุ้นวิ่งเอาออกแล้ว 2026-10-20 → แถบจุดเด่น content.ts → facts)
+components/HeroStage.tsx   Hero ขวา: รูป public/hero.png + ป้ายคำ 6 ป้าย (content.ts → hero.badges) · HeroVideo.tsx = วิดีโอแนะนำตัว (พักไว้ ไม่ได้แสดง 2026-10-20)
+components/Reviews.tsx     รีวิวผู้เรียน (content.ts → reviews) + ภาพวาด avatar · InstructorIntro = 4 รูปสลับในวงกลม (instructor.photos)
 components/Curriculum.tsx  หลักสูตร: เลขโมดูล + วงแหวนค้างซ้าย
 components/Pricing.tsx     การ์ดราคา + modal ชำระเงิน (ยังจำลอง)
 components/QABox.tsx       กล่องถามคำถาม (ยังเป็น alert)
@@ -217,3 +218,9 @@ Investing.com Pro **ห้ามเอามาแสดงบนเว็บ** 
 ## 🆕 2026-10-18 (รอบเปิดตัว) — อ่าน HANDOFF.md ประกอบ
 - รายปี ฿3,990 (ราคาปล่อยตัว) จำกัด 15 ที่ ถึง 31 ต.ค. 2569 23:59 (`LAUNCH` ใน convex/plans.ts) · Indicator = 10 คนแรกที่ซื้อ VIP · Live กลุ่มเดือนละ 2 ครั้ง · หลักสูตร 7 โมดูล เนื้อหาทยอยเพิ่ม ห้ามเดาข้อความขาย/วันที่
 - ห้องเรียน: การ์ดโมดูล → `/learn/module-<id>` → บทเรียน · แบบทดสอบยังไม่ทำ
+
+## 🆕 2026-10-20
+- หน้าแรก: ปุ่มเขียว "ทดลองเรียนฟรี" → /learn · Hero ใช้รูปเต็มตัว + ป้ายคำ 6 ป้าย (2 การ์ดล่างบังขอบแขนที่ถูกตัด — ต้องมี 6 ป้ายเสมอ) · เอาแถบหุ้นวิ่งออก ใช้แถบ facts แทน · รีวิว 3 คนใต้การ์ดคอร์ส (avatar เป็นภาพวาด ไม่ใช่รูปจริง — **ต้องขออนุญาตเน็ต/แฟง/ไมค์ก่อนใช้รีวิว**) · ผู้สอน 4 รูปสลับทุก 4 วิ ในวงกลม
+- รูปตัดพื้นหลังทำด้วย rembg (+ เพิ่มสีชมพูที่ปาก) จากไฟล์ที่เจ้าของส่ง · รูปเต็มตัวเสื้อดำ (ชุดแรก) ไม่ได้ใช้
+- ห้องเรียน: ผู้ทดลองเรียนเห็นบทที่มีคลิปแล้วเป็น 🔒 "สำหรับสมาชิก" (เดิมขึ้น "เร็วๆ นี้") — server ส่ง hasVideo จริงแม้ paywalled (ลิงก์วิดีโอยังเช็กสิทธิ์ใน videoUrl)
+- ลิงก์เว็บใต้คลิป: /admin → บทเรียน → "ลิงก์ใต้คลิป" (courseLessons.links, ≤20, ต้องเป็น http/https) · แสดงในกล่อง "ไฟล์ประกอบบทเรียน"

@@ -78,6 +78,7 @@ export default defineSchema({
     indicatorOnly: v.boolean(),               // เปิดเฉพาะผู้ได้ Indicator + แอดมิน
     free: v.optional(v.boolean()),            // บทเรียนฟรี: คนที่ล็อกอิน Google (ยังไม่ซื้อ) ดูได้ — แก้ที่ /admin
     newSince: v.optional(v.number()),         // ป้าย "ใหม่" นับจากเวลานี้
+    links: v.optional(v.array(v.object({ title: v.string(), url: v.string() }))),  // ลิงก์เว็บใต้คลิป (เช่น TradingView, Google Drive)
   })
     .index("by_moduleId_and_order", ["moduleId", "order"])
     .index("by_key", ["key"]),

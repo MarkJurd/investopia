@@ -11,7 +11,7 @@ import { getMembership } from "./payments";
 import { isAdminUser } from "./admin";
 import { planValidator } from "./plans";
 import { signBunnyEmbedUrl } from "./bunny";
-import { findVisibleLesson, findVisibleModule, loadCourse, NEW_LESSON_DAYS, visibleModules } from "./course";
+import { findVisibleLesson, findVisibleModule, lessonLinkValidator, loadCourse, NEW_LESSON_DAYS, visibleModules } from "./course";
 
 const PASS_PERCENT = 70;        // ผ่านแบบทดสอบเมื่อได้ ≥ 70%
 const DAY = 24 * 60 * 60 * 1000;
@@ -62,12 +62,13 @@ async function loadProgress(ctx: QueryCtx, userId: Id<"users">) {
 const fileOut = v.object({ name: v.string(), size: v.number(), url: v.union(v.string(), v.null()) });
 const lessonOut = v.object({
   id: v.string(), title: v.string(), notes: v.string(), minutes: v.number(),
-  hasVideo: v.boolean(),                        // false = ยังไม่มีวิดีโอ → แสดง "เร็วๆ นี้"
+  hasVideo: v.boolean(),                        // false = ยังไม่มีวิดีโอ → แสดง "เร็วๆ นี้" (บท paywalled ก็ส่งค่าจริง)
   locked: v.boolean(),                          // true = บทนี้สำหรับผู้ที่ได้ Indicator เท่านั้น (ไม่ส่งเนื้อหา)
   paywalled: v.boolean(),                       // true = ผู้ทดลองเรียนฟรีเปิดบทนี้ไม่ได้ (ต้องซื้อแพ็กเกจ — ไม่ส่งเนื้อหา)
   free: v.boolean(),                            // บทเรียนฟรี (ป้าย "ฟรี")
   isNew: v.boolean(),                           // ป้าย "ใหม่"
   files: v.array(fileOut),                      // ไฟล์แนบใต้คลิป (ว่างถ้าล็อก)
+  links: v.array(lessonLinkValidator),          // ลิงก์เว็บใต้คลิป (ว่างถ้าล็อก)
 });
 const moduleOut = v.object({
   id: v.string(), tag: v.string(), title: v.string(), practice: v.string(),
@@ -115,9 +116,10 @@ export const overview = query({
         if (!locked && !paywalled) for (const f of l.files) files.push({ name: f.name, size: f.size, url: await ctx.storage.getUrl(f.storageId) });
         outLessons.push({
           id: l.key, title: l.title, notes: locked || paywalled ? "" : l.notes, minutes: l.minutes, locked, paywalled, free: l.free,
-          hasVideo: !locked && !paywalled && videosOn && l.videoId !== "",
+          hasVideo: !locked && videosOn && l.videoId !== "",   // ผู้ทดลองเรียนก็รู้ได้ว่าบทนี้มีคลิปแล้ว (ขึ้น 🔒 แทน "เร็วๆ นี้") — ลิงก์วิดีโอยังเช็กสิทธิ์ใน videoUrl
           isNew: l.newSince !== null && now - l.newSince < NEW_LESSON_DAYS * DAY,
           files,
+          links: locked || paywalled ? [] : l.links,
         });
       }
       modules.push({

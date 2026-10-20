@@ -1,9 +1,11 @@
 /* หน้าแรก — ข้อความมาจาก lib/content.ts
  * อย่าพิมพ์ข้อความลงไฟล์นี้ตรงๆ */
+import Link from "next/link";
 import InstructorIntro from "@/components/InstructorIntro";
 import { ContentProvider, type Content } from "@/components/ContentContext";
 import Effects from "@/components/Effects";
-import HeroVideo from "@/components/HeroVideo";
+import HeroStage from "@/components/HeroStage";
+import Reviews from "@/components/Reviews";
 import CourseCards from "@/components/CourseCards";
 import Pricing from "@/components/Pricing";
 import QABox from "@/components/QABox";
@@ -33,12 +35,6 @@ function Logo({ name }: { name: string }) {
 
 export default function HomePage({ C }: { C: Content }) {
   const H = C.hero;
-  const ticks = C.marquee.items.map((it) => (
-    <span className="tick" key={it.sym}>
-      <span className="tk">{"logo" in it && it.logo ? <img src={it.logo as string} alt="" /> : it.sym.charAt(0)}</span>
-      <b>{it.sym}</b><span className="nm">{it.name}</span>
-    </span>
-  ));
 
   return (
     <ContentProvider value={C}>
@@ -74,25 +70,26 @@ export default function HomePage({ C }: { C: Content }) {
             <h1><span>{H.title.before}</span><span className="blue">{H.title.accent}</span><span>{H.title.after}</span></h1>
             <p className="lead">{H.lead}</p>
             <div className="hero-cta">
-              <a href="#pricing" className="btn btn-primary btn-lg">{H.ctaPrimary}</a>
-              <a href="#curriculum" className="btn btn-ghost btn-lg">{H.ctaSecondary}</a>
+              <Link href="/learn" className="btn btn-free btn-lg">▶ {H.ctaFree}</Link>
+              <a href="#pricing" className="btn btn-ghost btn-lg">{H.ctaPrimary}</a>
+              <span className="free-hint">{H.ctaFreeHint}</span>
             </div>
             <div className="hero-points">
               {H.points.map((p) => <div className="hero-point" key={p}><span className="check">✓</span> {p}</div>)}
             </div>
           </div>
-          <HeroVideo />
+          <HeroStage H={H} />
         </div>
       </section>
 
-      {/* แถบหุ้นสหรัฐฯ วิ่ง */}
-      <div className="marquee-wrap" aria-hidden="true">
-        <div className="marquee"><div className="m-row" id="mRow">{ticks}{ticks}</div></div>
-      </div>
-      <p className="marquee-note">{C.marquee.note}</p>
+      {/* แถบจุดเด่น */}
+      <div className="facts"><div className="container">{C.facts.map((f) => <span key={f}>{f}</span>)}</div></div>
 
       {/* เลือกคอร์ส */}
       <CourseCards />
+
+      {/* รีวิว */}
+      <Reviews />
 
       {/* FIT */}
       <section className="section" id="fit">

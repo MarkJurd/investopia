@@ -248,6 +248,9 @@ function LessonEditor({ lesson, moduleId, modules, bunnyReady, onClose }: {
   const genUrl = useMutation(api.adminCourse.generateUploadUrl);
   const addFile = useMutation(api.adminCourse.addLessonFile);
   const delFile = useMutation(api.adminCourse.deleteLessonFile);
+  const addLink = useMutation(api.adminCourse.addLessonLink);
+  const delLink = useMutation(api.adminCourse.deleteLessonLink);
+  const [link, setLink] = useState({ title: "", url: "" });
   const id = lesson.id as Id<"courseLessons">;
 
   const [f, setF] = useState({
@@ -322,6 +325,22 @@ function LessonEditor({ lesson, moduleId, modules, bunnyReady, onClose }: {
           {uploading ? A.uploading : A.upload}
           <input type="file" multiple hidden disabled={uploading} onChange={(e) => { void onFiles(e.target.files); e.target.value = ""; }} />
         </label>
+
+        <h4>{A.links}</h4>
+        {lesson.links.length === 0 && <p className="adm-sub">{A.noLinks}</p>}
+        <ul>
+          {lesson.links.map((k, i) => (
+            <li key={i}>
+              <a href={k.url} target="_blank" rel="noopener noreferrer">🔗 {k.title}</a>
+              <button className="btn btn-ghost btn-sm adm-danger" onClick={() => { if (confirm(A.confirmDelete)) void run(() => delLink({ lessonId: id, index: i })); }}>{A.delete}</button>
+            </li>
+          ))}
+        </ul>
+        <form className="adm-row" onSubmit={(e) => { e.preventDefault(); void run(async () => { await addLink({ lessonId: id, ...link }); setLink({ title: "", url: "" }); }); }}>
+          <input value={link.title} onChange={(e) => setLink((o) => ({ ...o, title: e.target.value }))} placeholder={A.linkTitle} maxLength={150} />
+          <input type="url" required value={link.url} onChange={(e) => setLink((o) => ({ ...o, url: e.target.value }))} placeholder={A.linkUrl} />
+          <button className="btn btn-ghost btn-sm" disabled={busy}>{A.addLink}</button>
+        </form>
       </div>
 
       <div className="adm-extra">

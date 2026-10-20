@@ -40,7 +40,7 @@ export default function LessonView({ steps, index }: { steps: Step[]; index: num
   return (
     <div className="learn-grid">
       <article className="learn-content">
-        {lesson.locked ? (
+        {lesson.locked || (lesson.paywalled && lesson.hasVideo) ? (
           <div className="card locked-card">
             <span className="lo-soon">🔒 {lesson.paywalled ? L.paywallBadge : L.lockedBadge}</span>
             <h1 className="learn-h1">{lesson.title}</h1>
@@ -56,10 +56,16 @@ export default function LessonView({ steps, index }: { steps: Step[]; index: num
         <h1 className="learn-h1">{lesson.title}{lesson.free && <span className="new-badge">{L.freeBadge}</span>}{lesson.isNew && <span className="new-badge">{L.newBadge}</span>}</h1>
         {lesson.minutes > 0 && <p className="learn-meta">{lesson.minutes} {L.minutesUnit}</p>}
 
-        {lesson.files.length > 0 && (
+        {lesson.files.length + lesson.links.length > 0 && (
           <section className="learn-files card">
             <h2>{L.filesTitle}</h2>
             <ul>
+              {lesson.links.map((k, i) => (
+                <li key={`l${i}`}>
+                  <span className="lf-name">🔗 {k.title}</span>
+                  <a href={k.url} target="_blank" rel="noopener noreferrer" className="btn btn-ghost btn-sm">{L.openLink}</a>
+                </li>
+              ))}
               {lesson.files.map((f, i) => (
                 <li key={i}>
                   <span className="lf-name">📄 {f.name}</span>

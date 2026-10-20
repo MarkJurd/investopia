@@ -9,6 +9,10 @@ import { COURSE, INDICATOR_ONLY_LESSONS } from "../lib/course";
 export const MODULE_TAG = "โมดูล";          // ป้ายหน้าชื่อโมดูล → "โมดูล 1", "โมดูล 2", ... (เลขตามลำดับที่แสดง)
 export const NEW_LESSON_DAYS = 14;          // ป้าย "ใหม่" แสดงกี่วัน
 export const MAX_FILE_MB = 50;              // ขนาดไฟล์แนบสูงสุดต่อไฟล์
+export const MAX_LINKS = 20;                // ลิงก์ใต้คลิปสูงสุดต่อบท
+
+export const lessonLinkValidator = v.object({ title: v.string(), url: v.string() });
+export type LessonLink = { title: string; url: string };
 
 export const quizItemValidator = v.object({
   q: v.string(),
@@ -30,6 +34,7 @@ export type CourseLesson = {
   indicatorOnly: boolean;
   free: boolean;
   newSince: number | null;
+  links: LessonLink[];
   files: CourseFile[];
 };
 export type CourseModule = {
@@ -89,7 +94,7 @@ export async function findVisibleModule(ctx: QueryCtx, key: string): Promise<Cou
 function lessonFields(l: Doc<"courseLessons">): Omit<CourseLesson, "files"> {
   return {
     id: l._id, key: l.key, title: l.title, notes: l.notes, videoId: l.videoId, minutes: l.minutes,
-    hidden: l.hidden, indicatorOnly: l.indicatorOnly, free: l.free ?? false, newSince: l.newSince ?? null,
+    hidden: l.hidden, indicatorOnly: l.indicatorOnly, free: l.free ?? false, newSince: l.newSince ?? null, links: l.links ?? [],
   };
 }
 
@@ -105,7 +110,7 @@ export function codeCourse(): CourseModule[] {
     quiz: m.quiz.map((q) => ({ q: q.q, choices: [...q.choices], answer: q.answer, explain: q.explain })),
     lessons: m.lessons.map((l) => ({
       id: null, key: l.id, title: l.title, notes: l.notes, videoId: l.videoId, minutes: l.minutes,
-      hidden: false, indicatorOnly: INDICATOR_ONLY_LESSONS.has(l.id), free: false, newSince: null, files: [],
+      hidden: false, indicatorOnly: INDICATOR_ONLY_LESSONS.has(l.id), free: false, newSince: null, links: [], files: [],
     })),
   }));
 }
