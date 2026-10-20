@@ -12,7 +12,7 @@ import { useContent } from "@/components/ContentContext";
 
 const PENDING_KEY = "investopia.pendingPlan"; // จำแพ็กเกจที่กดไว้ระหว่างไปล็อกอิน
 const COUPON_KEY = "investopia.pendingCoupon";
-const PLAN_IDS: PlanId[] = ["yearly", "vip"]; // แพ็กเกจที่เปิดขาย (ต้องตรงกับ FOR_SALE ใน convex/plans.ts)
+const PLAN_IDS: PlanId[] = ["monthly", "yearly", "vip"]; // แพ็กเกจที่เปิดขาย (ต้องตรงกับ FOR_SALE ใน convex/plans.ts)
 
 function readPending(): PlanId | null {
   try {
@@ -54,9 +54,10 @@ export default function Pricing() {
   const applied = appliedState?.code ?? "";
   const setApplied = (code: string) => setAppliedState(code ? { code, at: Math.floor(Date.now() / 60000) * 60000 } : null);
   const now = appliedState?.at ?? 0;
+  const qMonthly = useQuery(api.payments.checkCoupon, applied ? { plan: "monthly", code: applied, now } : "skip");
   const qYearly = useQuery(api.payments.checkCoupon, applied ? { plan: "yearly", code: applied, now } : "skip");
   const qVip = useQuery(api.payments.checkCoupon, applied ? { plan: "vip", code: applied, now } : "skip");
-  const quotes: Partial<Record<PlanId, typeof qYearly>> = { yearly: qYearly, vip: qVip };
+  const quotes: Partial<Record<PlanId, typeof qYearly>> = { monthly: qMonthly, yearly: qYearly, vip: qVip };
   const anyOk = Object.values(quotes).some((q) => q?.ok);
   const firstErr = Object.values(quotes).find((q) => q && !q.ok);
 

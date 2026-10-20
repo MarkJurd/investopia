@@ -11,8 +11,8 @@ export const PLANS = {
 
 export type PlanId = keyof typeof PLANS;
 
-/** แพ็กเกจที่เปิดขายตอนนี้ — รายเดือน/3 เดือน เลิกขายแล้ว (2026-10-16) แต่ยังเก็บไว้ในระบบเพื่อสมาชิกเดิม */
-export const FOR_SALE: ReadonlySet<PlanId> = new Set<PlanId>(["yearly", "vip"]);
+/** แพ็กเกจที่เปิดขายตอนนี้ — 3 เดือนเลิกขายแล้ว (2026-10-16) ยังเก็บไว้เพื่อสมาชิกเดิม · รายเดือน ฿990 เปิดขายอีกครั้ง 2026-10-20 เป็น "ตัวเลือกช่วงเปิดตัว" (เจ้าของจะเลิกขายเมื่อมีคอร์สเพิ่ม → ถอดออกจากที่นี่ + Pricing.tsx + CouponsTab) */
+export const FOR_SALE: ReadonlySet<PlanId> = new Set<PlanId>(["monthly", "yearly", "vip"]);
 
 export const planValidator = v.union(
   v.literal("monthly"),

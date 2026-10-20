@@ -8,7 +8,7 @@ import type { PlanId } from "@/convex/plans";
 import { useContent } from "@/components/ContentContext";
 import { adminError, baht, fmtDate } from "@/components/admin/shared";
 
-const SALE_PLANS: PlanId[] = ["yearly", "vip"];
+const SALE_PLANS: PlanId[] = ["monthly", "yearly", "vip"];
 
 export default function CouponsTab() {
   const C = useContent();
