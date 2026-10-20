@@ -139,7 +139,7 @@ button.vid-ph:hover .play{transform:scale(1.08)}
 .hstage i svg{width:20px;height:20px}
 .bchip{align-items:center;gap:10px;border-radius:999px;padding:8px 16px 8px 8px;font-size:14px}
 .c1{left:-2%;top:14%;rotate:-5deg}.c2{left:-4%;top:37%;rotate:3deg}.c3{right:-1%;top:6%;rotate:-3deg}.c4{right:-3%;top:30%;rotate:5deg}
-.fcard{flex-direction:column;align-items:flex-start;gap:10px;border-radius:16px;padding:20px 18px 24px;width:36%;box-shadow:0 16px 36px rgba(15,23,42,.18)!important}
+.fcard{z-index:4!important;flex-direction:column;align-items:flex-start;gap:10px;border-radius:16px;padding:20px 18px 24px;width:36%;box-shadow:0 16px 36px rgba(15,23,42,.18)!important}
 .fcard b{font-size:17px;line-height:1.3}
 .fcard.bl i{background:#FEF9C3;color:#A16207}.fcard.br i{background:#FEE2E2;color:#B91C1C}
 .bl{left:2%;top:63%;rotate:-4deg}.br{right:1%;top:62%;rotate:4deg}

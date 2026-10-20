@@ -58,12 +58,12 @@ export const CONTENT_EN: typeof CONTENT = {
     ctaPrimary: "Choose a plan",
     photo: "/hero.png",
     badges: [
-      { icon: "steps",   text: "Guided,\nstep by step" },
-      { icon: "user",    text: "Knows what\nbeginners don't know" },
-      { icon: "compass", text: "Build your\nown principles" },
-      { icon: "flag",    text: "Real mistakes,\nhonestly shared" },
-      { icon: "bulb",    text: "Easy to understand" },
-      { icon: "abc",     text: "Little heavy jargon" }
+      { icon: "steps",   text: "Step by step" },
+      { icon: "user",    text: "Made for\nbeginners" },
+      { icon: "compass", text: "Clear\nprinciples" },
+      { icon: "flag",    text: "Real mistakes\nshared" },
+      { icon: "bulb",    text: "Easy to follow" },
+      { icon: "abc",     text: "No heavy jargon" }
     ],
     chartCaption: "Example — reading a trend from a real chart (EMA line over candlesticks)",
     chartLegend: [
