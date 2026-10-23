@@ -43,11 +43,11 @@ export const CONTENT_EN: typeof CONTENT = {
   hero: {
     eyebrow: "For beginners who want to learn to read charts for investing",
     title: {
-      before: "Find support and resistance",
-      accent: "yourself in 30 days",
-      after: "without asking anyone again"
+      before: "30 days.",
+      accent: "Not good yet?",
+      after: "Take your money back"
     },
-    lead: "Finished 30 days of 1:1 coaching and still need others to hand you support and resistance? Take a full refund — 1:1 coaching plan only, conditions apply.",
+    lead: "Finish 30 days of 1:1 coaching and still can't find support and resistance yourself? I refund you in full — 1:1 coaching plan only, conditions apply, no profit guarantee.",
     points: [
       "Understand buying and selling pressure (Demand & Supply) first — the core of every technique",
       "Step by step, from basic chart reading to splitting your entries and exits",
