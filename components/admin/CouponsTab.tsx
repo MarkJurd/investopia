@@ -8,7 +8,7 @@ import type { PlanId } from "@/convex/plans";
 import { useContent } from "@/components/ContentContext";
 import { adminError, baht, fmtDate } from "@/components/admin/shared";
 
-const SALE_PLANS: PlanId[] = ["monthly", "yearly", "vip"];
+const SALE_PLANS: PlanId[] = ["monthly", "vip"];
 
 export default function CouponsTab() {
   const C = useContent();
@@ -19,7 +19,7 @@ export default function CouponsTab() {
   const [code, setCode] = useState("");
   const [kind, setKind] = useState<"percent" | "amount">("percent");
   const [value, setValue] = useState(10);
-  const [plans, setPlans] = useState<PlanId[]>(["yearly"]);
+  const [plans, setPlans] = useState<PlanId[]>(["vip"]);
   const [maxUses, setMaxUses] = useState("");
   const [expires, setExpires] = useState("");
   const [note, setNote] = useState("");
