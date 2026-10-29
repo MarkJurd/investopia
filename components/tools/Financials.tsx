@@ -20,18 +20,27 @@ type Company = Result["companies"][number];
 
 const FIN_KEYS = ["revenue", "grossProfit", "sga", "operatingIncome", "interestExpense", "netIncome", "depreciation", "longTermDebt"] as const;
 const tpl = (s: string, x: string | number) => s.replace("{x}", String(x));
+const MAX_PEERS = 10;
 const latest = (c: Company) => c.years[c.years.length - 1];
 
 export default function Financials({ symbol }: { symbol: string }) {
   const C = useContent();
   const D = C.screener;
   const run = useAction(api.screenerSec.compare);
+  const fetchPeer = useAction(api.screenerSec.addPeer);
   // ผลลัพธ์ผูกกับ symbol ที่ขอ — symbol เปลี่ยนแล้วผลเก่ายังไม่ตรง = กำลังโหลด
   const [got, setGot] = useState<{ symbol: string; status: "idle" | "error" | "notListed" | "quota"; result: Result | null } | null>(null);
   const [span, setSpan] = useState<5 | 10>(5);
+  // ผู้ใช้ปรับคู่แข่งเอง (เฉพาะหน้านี้ ไม่บันทึก): เอาออก = cik · เพิ่มเอง = ข้อมูลบริษัท
+  const [removed, setRemoved] = useState<number[]>([]);
+  const [added, setAdded] = useState<Company[]>([]);
+  const [addText, setAddText] = useState("");
+  const [addMsg, setAddMsg] = useState("");
+  const [adding, setAdding] = useState(false);
   const lang = C.locale.code === "en" ? "en" : "th";
 
   useEffect(() => {
+    setRemoved([]); setAdded([]); setAddText(""); setAddMsg("");
     let alive = true;
     run({ ticker: symbol })
       .then((r) => { if (alive) setGot({ symbol, status: r ? "idle" : "notListed", result: r }); })
@@ -42,8 +51,26 @@ export default function Financials({ symbol }: { symbol: string }) {
   const result = got?.symbol === symbol ? got.result : null;
 
   const self = result?.companies.find((c) => c.cik === result.selfCik);
-  const peers = result?.companies.filter((c) => c.cik !== result.selfCik && c.years.length > 0) ?? [];
   const g = result?.group;
+  const basePeers = result?.companies.filter((c) => c.cik !== result.selfCik && c.years.length > 0) ?? [];
+  const peers = [...basePeers.filter((c) => !removed.includes(c.cik)), ...added];
+  const edited = removed.length > 0 || added.length > 0;
+  const catchAll = g?.kind === "sic" && /NEC|MISC|OTHER|ALLIED/i.test(g.desc);
+  const addPeer = async () => {
+    const t = addText.trim().toUpperCase();
+    if (!t || !self) return;
+    setAddMsg("");
+    if (peers.length >= MAX_PEERS) { setAddMsg(tpl(D.addMax, MAX_PEERS)); return; }
+    setAdding(true);
+    try {
+      const c = await fetchPeer({ ticker: t });
+      if (c === null || c.years.length === 0) setAddMsg(tpl(D.addNotFound, t));
+      else if (c.cik === self.cik || peers.some((p) => p.cik === c.cik)) setAddMsg(tpl(D.addDup, c.ticker));
+      else if (basePeers.some((p) => p.cik === c.cik)) { setRemoved((r) => r.filter((x) => x !== c.cik)); setAddText(""); }
+      else { setAdded((a) => [...a, c]); setAddText(""); }
+    } catch (e) { console.error(e); setAddMsg(D.addError); }
+    setAdding(false);
+  };
   const ownerGroup = g?.kind === "owner" ? SCREENER_GROUPS.find((x) => x.id === g.id) : undefined;
   const groupName = ownerGroup ? ownerGroup.name[lang] : g?.kind === "sic" ? `${g.desc} (SIC ${g.sic})` : "";
   // ค่ากลางต้องมีคู่แข่งอย่างน้อย 2 รายที่คำนวณได้ ไม่งั้นไม่เทียบ
@@ -77,6 +104,7 @@ export default function Financials({ symbol }: { symbol: string }) {
           <section className="card sc-card">
             <h3 className="tool-h2">{D.tableTitle}</h3>
             {groupName && <p className="tool-asof">{D.group}: <b>{groupName}</b>{g?.kind === "sic" && <> · {D.sicPeers}</>}</p>}
+            {g?.kind === "sic" && <p className="tool-warn" role="note">{tpl(D.sicWarn, g.sic)}{catchAll && <> {D.sicCatchAll}</>}</p>}
             <div className="sc-scroll">
               <table className="sc-table">
                 <thead>
@@ -88,7 +116,7 @@ export default function Financials({ symbol }: { symbol: string }) {
                 <tbody>
                   {[self, ...peers].map((c) => (
                     <tr key={c.cik} className={c.cik === self.cik ? "sc-self" : ""}>
-                      <th scope="row"><b>{c.ticker}</b><span>{c.name} · {latest(c).end}</span></th>
+                      <th scope="row"><b>{c.ticker}</b><span>{c.name} · {latest(c).end}{c.cik !== self.cik && c.sicDesc ? ` · SIC ${c.sic}: ${c.sicDesc}` : ""}</span>{c.cik !== self.cik && <button type="button" className="sc-x" aria-label={tpl(D.removePeer, c.ticker)} title={tpl(D.removePeer, c.ticker)} onClick={() => (added.some((a) => a.cik === c.cik) ? setAdded((a) => a.filter((x) => x.cik !== c.cik)) : setRemoved((r) => [...r, c.cik]))}>✕</button>}</th>
                       {RATIOS.map((r) => { const x = r.calc(latest(c)); const ref = peerMedian(r); return <td key={r.id} className={x !== null && ref !== null ? `sc-c-${compare(r, x, ref)}` : ""}>{fmt(r, x, latest(c))}</td>; })}
                     </tr>
                   ))}
@@ -99,6 +127,14 @@ export default function Financials({ symbol }: { symbol: string }) {
                 </tbody>
               </table>
             </div>
+            <form className="sc-add" onSubmit={(e) => { e.preventDefault(); void addPeer(); }}>
+              <label htmlFor="sc-add-in">{D.addPeer}</label>
+              <input id="sc-add-in" value={addText} onChange={(e) => setAddText(e.target.value)} placeholder={D.addHint} maxLength={12} autoComplete="off" />
+              <button type="submit" className="btn btn-primary btn-sm" disabled={adding || addText.trim() === ""}>{D.addBtn}</button>
+              {edited && <button type="button" className="btn btn-ghost btn-sm" onClick={() => { setRemoved([]); setAdded([]); setAddMsg(""); }}>{D.resetPeers}</button>}
+            </form>
+            {addMsg && <p className="tool-warn" role="alert">{addMsg}</p>}
+            {edited && <p className="sc-note">{D.edited}</p>}
             <p className="sc-legend">{D.legend}</p>
             {anyEst && <p className="sc-note">{D.estNote}</p>}
             {gaps.length > 0 && (

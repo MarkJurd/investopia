@@ -184,6 +184,20 @@ type Result = {
   quota: { used: number; limit: number } | null;   // null = สมาชิก/แอดมิน (ไม่จำกัด)
 } | null;
 
+/** เพิ่มคู่แข่งที่ผู้ใช้เลือกเอง — คืนงบของหุ้นนั้น (null = ไม่พบในรายชื่อ) · ไม่นับโควตา */
+export const addPeer = action({
+  args: { ticker: v.string() },
+  returns: v.union(v.null(), companyValidator),
+  handler: async (ctx, { ticker }): Promise<Company | null> => {
+    if ((await getAuthUserId(ctx)) === null) throw new ConvexError("NOT_SIGNED_IN");
+    const c: Company | null = await ctx.runQuery(internal.screener.lookup, { ticker: ticker.trim().slice(0, 12) });
+    if (c === null) return null;
+    if (c.fetchedAt > 0 && c.ver === EXTRACT_VERSION) return c;
+    await syncCompany(ctx, c);
+    return (await ctx.runQuery(internal.screener.lookup, { ticker: c.ticker })) ?? c;
+  },
+});
+
 /** ค้นหุ้น 1 ตัว → งบของตัวเอง + คู่แข่ง (กลุ่มที่ผู้สอนจัดไว้ก่อน ถ้าไม่มีใช้ SIC เดียวกันที่ขนาดใกล้เคียง)
  *  null = ไม่พบหุ้นนี้ในรายชื่อ NYSE/Nasdaq */
 export const compare = action({

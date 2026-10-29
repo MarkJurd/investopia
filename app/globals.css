@@ -1200,3 +1200,9 @@ fieldset:disabled .quiz-choice{cursor:default}
 .sc-chart-legend i.self{border-color:var(--blue)}
 .sc-chart-legend i.med{border-color:#94A3B8}
 .sc-chart-legend i.rule{border-color:#16A34A;border-top-style:dashed;border-top-width:2px}
+.sc-table th[scope=row]{position:relative}
+.sc-x{position:absolute;top:6px;right:2px;border:0;background:none;color:var(--muted);cursor:pointer;font-size:13px;padding:2px 6px;border-radius:6px}
+.sc-x:hover{background:var(--bg-soft);color:var(--down)}
+.sc-add{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:14px;font-size:14px}
+.sc-add input{padding:7px 12px;border:1px solid var(--line);border-radius:10px;font:inherit;width:150px;text-transform:uppercase}
+.lv-conf{display:inline-flex;align-items:center;gap:6px}
