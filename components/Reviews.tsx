@@ -40,7 +40,7 @@ const AVATARS: Record<string, ReactNode> = {
 
 const LONG = 220;   // ตัวอักษร — ยาวกว่านี้ถึงจะมีปุ่ม "อ่านต่อ"
 
-function Card({ name, avatar, text, role, more, less }: { name: string; avatar: string; text: string; role: string; more: string; less: string }) {
+function Card({ name, avatar, photo, text, role, more, less }: { name: string; avatar: string; photo?: string; text: string; role: string; more: string; less: string }) {
   const [open, setOpen] = useState(false);
   const long = text.length > LONG;
   return (
@@ -49,11 +49,13 @@ function Card({ name, avatar, text, role, more, less }: { name: string; avatar: 
       <q className={long && !open ? "clamp" : undefined}>{text}</q>
       {long && <button type="button" className="rmore" onClick={() => setOpen(!open)}>{open ? less : more}</button>}
       <div className="rhead">
-        <svg viewBox="0 0 64 64" aria-hidden="true">
-          <defs><clipPath id={`av-${avatar}`}><circle cx="32" cy="32" r="32" /></clipPath></defs>
-          <circle cx="32" cy="32" r="32" fill="#DBEAFE" />
-          <g clipPath={`url(#av-${avatar})`} stroke="#0F172A" strokeWidth="1.6" strokeLinejoin="round">{AVATARS[avatar]}</g>
-        </svg>
+        {photo ? <img src={photo} alt="" width={56} height={56} className="rphoto" loading="lazy" /> : (
+          <svg viewBox="0 0 64 64" aria-hidden="true">
+            <defs><clipPath id={`av-${avatar}`}><circle cx="32" cy="32" r="32" /></clipPath></defs>
+            <circle cx="32" cy="32" r="32" fill="#DBEAFE" />
+            <g clipPath={`url(#av-${avatar})`} stroke="#0F172A" strokeWidth="1.6" strokeLinejoin="round">{AVATARS[avatar]}</g>
+          </svg>
+        )}
         <div><b>{name}</b><small>{role}</small></div>
       </div>
     </article>

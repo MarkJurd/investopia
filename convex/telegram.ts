@@ -11,6 +11,8 @@ import { adminUserIds } from "./admin";
 import { getMembership } from "./payments";
 import { insertComment } from "./community";
 import { PLANS } from "./plans";
+import { levelsFor } from "./market";
+import { nearestLevels } from "../lib/sr";
 
 const API = "https://api.telegram.org";
 const MAX_REPLY = 2000;
@@ -173,6 +175,29 @@ export const webhook = httpAction(async (ctx, req) => {
   const chatId = msg?.chat?.id;
   if (!msg || (typeof chatId !== "number" && typeof chatId !== "string")) return ok;
 
+  // ผู้ใช้ทั่วไป: เชื่อม/ยกเลิกรับสรุป Watchlist รายสัปดาห์ (ลิงก์ t.me/<bot>?start=<รหัส> จากหน้า /tools)
+  const raw = typeof msg.text === "string" ? msg.text.trim() : "";
+  const start = raw.match(/^\/start\s+([a-f0-9]{36})$/);
+  if (start || raw === "/stop") {
+    if (typeof update.update_id === "number" && !(await ctx.runMutation(internal.telegram.markSeen, { updateId: update.update_id }))) return ok;
+    if (start) {
+      const linked: boolean = await ctx.runMutation(internal.watchlist.linkTelegram, { token: start[1], chatId: Number(chatId) });
+      await sendMessage(token, chatId, linked
+        ? "✅ เชื่อมกับบัญชี INVESTOPIA แล้ว — จะได้รับสรุป Watchlist ทุกเช้าวันเสาร์\nพิมพ์ /stop เมื่อต้องการหยุดรับ"
+        : "❌ ลิงก์หมดอายุหรือใช้ไปแล้ว — กลับไปกด \"เชื่อม Telegram\" ที่หน้าเครื่องมือบนเว็บอีกครั้ง");
+    } else {
+      await ctx.runMutation(internal.watchlist.unlinkTelegram, { chatId: Number(chatId) });
+      await sendMessage(token, chatId, "หยุดส่งสรุป Watchlist แล้ว");
+    }
+    return ok;
+  }
+
+  // /chatid ในแชท/กลุ่มไหนก็ได้ → บอกรหัสแชท (ใช้ตั้ง TELEGRAM_NEWS_CHAT_ID ของกลุ่มข่าว) — รหัสแชทไม่ใช่ความลับ
+  if (/^\/chatid(@\w+)?$/.test(raw)) {
+    await sendMessage(token, chatId, `รหัสแชทนี้คือ ${chatId}`);
+    return ok;
+  }
+
   // ยังไม่ได้ตั้ง TELEGRAM_CHAT_ID: บอกรหัสแชทของคนที่ทักมา (เจ้าของใช้ตั้งค่า) — ยังไม่ทำอะไรกับเว็บ
   const owner = process.env.TELEGRAM_CHAT_ID;
   if (!owner) {
@@ -196,4 +221,61 @@ export const webhook = httpAction(async (ctx, req) => {
     : "❌ ยังไม่ได้ตั้งค่าบัญชีแอดมิน (ADMIN_EMAILS)";
   await sendMessage(token, chatId, answer);
   return ok;
+});
+
+/* ---------- สรุป Watchlist รายสัปดาห์ (สมาชิกที่เชื่อม Telegram) — cron เช้าวันเสาร์ ---------- */
+const money = (n: number) => n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const pct = (n: number) => `${n >= 0 ? "+" : "−"}${Math.abs(n).toFixed(1)}%`;
+const stars = (n: number) => "★".repeat(n) + "☆".repeat(3 - n);
+
+export const weeklyDigest = internalAction({
+  args: {},
+  returns: v.null(),
+  handler: async (ctx) => {
+    const token = process.env.TELEGRAM_BOT_TOKEN;
+    if (!token) return null;
+    const site = process.env.SITE_URL ?? "https://investopiaclass.com";
+    const recipients = await ctx.runQuery(internal.watchlist.digestRecipients, {});
+    const cache = new Map<string, Awaited<ReturnType<typeof levelsFor>>>();
+    for (const r of recipients) {
+      const lines: string[] = [];
+      for (const sym of r.symbols) {
+        if (!cache.has(sym)) {
+          try { cache.set(sym, await levelsFor(ctx, sym)); } catch (e) { console.error(sym, e); cache.set(sym, null); }
+        }
+        const d = cache.get(sym);
+        if (!d) { lines.push(`${sym} — ดึงข้อมูลไม่ได้สัปดาห์นี้`, ""); continue; }
+        const { support, resistance } = nearestLevels(d.levels.short, d.levels.long);
+        lines.push(`${d.symbol}  ${money(d.price)} ${d.currency}${d.weekClose ? `  (${pct(((d.price - d.weekClose) / d.weekClose) * 100)} ใน 1 สัปดาห์)` : ""}`);
+        if (support) lines.push(`  แนวรับใกล้สุด ${money(support.price)} (${pct(support.distPct)}) ความมั่นใจ ${stars(support.stars)}`);
+        if (resistance) lines.push(`  แนวต้านใกล้สุด ${money(resistance.price)} (${pct(resistance.distPct)}) ความมั่นใจ ${stars(resistance.stars)}`);
+        lines.push("");
+      }
+      const text = ["📋 สรุป Watchlist ประจำสัปดาห์ — INVESTOPIA", "", ...lines,
+        `ดูรายละเอียด: ${site}/tools`,
+        "ข้อมูลเพื่อการศึกษา ไม่ใช่สัญญาณซื้อขายหรือคำแนะนำการลงทุน ราคาอาจดีเลย์",
+        "พิมพ์ /stop เพื่อหยุดรับ"].join("\n");
+      await sendMessage(token, r.chatId, text);
+      await new Promise((res) => setTimeout(res, 100));   // Telegram จำกัด ~30 ข้อความ/วินาที
+    }
+    return null;
+  },
+});
+
+/* ---------- กลุ่มข่าว: ส่งข้อความทดสอบ (npx convex run telegram:sendNewsTest) — ต้องตั้ง TELEGRAM_NEWS_CHAT_ID ---------- */
+export const sendNewsTest = internalAction({
+  args: {},
+  returns: v.string(),
+  handler: async () => {
+    const token = process.env.TELEGRAM_BOT_TOKEN;
+    const chatId = process.env.TELEGRAM_NEWS_CHAT_ID;
+    if (!token || !chatId) return "ยังไม่ได้ตั้ง TELEGRAM_BOT_TOKEN / TELEGRAM_NEWS_CHAT_ID";
+    const site = process.env.SITE_URL ?? "https://investopiaclass.com";
+    const id = await sendMessage(token, chatId, [
+      "🧪 ทดสอบข่าวหุ้นสั้น — ข้อมูลสมมติ ไม่ใช่ข่าวจริง", "",
+      "📰 NVDA +2.4%", "NVDA ได้ดีลชิป AI รายใหญ่ (ตัวอย่างข้อความ)", "",
+      "ที่มา: (ตัวอย่าง)", `ดูหน้าหุ้น: ${site}/tools/stock/NVDA`,
+      "ข้อมูลเพื่อการศึกษา ไม่ใช่สัญญาณซื้อขายหรือคำแนะนำการลงทุน"].join("\n"));
+    return id === null ? "ส่งไม่สำเร็จ — เช็กว่าบอทอยู่ในกลุ่ม และรหัสกลุ่มถูกต้อง" : "ส่งแล้ว";
+  },
 });

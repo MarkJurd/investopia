@@ -70,7 +70,7 @@ export default function HomePage({ C }: { C: Content }) {
           <div>
             <span className="eyebrow">{H.eyebrow}</span>
             {/* หัวข้อ 3 บรรทัด: แต่ละบรรทัดไม่ถูกตัดกลางคำ */}
-            <h1><span>{H.title.before}</span><span className="blue">{H.title.accent}</span><span>{H.title.after}</span></h1>
+            <h1><span>{H.title.before}</span><span>{H.title.accent}</span><span className="blue">{H.title.after}</span></h1>
             <p className="lead">{H.lead}</p>
             <div className="hero-cta">
               <Link href={learnPath(C)} className="btn btn-free btn-lg">▶ {H.ctaFree}</Link>

@@ -24,7 +24,7 @@ export const CONTENT_EN: typeof CONTENT = {
       { text: "For you", href: "#fit" },
       { text: "Instructor",  href: "#instructor" },
       { text: "Pricing",     href: "#pricing" },
-      { text: "Dividends", href: "/en/tools/dividend" },
+      { text: "Tools", href: "/en/tools" },
       { text: "FAQ",         href: "#faq" }
     ],
     primary: "Start learning"
@@ -43,11 +43,11 @@ export const CONTENT_EN: typeof CONTENT = {
   hero: {
     eyebrow: "For beginners who want to learn to read charts for investing",
     title: {
-      before: "30 days.",
-      accent: "Not good yet?",
-      after: "Take your money back"
+      before: "30-day challenge",
+      accent: "Finish the course and still can't find support, resistance and your own entries and exits?",
+      after: "I refund you 100%"
     },
-    lead: "Finish 30 days of 1:1 coaching and still can't find support and resistance yourself? I refund you in full — 1:1 coaching plan only, conditions apply, no profit guarantee.",
+    lead: "Finish 4 one-to-one sessions and still can't find support and resistance yourself? I refund you in full — 1:1 coaching plan only, conditions apply, no profit guarantee.",
     points: [
       "Understand buying and selling pressure (Demand & Supply) first — the core of every technique",
       "Step by step, from basic chart reading to splitting your entries and exits",
@@ -55,7 +55,7 @@ export const CONTENT_EN: typeof CONTENT = {
     ],
     ctaFree: "Try it free",
     ctaFreeHint: "Sign in with Google and open the free lessons right away — no payment needed.",
-    ctaPrimary: "See the 30-day guarantee plan",
+    ctaPrimary: "See the 4-session guarantee plan",
     photo: "/hero.png",
     badges: [
       { icon: "steps",   text: "Step by step" },
@@ -144,9 +144,9 @@ export const CONTENT_EN: typeof CONTENT = {
     more: "Read more",
     less: "Show less",
     items: [
-      { name: "Net", avatar: "net", text: "I feel he's a young person who stays focused — and I don't even know how old the teacher is, haha 555 — but he also seems really calm. If someone I know wants to learn this, I'd recommend him." },
-      { name: "Fang", avatar: "fang", text: "It's all good. He teaches in a way that's easy to follow, and even people who don't know the terms aren't lost. He focuses on the basics and how to think so you can build on them — if this part is checked and done, what should come next. I think it suits people who want things easy to understand. What I got is the basics you should know, the basics few people go into detail about, like Higher High and Lower Low, and drawing trendlines. Others just tell you to try it, but nobody teaches whether what you did is right. He does, and I love that part. In future I can check by myself whether it's right or wrong, which I don't think other places ever give." },
-      { name: "Mike", avatar: "mike", text: "Great teaching and solid content, exactly what I needed. It's real chart learning where you actually practise." }
+      { name: "Net", avatar: "net", photo: "/reviews/net.jpg", text: "I feel he's a young person who stays focused — and I don't even know how old the teacher is, haha 555 — but he also seems really calm. If someone I know wants to learn this, I'd recommend him." },
+      { name: "Fang", avatar: "fang", photo: "/reviews/fang.jpg", text: "It's all good. He teaches in a way that's easy to follow, and even people who don't know the terms aren't lost. He focuses on the basics and how to think so you can build on them — if this part is checked and done, what should come next. I think it suits people who want things easy to understand. What I got is the basics you should know, the basics few people go into detail about, like Higher High and Lower Low, and drawing trendlines. Others just tell you to try it, but nobody teaches whether what you did is right. He does, and I love that part. In future I can check by myself whether it's right or wrong, which I don't think other places ever give." },
+      { name: "Mike", avatar: "mike", photo: "/reviews/mike.jpg", text: "Great teaching and solid content, exactly what I needed. It's real chart learning where you actually practise." }
     ]
   },
 
@@ -264,7 +264,7 @@ export const CONTENT_EN: typeof CONTENT = {
       { text: "Curriculum", href: "#curriculum" },
       { text: "Instructor", href: "#instructor" },
       { text: "Plans",      href: "#pricing" },
-      { text: "Dividend calculator", href: "/en/tools/dividend" },
+      { text: "Tools", href: "/en/tools" },
       { text: "FAQ",        href: "#faq" }
     ],
     contactTitle: "Contact",
@@ -487,6 +487,174 @@ export const CONTENT_EN: typeof CONTENT = {
     ctaButton: "See the curriculum",
     backHome: "← Home",
     tools: "Tools"
+  },
+
+  /* 13a) Tools hub (/tools) + stock page (/tools/stock/XXX) + Watchlist — never "buy/sell point", "signal", "recommended" */
+  tools: {
+    metaTitle: "Stock Tools",
+    metaDesc: "Search a US stock once to see price, support & resistance and financials vs peers — plus a Watchlist and dividend calculator",
+    title: "Tools",
+    lead: "Search a stock once and see its price, support & resistance and financials vs peers on one page.",
+    searchLabel: "Search a US stock or ETF",
+    searchPh: "Type a ticker or company name, e.g. KO, Apple",
+    searchBtn: "Open",
+    signInTitle: "Sign in to use the tools",
+    signInText: "Free — just sign in with Google first",
+    back: "← All tools",
+    whatTitle: "What's on a stock page",
+    cards: [
+      { t: "Price + support & resistance", d: "Latest price, trend, and levels where price has reacted before, with a confidence rating", tag: "Free" },
+      { t: "Financials vs peers", d: "6 key ratios compared with companies in the same industry, 5 years of history", tag: "Free for 5 companies a day · unlimited for members" }
+    ],
+    dividendTitle: "Portfolio dividend calculator",
+    dividendText: "Pick fund/index weights and see your after-tax dividend per year",
+    dividendTag: "Free, no sign-in",
+    open: "Open →",
+
+    watchTitle: "My Watchlist",
+    watchEmpty: "Your Watchlist is empty — open a stock page and tap \"☆ Add to Watchlist\"",
+    watchCount: "{x} of {y}",
+    watchFree: "Free accounts can watch 3 stocks · members get 20 plus a weekly Telegram summary",
+    watchAdd: "☆ Add to Watchlist",
+    watchAdded: "★ In Watchlist",
+    watchRemove: "Remove",
+    watchFull: "Watchlist is full ({x}) — remove one first",
+    watchLoading: "Loading prices...",
+    watchMissing: "Couldn't load",
+    nearSupport: "Nearest support",
+    nearResistance: "Nearest resistance",
+    tgTitle: "Weekly Watchlist summary on Telegram, every Saturday morning",
+    tgText: "Price and nearest support/resistance for each stock in your Watchlist, every week — for learning only, not a trading signal",
+    tgConnect: "Connect Telegram",
+    tgConnected: "Telegram connected ✓",
+    tgDisconnect: "Disconnect",
+    tgMemberOnly: "Members only",
+    tgNotReady: "Not available yet",
+    tgOpened: "Telegram opened — press Start in the bot chat to finish (the link works for 30 minutes)",
+    seePlans: "See plans",
+
+    cautionTitle: "Before you use this",
+    caution: [
+      "All data is historical and from public sources; it may be delayed or inaccurate — check with your broker and the original filings before deciding.",
+      "Support and resistance are just areas where price has reacted before; nobody knows where price will stop or break through.",
+      "These tools are not trading signals and don't recommend any stock — the decision is yours."
+    ]
+  },
+
+  /* 13b) Tool: compare financials with peers (/tools/screener) — members only. Tickers/groups + instructor rules in lib/screener.ts */
+  screener: {
+    sectionTitle: "Financials vs peers",
+    quotaUsed: "Free today: {x} of 5 companies viewed",
+    quotaOut: "You've viewed 5 companies' financials today — come back tomorrow, or become a member for unlimited access",
+    estNote: "≈ = estimated, because the filing doesn't show this line directly (gross profit ≈ revenue − (total costs − SG&A − depreciation) · SG&A ≈ general & admin expense). Other stock-data sites use similar methods; numbers may differ slightly.",
+    metaTitle: "Compare Financials with Peers",
+    metaDesc: "Search a US stock and compare 6 financial ratios with companies in the same industry — for members",
+    chip: "Members",
+    title: "Is this business still healthy? Compare its financials with industry peers",
+    lead: "Type a ticker to see 6 financial ratios next to its competitors, the group median and the company's own trend — one number alone says little, so read them together.",
+    searchLabel: "Ticker or company name (US stocks on NYSE/Nasdaq)",
+    searchPh: "e.g. KO, NVDA, Apple",
+    searchBtn: "Compare",
+    available: "Peer groups set by the instructor (any other stock can be searched)",
+    notListed: "{x} not found — type a ticker (e.g. KO) or pick from the list that appears as you type · US stocks on NYSE/Nasdaq only",
+    loading: "Loading financial statements...",
+    error: "Couldn't load the data. Please try again.",
+    failed: "Couldn't load: {x}",
+    signInTitle: "Sign in to use this tool",
+    signInText: "The peer comparison tool is for members — sign in with the Google account you used to buy your plan",
+    noMemberTitle: "This tool is for members",
+    noMemberText: "This account has no active plan, or the plan has expired.",
+    finance: "This is a financial company (bank/insurer/broker/REIT) — its statements have no cost of sales or gross profit like an ordinary business, so these ratios don't fit well. Use finance-specific measures instead.",
+    noData: "No 10-K financials for {x} yet — usually a foreign company filing 20-F, a fund/SPAC, or a newly listed company.",
+    noPeers: "No peers with complete financials found in the same industry code, so there is no median to compare with.",
+    sicPeers: "Peers = companies in the same SEC industry code with the closest revenue (up to 7)",
+    seePlans: "See plans",
+
+    group: "Industry group",
+    tableTitle: "Peer comparison (each company's latest fiscal year)",
+    colCompany: "Company",
+    na: "—",
+    legend: "Colour only shows direction vs the peer median: green = better · grey = in line · red = weaker (it does not tell you to buy or sell)",
+    gapsTitle: "Why some cells have no number (—)",
+    why: {
+      noItem: {
+        revenue: "The filing has no total revenue line the system can read.",
+        grossProfit: "No Gross Profit in the filing — some service, restaurant and software companies don't break out cost of sales, so gross profit can't be found (we don't guess).",
+        sga: "The filing has no single SG&A line — some companies split it into several items or use another label.",
+        operatingIncome: "No operating income line the system can read.",
+        interestExpense: "No separate interest expense found — possibly very little debt, or it's reported net of interest income (we don't assume 0 — check the original filing).",
+        netIncome: "No net income line the system can read.",
+        depreciation: "No separate depreciation found — it may be included in another line.",
+        longTermDebt: "No interest-bearing long-term debt found — possibly no debt, or a line label we don't recognise yet (we don't assume 0)."
+      },
+      loss: {
+        revenue: "Revenue is zero or negative, so the ratio can't be computed.",
+        grossProfit: "Gross profit is zero or negative — sales didn't cover cost of sales, so the ratio can't be computed (worth reading yourself, not just a blank).",
+        operatingIncome: "The business had an operating loss this year, so a ratio to profit can't be computed (worth reading yourself, not just a blank).",
+        netIncome: "Net loss this year, so a ratio to profit can't be computed (worth reading yourself, not just a blank)."
+      }
+    },
+    summaryTitle: "Ratio-by-ratio summary for {x}",
+    vsPeers: "Vs peers",
+    peerMedian: "Peer median",
+    trend: "Vs its own 5-year average",
+    avg5: "5-yr avg",
+    rule: "Instructor's rule",
+    noRule: "No rule — compare with peers",
+    pass: "Pass",
+    fail: "Miss",
+    verdict: { better: "Better than group", similar: "In line with group", worse: "Weaker than group" },
+    trendWord: { better: "Improving", similar: "Stable", worse: "Weakening" },
+    times: "x",
+
+    ratios: {
+      gpm:      { name: "Gross Profit Margin", formula: "Gross profit ÷ Revenue", rule: "", d: "Out of every 100 in sales, how much is left as gross profit. High = pricing power or low costs — varies a lot by industry, so compare with peers." },
+      sga:      { name: "SG&A ratio", formula: "SG&A expense ÷ Gross profit", rule: "below 30%", d: "How much of gross profit is spent on selling and admin. Lower leaves more as profit." },
+      interest: { name: "Interest Expense Ratio", formula: "Interest expense ÷ Operating profit", rule: "below 15%", d: "What share of operating profit goes to interest. Lower means less work done for lenders." },
+      npm:      { name: "Net Profit Margin", formula: "Net income ÷ Revenue", rule: "above 20%", d: "Out of every 100 in sales, how much ends up as net profit after everything." },
+      dep:      { name: "Depreciation to Revenue", formula: "Depreciation ÷ Revenue", rule: "below 15% (above is high)", d: "How capital-heavy the business is. High = it keeps reinvesting in equipment and buildings to stay in business." },
+      debt:     { name: "Long-term Debt ÷ Net Income", formula: "Interest-bearing long-term debt ÷ Net income", rule: "", d: "How many years of profit it would take to repay long-term debt. Lower = less reliance on debt." }
+    },
+
+    finTitle: "Condensed financials of {x} (USD millions)",
+    fin: {
+      revenue: "Revenue", grossProfit: "Gross profit", sga: "SG&A expense", operatingIncome: "Operating income",
+      interestExpense: "Interest expense", netIncome: "Net income", depreciation: "Depreciation", longTermDebt: "Interest-bearing long-term debt"
+    },
+    source: "Source: annual reports (10-K) from SEC EDGAR · last checked {x} (updated automatically every week) · companies' fiscal years may end in different months",
+    secLink: "Original filings on SEC",
+
+    cautionTitle: "Before you use this",
+    caution: [
+      "Numbers are pulled automatically from SEC filings — companies label items differently, so figures may be off. Check the original filing before relying on them.",
+      "The instructor's rules are a starting point, not fixed laws — some industries run high or low across the board, so weigh peers and trend too.",
+      "Financial statements describe the past; they don't tell you the future share price or returns.",
+      "This tool doesn't recommend buying or selling any stock — the decision is yours."
+    ]
+  },
+
+  /* 13c) Current price + support & resistance (top of the stock page) — free, sign-in required · computed in lib/sr.ts */
+  levels: {
+    loading: "Loading price...",
+    error: "The price data source isn't responding. Please try again in a moment.",
+    notFound: "Couldn't find {x}, or it has too little price history — works for US stocks and ETFs (e.g. KO, AAPL, SPY).",
+    vsPrev: "vs previous day",
+    asOf: "As of {x}",
+    marketOpen: "Market open",
+    marketClosed: "Market closed — last closing price",
+    delayNote: "Prices refresh about once a minute and may be delayed — not real-time.",
+    stale: "The data source isn't responding; showing previously stored data.",
+    trendLabel: "Trend",
+    trend: { up: "Uptrend", down: "Downtrend", sideways: "Sideways" },
+    horizon: { short: "Short term (1–7 days)", long: "Long term (2–8 weeks)" },
+    ladderTitle: "Support & resistance",
+    resistance: "Resistance",
+    support: "Support",
+    now: "Price now",
+    confLabel: "Confidence",
+    conf: { 1: "Low", 2: "Medium", 3: "High" },
+    confHint: "High confidence = several methods point to the same price, and price has turned around here several times",
+    noLevels: "No levels found within a sensible range"
   },
 
   community: {

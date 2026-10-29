@@ -3,6 +3,7 @@ import { v } from "convex/values";
 import { authTables } from "@convex-dev/auth/server";
 import { planValidator } from "./plans";
 import { quizItemValidator } from "./course";
+import { screenerYearValidator } from "./screener";
 
 // ตารางของระบบล็อกอิน (users, sessions, accounts ฯลฯ) มาจาก Convex Auth
 export default defineSchema({
@@ -201,4 +202,50 @@ export default defineSchema({
     .index("by_userId", ["userId"])
     .index("by_postId", ["postId"])
     .index("by_userId_and_lessonKey", ["userId", "lessonKey"]),
+
+  // หุ้นสหรัฐฯ (NYSE/Nasdaq) + งบปีจาก SEC EDGAR สำหรับเครื่องมือเทียบงบ — อัปเดตอัตโนมัติทุกสัปดาห์ (convex/crons.ts)
+  screenerCompanies: defineTable({
+    cik: v.number(),
+    ticker: v.string(),                       // ticker หลัก (บางบริษัทมีหลายตัว ดู screenerTickers)
+    name: v.string(),
+    exchange: v.string(),
+    sic: v.optional(v.string()),              // รหัสอุตสาหกรรมของ SEC (ใช้หาคู่แข่ง)
+    sicDesc: v.optional(v.string()),
+    lastFiled: v.optional(v.string()),        // วันที่ยื่น 10-K ล่าสุด (ใช้เช็กว่ามีงบใหม่ไหม)
+    fetchedAt: v.number(),                    // 0 = ยังไม่เคยดึง
+    ver: v.optional(v.number()),              // เวอร์ชันวิธีอ่านงบ (EXTRACT_VERSION ใน screenerSec.ts)
+    years: v.array(screenerYearValidator),
+  })
+    .index("by_cik", ["cik"])
+    .index("by_sic", ["sic"])
+    .searchIndex("search_name", { searchField: "name" }),
+
+  screenerTickers: defineTable({ ticker: v.string(), cik: v.number() }).index("by_ticker", ["ticker"]),
+
+  // ราคา + แท่งรายวันล่าสุดของหุ้น (เครื่องมือแนวรับ–แนวต้าน) — แคช ~1 นาทีต่อ symbol กันยิงแหล่งข้อมูลซ้ำ
+  marketCache: defineTable({
+    symbol: v.string(),
+    fetchedAt: v.number(),
+    name: v.string(),
+    currency: v.string(),
+    price: v.number(),
+    regStart: v.number(),                     // ช่วงตลาดปกติของวันนี้ (วินาที unix) ใช้ดูว่าตลาดเปิดอยู่ไหม
+    regEnd: v.number(),
+    bars: v.array(v.object({ t: v.number(), o: v.number(), h: v.number(), l: v.number(), c: v.number() })),
+  }).index("by_symbol", ["symbol"]),
+
+  // โควตาฟรีของเครื่องมือเทียบงบ: บริษัทที่ผู้ใช้ (ไม่ใช่สมาชิก) ดูไปแล้วในวันนั้น (เวลาไทย)
+  toolUsage: defineTable({ userId: v.id("users"), day: v.string(), tickers: v.array(v.string()) })
+    .index("by_userId_and_day", ["userId", "day"]),
+
+  // Watchlist ของผู้ใช้ (ฟรี 3 ตัว · สมาชิก 20 ตัว)
+  watchlist: defineTable({ userId: v.id("users"), symbol: v.string(), addedAt: v.number() }).index("by_userId", ["userId"]),
+
+  // ผูกบัญชีเว็บกับแชท Telegram (รับสรุป Watchlist รายสัปดาห์) · token = รหัสใช้ครั้งเดียวตอนกดเชื่อม
+  telegramLinks: defineTable({
+    userId: v.id("users"),
+    chatId: v.optional(v.number()),
+    token: v.optional(v.string()),
+    tokenAt: v.optional(v.number()),
+  }).index("by_userId", ["userId"]).index("by_token", ["token"]).index("by_chatId", ["chatId"]),
 });
