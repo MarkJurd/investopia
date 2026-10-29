@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>INVESTOPIA — จำลองรอบแก้ v3</title>
+<link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--blue:#1D4ED8;--blue-soft:#EEF4FF;--ink:#0F172A;--muted:#64748B;--line:#E2E8F0;--green:#16A34A}
+*{box-sizing:border-box}
+body{margin:0;font-family:Anuphan,sans-serif;color:var(--ink);background:#fff}
+.note{background:#FEF9C3;border-bottom:1px solid #FDE68A;padding:10px 16px;font-size:14px;text-align:center}
+.tag{display:inline-block;background:#111;color:#fff;font-size:12px;padding:3px 10px;border-radius:99px;margin:28px 0 0 16px}
+section{padding:56px 16px}
+.wrap{max-width:1120px;margin:0 auto}
+.eyebrow{display:inline-block;background:var(--blue-soft);color:var(--blue);font-weight:600;font-size:14px;padding:6px 12px;border-radius:99px}
+.btn{display:inline-flex;align-items:center;gap:8px;border-radius:12px;padding:14px 22px;font:600 16px Anuphan;text-decoration:none;border:0;cursor:pointer}
+.btn-p{background:var(--blue);color:#fff}
+.btn-g{background:#fff;color:var(--blue);border:1.5px solid #BFD1FF}
+
+/* 1) Hero + ปุ่มทดลองเรียนฟรี */
+.hero h1{font-size:clamp(34px,5vw,56px);line-height:1.15;margin:16px 0}
+.hero h1 span{color:var(--blue)}
+.hero p{color:var(--muted);font-size:18px;margin:0 0 26px}
+.cta{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.btn-free{background:var(--green);color:#fff;font-size:18px;padding:16px 26px;box-shadow:0 10px 24px rgba(22,163,74,.3);position:relative}
+.btn-free .badge{background:#FACC15;color:#422006;font-size:12px;font-weight:700;padding:2px 8px;border-radius:99px}
+.free-hint{width:100%;font-size:14px;color:var(--muted)}
+@media(prefers-reduced-motion:no-preference){.btn-free{animation:pulse 2.4s infinite}}
+@keyframes pulse{0%,100%{box-shadow:0 10px 24px rgba(22,163,74,.3)}50%{box-shadow:0 10px 34px rgba(22,163,74,.55)}}
+
+.hero{overflow:hidden}
+.hero-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:24px;align-items:center}
+.facts{background:var(--blue);color:#fff;padding:14px 16px}
+.facts .wrap{display:flex;flex-wrap:wrap;justify-content:space-around;gap:10px 24px;font-weight:600;font-size:15px}
+
+/* รูปตัดพื้นหลังแบบ "โผล่จากวงกลม": หัวพ้นขอบบน ส่วนล่างถูกตัดตามโค้งวงกลม → ขอบที่โดนตัดของรูปต้นฉบับ (แขน/ท้อง) ไม่โผล่ */
+.portrait{position:relative;justify-self:center;width:min(100%,440px);aspect-ratio:1/1.4}
+.disc{position:absolute;left:0;right:0;bottom:0;aspect-ratio:1;border-radius:50%;background:linear-gradient(160deg,#EFF6FF,#BFDBFE 60%,#93C5FD)}
+.disc::after{content:"";position:absolute;inset:16px;border-radius:50%;border:2px solid rgba(255,255,255,.6)}
+.clip{position:absolute;inset:0;border-radius:0 0 50% 50%/0 0 35.71% 35.71%;overflow:hidden}
+.ppl{position:absolute;top:26%;left:50%;height:97%;width:auto;transform:translateX(-50%)}
+.burst,.glow{position:absolute;left:50%;top:64.29%;aspect-ratio:1;border-radius:50%;transform:translate(-50%,-50%);pointer-events:none}
+.burst{width:175%;background:repeating-conic-gradient(rgba(250,204,21,.9) 0 5deg,transparent 5deg 15deg);-webkit-mask:radial-gradient(circle,#000 28%,transparent 70%);mask:radial-gradient(circle,#000 28%,transparent 70%);opacity:.22}
+.glow{width:150%;background:radial-gradient(circle,#FEF08A 0%,rgba(253,224,71,.7) 30%,rgba(250,204,21,0) 68%);opacity:.45}
+@media(prefers-reduced-motion:no-preference){
+}
+@keyframes rise{from{opacity:0;transform:translate(-50%,45%)}to{opacity:1;transform:translate(-50%,0)}}
+@keyframes burst{0%{opacity:0;transform:translate(-50%,-50%) scale(.4) rotate(-20deg)}22%{opacity:1;transform:translate(-50%,-50%) scale(1.08) rotate(0)}40%{opacity:.45}55%{opacity:.95}100%{opacity:.22;transform:translate(-50%,-50%) scale(1) rotate(12deg)}}
+@keyframes glow{0%{opacity:0;transform:translate(-50%,-50%) scale(.5)}20%{opacity:1;transform:translate(-50%,-50%) scale(1.15)}40%{opacity:.5}55%{opacity:.9}100%{opacity:.45;transform:translate(-50%,-50%) scale(1)}}
+@media(max-width:860px){.hero-grid{grid-template-columns:1fr}.portrait{width:min(78%,340px)}}
+
+
+/* Hero: รูปเต็มตัว + การ์ดกราฟบังขอบที่ถูกตัด (แนวเดียวกับโปสเตอร์ตัวอย่าง) */
+.hstage{position:relative;justify-self:center;width:min(100%,540px);aspect-ratio:760/706;margin-top:30px}
+.hstage::before{content:"";position:absolute;inset:-12% -20% -6%;background-image:linear-gradient(#E0E9FF 1px,transparent 1px),linear-gradient(90deg,#E0E9FF 1px,transparent 1px);background-size:34px 34px;-webkit-mask:radial-gradient(closest-side,#000,transparent);mask:radial-gradient(closest-side,#000,transparent)}
+.hglow{position:absolute;left:50%;top:28%;width:80%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,rgba(253,224,71,.75),rgba(253,224,71,0) 65%);filter:blur(6px);opacity:.35}
+.hpanel{position:absolute;left:14%;right:14%;top:52%;bottom:4%;border-radius:28px;background:linear-gradient(#EEF4FF,#F8FAFF);border:2px dashed #C7D7FE}
+.fan{position:absolute;width:26%;aspect-ratio:1/1.05;transform:rotate(var(--r))}
+.fc{width:100%;height:100%;background:#fff;border-radius:18px;box-shadow:0 12px 30px rgba(15,23,42,.12);padding:12%;display:flex;flex-direction:column;justify-content:center;gap:8px}
+.fc b{font-size:13px;white-space:nowrap}.fc svg{width:100%;height:auto}
+.f1{left:2%;top:34%;--r:-18deg}.f2{left:17%;top:22%;--r:-8deg}.f3{right:17%;top:20%;--r:8deg}.f4{right:2%;top:33%;--r:18deg}
+.hppl{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:bottom}
+.fcard{position:absolute;background:#fff;border-radius:16px;box-shadow:0 16px 36px rgba(15,23,42,.18);padding:10px 12px;display:flex;flex-direction:column;gap:6px;z-index:2}
+.fcard span{font-size:12.5px;font-weight:600;white-space:nowrap}.fcard svg{width:100%;height:auto}
+.fl{left:3%;top:64%;width:34%;rotate:-4deg}
+.fr{right:2%;top:58%;width:34%;rotate:4deg}
+.hfade{position:absolute;left:-10%;right:-10%;bottom:-2px;height:30%;background:linear-gradient(rgba(255,255,255,0),#fff 75%);z-index:3}
+@media(prefers-reduced-motion:no-preference){
+  .hppl{animation:hrise 1s cubic-bezier(.22,1,.36,1) .15s both}
+  .fan{animation:fanin .7s cubic-bezier(.34,1.4,.64,1) both}
+  .f1{animation-delay:.55s}.f2{animation-delay:.65s}.f3{animation-delay:.75s}.f4{animation-delay:.85s}
+  .fcard{animation:cardin .6s cubic-bezier(.34,1.4,.64,1) 1s both}
+  .hglow{animation:hflash 1.5s ease-out .5s both}
+}
+@keyframes hrise{from{opacity:0;transform:translateY(90px)}to{opacity:1;transform:none}}
+@keyframes fanin{from{opacity:0;transform:translateY(40px) rotate(0) scale(.8)}to{opacity:1;transform:rotate(var(--r))}}
+@keyframes cardin{from{opacity:0;translate:0 24px}to{opacity:1;translate:0 0}}
+@keyframes hflash{0%{opacity:0;transform:translate(-50%,-50%) scale(.5)}25%{opacity:1;transform:translate(-50%,-50%) scale(1.2)}45%{opacity:.5}60%{opacity:.9}100%{opacity:.35;transform:translate(-50%,-50%) scale(1)}}
+@media(max-width:860px){.fc b,.fcard span{font-size:11px}}
+
+/* ป้ายคำจุดเด่น (แทนการ์ดกราฟ) */
+.bchip{position:absolute;z-index:2;display:flex;align-items:center;gap:10px;background:#fff;border-radius:999px;padding:8px 16px 8px 8px;box-shadow:0 12px 28px rgba(15,23,42,.14);font-size:14px;line-height:1.25}
+.bchip i,.fcard i{display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:var(--blue-soft);color:var(--blue);flex:none}
+.bchip svg,.fcard i svg{width:20px;height:20px}
+.c1{left:-2%;top:14%;rotate:-5deg}.c2{right:-3%;top:30%;rotate:5deg}.c3{left:-4%;top:37%;rotate:3deg}.c4{right:-1%;top:6%;rotate:-3deg}
+.fcard.bl,.fcard.br{align-items:flex-start;gap:10px;padding:20px 18px 24px;width:36%}
+.fcard b{font-size:17px;line-height:1.3}
+.fcard.bl i{background:#FEF9C3;color:#A16207}.fcard.br i{background:#FEE2E2;color:#B91C1C}
+.bl{left:2%;top:63%;rotate:-4deg}.br{right:1%;top:62%;rotate:4deg}
+@media(prefers-reduced-motion:no-preference){.bchip{animation:cardin .6s cubic-bezier(.34,1.4,.64,1) both}.c1{animation-delay:.7s}.c2{animation-delay:.85s}.c3{animation-delay:.78s}.c4{animation-delay:.92s}.bl{animation-delay:1s}.br{animation-delay:1.1s}}
+@media(max-width:860px){.bchip{font-size:12px}.fcard b{font-size:14px}.c1{left:0}.c2{right:0}}
+
+/* 2) ผู้สอน: 4 รูปสลับ */
+.ins{position:relative;overflow:hidden;background:#fff}
+.ins .wrap{display:grid;grid-template-columns:1.05fr .95fr;align-items:center;gap:24px;position:relative}
+.ins-txt{position:relative;z-index:2}
+.ins-txt h2{font-size:clamp(32px,4.4vw,50px);line-height:1.15;margin:14px 0}
+.ins-txt h2 span{color:var(--blue)}
+.ins-txt p{color:#334155;line-height:1.8;max-width:520px}
+.ins-por .disc{background:linear-gradient(150deg,#60A5FA,#1D4ED8 55%,#0A1B4D);overflow:hidden}
+.ins-por .disc::after{border-color:rgba(255,255,255,.3)}
+.ins-por .disc svg{position:absolute;inset:0;width:100%;height:100%;opacity:.3}
+.ins-por .ppl{opacity:0;transform:translate(-50%,40%)}
+.ins-por .ppl.on{animation:pop .8s cubic-bezier(.34,1.4,.64,1) forwards}
+.ins-por .ppl.off{animation:out .35s ease forwards}
+@keyframes pop{to{opacity:1;transform:translate(-50%,0)}}
+@keyframes out{from{opacity:1;transform:translate(-50%,0)}to{opacity:0;transform:translate(-50%,12%)}}
+.dots{position:absolute;left:50%;bottom:-26px;transform:translateX(-50%);display:flex;gap:6px}
+.dots i{width:8px;height:8px;border-radius:50%;background:#BFD1FF}.dots i.on{background:var(--blue)}
+@media(max-width:860px){.ins .wrap{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){.ins-por .ppl{animation:none!important;transform:translate(-50%,0)}.ins-por .ppl.on{opacity:1}}
+
+/* 3) รีวิว */
+.rev{background:#F8FAFF}
+.rev h2{font-size:clamp(28px,4vw,40px);margin:12px 0 30px}
+.rev-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.rcard{background:#fff;border:1px solid var(--line);border-radius:20px;padding:24px;display:flex;flex-direction:column;gap:14px;box-shadow:0 8px 24px rgba(15,23,42,.05)}
+.rcard q{font-size:15.5px;line-height:1.75;color:#334155;quotes:"“" "”";flex:1}
+.rhead{display:flex;gap:14px;align-items:center}
+.rhead svg{width:64px;height:64px;flex:none}
+.rhead b{display:block;font-size:17px}.rhead small{color:var(--muted)}
+.stars{color:#F59E0B;letter-spacing:2px}
+.rcard.long q{display:-webkit-box;-webkit-line-clamp:7;-webkit-box-orient:vertical;overflow:hidden}
+.rcard.long.open q{display:block}
+.more{background:none;border:0;color:var(--blue);font:600 14px Anuphan;cursor:pointer;padding:0;text-align:left}
+@media(max-width:860px){.rev-grid{grid-template-columns:1fr}}
+
+/* 4) ห้องเรียน */
+.learn{background:#F1F5F9}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.panel{background:#fff;border-radius:18px;padding:20px;border:1px solid var(--line)}
+.panel h3{margin:0 0 4px}.panel .sub{color:var(--muted);font-size:14px;margin:0 0 14px}
+.trial{background:linear-gradient(90deg,#DCFCE7,#EEF4FF);border-radius:12px;padding:12px 14px;font-size:14px;margin-bottom:14px;display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
+.trial a{color:var(--blue);font-weight:600}
+.row{display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--line);border-radius:12px;margin-bottom:8px}
+.row .n{width:28px;height:28px;border-radius:8px;background:var(--blue-soft);color:var(--blue);display:grid;place-items:center;font-weight:700;font-size:13px;flex:none}
+.row .t{flex:1;font-size:15px}
+.pill{font-size:12px;font-weight:600;padding:3px 9px;border-radius:99px;white-space:nowrap}
+.p-free{background:#DCFCE7;color:#166534}.p-lock{background:#FEF3C7;color:#92400E}.p-soon{background:#F1F5F9;color:#64748B}
+.row.lock .t{color:#334155}.row.soon{opacity:.6}
+.vid{aspect-ratio:16/9;border-radius:12px;background:#0F172A;display:grid;place-items:center;color:#94A3B8;margin-bottom:14px}
+.att h4{margin:14px 0 8px;font-size:15px}
+.att a{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;text-decoration:none;color:var(--ink);margin-bottom:6px;font-size:14px}
+.att a:hover{border-color:var(--blue)}
+.att a span{flex:1}.att a em{font-style:normal;color:var(--blue);font-weight:600;font-size:13px}
+.admin{margin-top:16px;border:1.5px dashed #BFD1FF;border-radius:12px;padding:12px;font-size:13px;background:#FAFCFF}
+.admin input{font:14px Anuphan;padding:8px 10px;border:1px solid var(--line);border-radius:8px;width:100%;margin:4px 0}
+.admin .r{display:grid;grid-template-columns:1fr 1.4fr auto;gap:6px;align-items:center}
+.admin button{font:600 13px Anuphan;background:var(--blue);color:#fff;border:0;border-radius:8px;padding:9px 12px}
+@media(max-width:860px){.cols{grid-template-columns:1fr}.admin .r{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="note">หน้าจำลอง (ยังไม่ใช่เว็บจริง) · แสดงเฉพาะส่วนที่จะแก้ 4 จุด</div>
+
+<span class="tag">① ส่วนบนสุด: ปุ่ม "ทดลองเรียนฟรี" + รูปเต็มตัว + ป้ายคำจุดเด่นบังขอบรูป + แสงเหลืองวาบครั้งเดียว (กด F5 เพื่อดูซ้ำ)</span>
+<section class="hero"><div class="wrap hero-grid"><div>
+  <span class="eyebrow">สำหรับมือใหม่ที่อยากเรียนอ่านกราฟเพื่อการลงทุน</span>
+  <h1>เลิกซื้อตามคนอื่น <span>เริ่มตัดสินใจเอง</span><br>ได้อย่างมีหลักการ</h1>
+  <p>เรียนง่าย ใช้ได้จริง ไม่ต้องมีพื้นฐานเรื่องกราฟมาก่อน</p>
+  <div class="cta">
+    <a class="btn btn-free" href="#learn">▶ ทดลองเรียนฟรี</a>
+    <a class="btn btn-g" href="#">เลือกแพ็กเกจ</a>
+    <span class="free-hint">ล็อกอินด้วย Google แล้วเข้าเรียนบทฟรีได้ทันที ไม่ต้องจ่ายเงิน</span>
+  </div></div>
+  <div class="hstage" aria-hidden="true">
+    <span class="hglow"></span>
+    <span class="hpanel"></span>
+    <div class="bchip c1"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20h5v-5h5v-5h5V5h3"/><path d="M3 20h18"/></svg></i><b>พาทำทีละสเต็ป</b></div>
+    <div class="bchip c2"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4M5 4h11l-2 4 2 4H5"/></svg></i><b>แชร์จุดผิดพลาด<br>ของจริง</b></div>
+    <div class="bchip c3"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg></i><b>รู้ว่ามือใหม่<br>ไม่รู้อะไร</b></div>
+    <div class="bchip c4"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></svg></i><b>มีหลักการ<br>เป็นของตัวเอง</b></div>
+    <img class="hppl" src="ins/hero.png" alt="">
+    <div class="fcard bl"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.8.8 1 1.5 1 2.5h6c0-1 .2-1.7 1-2.5A6 6 0 0 0 12 3z"/></svg></i><b>สอนเข้าใจง่าย</b></div>
+    <div class="fcard br"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17l3-9 3 9M5 14h4M13 8h3a2 2 0 0 1 0 4h-3zm0 4h3.5a2.5 2.5 0 0 1 0 5H13z"/><path d="M3 21L21 3" stroke="#DC2626"/></svg></i><b>ไม่เน้นศัพท์ยาก</b></div>
+    <span class="hfade"></span>
+  </div>
+</div></section>
+
+<span class="tag">ข้อเสนอ: เอาแถบชื่อหุ้นที่วิ่งออก แทนด้วยแถบจุดเด่น (ข้อเท็จจริงที่มีอยู่แล้ว)</span>
+<div class="facts"><div class="wrap">
+  <span>🎁 ทดลองเรียนฟรี ไม่ต้องใช้บัตร</span><span>💬 ถาม-ตอบกับผู้สอนในเว็บ</span><span>📺 Live กลุ่มเดือนละ 2 ครั้ง</span><span>↩️ รับประกันคืนเงิน 7 วัน</span>
+</div></div>
+
+<span class="tag">② ผู้สอน — 4 รูปเด้งสลับกันทุก 4 วินาที</span>
+<section class="ins"><div class="wrap">
+  <div class="ins-txt">
+    <span class="eyebrow">ผู้สอน</span>
+    <h2>เรียนแล้ว <span>ทำเองได้จริง</span> ไม่ต้องพึ่งใคร</h2>
+    <p><b>มาร์ค</b> — ผู้ก่อตั้งและผู้สอน INVESTOPIA<br>ผมลงทุนมาประมาณ 5 ปี เริ่มจากหุ้นไทยแบบมั่วๆ ไม่ดูกราฟ ไม่ดูพื้นฐาน… (ข้อความเดิม พิมพ์ทีละตัวเหมือนเดิม)</p>
+  </div>
+  <div class="portrait ins-por" id="stage" aria-label="รูปผู้สอน">
+    <span class="disc" aria-hidden="true"><svg viewBox="0 0 780 600" preserveAspectRatio="none"><g stroke="#fff" stroke-width="2"><line x1="40" x2="40" y1="260" y2="360"/><rect x="32" y="280" width="16" height="50" rx="2" fill="none"/></g><g stroke="#fff" stroke-width="2"><line x1="68" x2="68" y1="223" y2="323"/><rect x="60" y="243" width="16" height="50" rx="2" fill="#fff"/></g><g stroke="#fff" stroke-width="2"><line x1="96" x2="96" y1="186" y2="286"/><rect x="88" y="206" width="16" height="50" rx="2" fill="none"/></g><g stroke="#fff" stroke-width="2"><line x1="124" x2="124" y1="239" y2="339"/><rect x="116" y="259" width="16" height="50" rx="2" fill="#fff"/></g><g stroke="#fff" stroke-width="2"><line x1="152" x2="152" y1="202" y2="302"/><rect x="144" y="222" width="16" height="50" rx="2" fill="none"/></g><g stroke="#fff" stroke-width="2"><line x1="180" x2="180" y1="255" y2="355"/><rect x="172" y="275" width="16" height="50" rx="2" fill="#fff"/></g><g stroke="#fff" stroke-width="2"><line x1="208" x2="208" y1="218" y2="318"/><rect x="200" y="238" width="16" height="50" rx="2" fill="none"/></g><g stroke="#fff" stroke-width="2"><line x1="236" x2="236" y1="181" y2="281"/><rect x="228" y="201" width="16" height="50" rx="2" fill="#fff"/></g><g stroke="#fff" stroke-width="2"><line x1="264" x2="264" y1="234" y2="334"/><rect x="256" y="254" width="16" height="50" rx="2" fill="none"/></g><g stroke="#fff" stroke-width="2"><line x1="292" x2="292" y1="197" y2="297"/><rect x="284" y="217" width="16" height="50" rx="2" fill="#fff"/></g><g stroke="#fff" stroke-width="2"><line x1="320" x2="320" y1="250" y2="350"/><rect x="312" y="270" width="16" height="50" rx="2" fill="none"/></g><g stroke="#fff" stroke-width="2"><line x1="348" x2="348" y1="213" y2="313"/><rect x="340" y="233" width="16" height="50" rx="2" fill="#fff"/></g><g stroke="#fff" stroke-width="2"><line x1="376" x2="376" y1="176" y2="276"/><rect x="368" y="196" width="16" height="50" rx="2" fill="none"/></g><g stroke="#fff" stroke-width="2"><line x1="404" x2="404" y1="229" y2="329"/><rect x="396" y="249" width="16" height="50" rx="2" fill="#fff"/></g><g stroke="#fff" stroke-width="2"><line x1="432" x2="432" y1="192" y2="292"/><rect x="424" y="212" width="16" height="50" rx="2" fill="none"/></g><g stroke="#fff" stroke-width="2"><line x1="460" x2="460" y1="245" y2="345"/><rect x="452" y="265" width="16" height="50" rx="2" fill="#fff"/></g><g stroke="#fff" stroke-width="2"><line x1="488" x2="488" y1="208" y2="308"/><rect x="480" y="228" width="16" height="50" rx="2" fill="none"/></g><g stroke="#fff" stroke-width="2"><line x1="516" x2="516" y1="171" y2="271"/><rect x="508" y="191" width="16" height="50" rx="2" fill="#fff"/></g><g stroke="#fff" stroke-width="2"><line x1="544" x2="544" y1="224" y2="324"/><rect x="536" y="244" width="16" height="50" rx="2" fill="none"/></g><g stroke="#fff" stroke-width="2"><line x1="572" x2="572" y1="187" y2="287"/><rect x="564" y="207" width="16" height="50" rx="2" fill="#fff"/></g><g stroke="#fff" stroke-width="2"><line x1="600" x2="600" y1="240" y2="340"/><rect x="592" y="260" width="16" height="50" rx="2" fill="none"/></g><g stroke="#fff" stroke-width="2"><line x1="628" x2="628" y1="203" y2="303"/><rect x="620" y="223" width="16" height="50" rx="2" fill="#fff"/></g><g stroke="#fff" stroke-width="2"><line x1="656" x2="656" y1="256" y2="356"/><rect x="648" y="276" width="16" height="50" rx="2" fill="none"/></g><g stroke="#fff" stroke-width="2"><line x1="684" x2="684" y1="219" y2="319"/><rect x="676" y="239" width="16" height="50" rx="2" fill="#fff"/></g><g stroke="#fff" stroke-width="2"><line x1="712" x2="712" y1="182" y2="282"/><rect x="704" y="202" width="16" height="50" rx="2" fill="none"/></g><g stroke="#fff" stroke-width="2"><line x1="740" x2="740" y1="235" y2="335"/><rect x="732" y="255" width="16" height="50" rx="2" fill="#fff"/></g></svg></span>
+    <div class="clip">
+    <img class="ppl on" src="ins/b0.png" alt="มาร์ค ผู้สอน">
+    <img class="ppl" src="ins/b1.png" alt="" aria-hidden="true">
+    <img class="ppl" src="ins/b2.png" alt="" aria-hidden="true">
+    <img class="ppl" src="ins/b3.png" alt="" aria-hidden="true">
+    </div>
+    <div class="dots"><i class="on"></i><i></i><i></i><i></i></div>
+  </div>
+</div></section>
+
+<span class="tag">③ รีวิวจากผู้เรียน (ภาพวาดประกอบ)</span>
+<section class="rev"><div class="wrap">
+  <span class="eyebrow">เสียงจากผู้เรียน</span>
+  <h2>รีวิวจริงจากคนที่เรียนกับผม</h2>
+  <div class="rev-grid">
+    <article class="rcard">
+      <div class="stars" aria-label="5 ดาว">★★★★★</div>
+      <q>พี่มีความรู้สึกว่าเป็นเด็กรุ่นใหม่ที่โฟกัสได้ดี พี่ไม่รู้ว่าครูอายุเท่าไหร่นะ 555 แต่แบบรู้สึกใจเย็นด้วย ถ้าเกิดว่ามีคนที่รู้จักแล้วอยากศึกษาพี่จะแนะนำ</q>
+      <div class="rhead">
+        <!-- คุณเน็ต: ผมบ็อบน้ำตาล แว่นกรอบหนา เสื้อฮู้ดเทา -->
+        <svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="32" fill="#DBEAFE"/><clipPath id="c1"><circle cx="32" cy="32" r="32"/></clipPath><g clip-path="url(#c1)" stroke="#0F172A" stroke-width="1.6" stroke-linejoin="round">
+          <path d="M8 66c1-13 10-19 24-19s23 6 24 19z" fill="#64748B"/><path d="M24 47c2 5 14 5 16 0" fill="none"/>
+          <path d="M14 40c-2-16 5-27 18-27s20 11 18 27c-2 3-5 4-7 3V27H21v16c-2 1-5 0-7-3z" fill="#8B4A2B"/>
+          <rect x="27" y="38" width="10" height="9" fill="#F2C9A8"/>
+          <ellipse cx="32" cy="31" rx="11" ry="12.5" fill="#F7D6BC"/>
+          <path d="M20 27c4-7 15-9 23-3-6-1-14 0-23 3z" fill="#8B4A2B"/>
+          <rect x="21.5" y="27" width="9" height="7" rx="2" fill="#fff" fill-opacity=".4"/><rect x="33.5" y="27" width="9" height="7" rx="2" fill="#fff" fill-opacity=".4"/><path d="M30.5 30h3" fill="none"/>
+          <path d="M27 37c3 3 7 3 10 0" fill="#fff"/></g></svg>
+        <div><b>คุณเน็ต</b><small>ผู้เรียน</small></div>
+      </div>
+    </article>
+
+    <article class="rcard long" id="fang">
+      <div class="stars" aria-label="5 ดาว">★★★★★</div>
+      <q>โอเคหมดเลย สอนเข้าใจง่าย บางคนที่ไม่รู้คำศัพท์ก็ไม่ยากจนเกินไป เน้นสอนพื้นฐาน วิธีคิดเพื่อไปต่อยอด ถ้าเกิดตรงนี้เช็กแล้วหมด ควรเป็นตรงไหนต่อ แฟงคิดว่าเหมาะกับคนที่ต้องการความเข้าใจง่าย สิ่งที่ได้ไปคิดว่าเป็นพื้นฐานที่ควรจะรู้ พื้นฐานที่ไม่ค่อยมีใครลง Detail นะ อย่าง Higher High, Lower Low แล้วอย่างตีพวกเทรนด์ไลน์ มีแค่คนอื่นให้ลองทำ แต่ไม่มีใครเคยสอนว่าสิ่งที่เราทำมันถูกไหม? ซึ่งพี่สอน แฟงชอบในส่วนนี้ ในอนาคตแฟงก็สามารถเช็กได้เองว่ามันถูกหรือผิด ซึ่งแฟงคิดว่าที่อื่นไม่เคยให้เลย</q>
+      <button class="more" onclick="this.parentNode.classList.toggle('open');this.textContent=this.parentNode.classList.contains('open')?'ย่อ':'อ่านต่อ'">อ่านต่อ</button>
+      <div class="rhead">
+        <!-- คุณแฟง: ผมสั้นดำชี้ เสื้อกล้ามเขียว -->
+        <svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="32" fill="#DBEAFE"/><clipPath id="c2"><circle cx="32" cy="32" r="32"/></clipPath><g clip-path="url(#c2)" stroke="#0F172A" stroke-width="1.6" stroke-linejoin="round">
+          <path d="M8 66c1-13 10-19 24-19s23 6 24 19z" fill="#F2C9A8"/><path d="M18 66V52h7c2 5 12 5 14 0h7v14z" fill="#4D6B3C"/>
+          <rect x="27" y="38" width="10" height="10" fill="#F2C9A8"/>
+          <ellipse cx="32" cy="31" rx="11" ry="12.5" fill="#F7D6BC"/>
+          <path d="M20 31c-2-11 4-17 12-17 9 0 14 6 12 17-1-6-4-9-7-9-3 2-9 2-12 0-3 0-4 3-5 9z" fill="#111827"/>
+          <path d="M33 15c1-5 5-7 7-6-2 1-3 3-3 6" fill="#111827"/>
+          <circle cx="27.5" cy="31" r="1.3" fill="#0F172A"/><circle cx="36.5" cy="31" r="1.3" fill="#0F172A"/>
+          <path d="M28 37c2.5 2 5.5 2 8 0" fill="#fff"/></g></svg>
+        <div><b>คุณแฟง</b><small>ผู้เรียน</small></div>
+      </div>
+    </article>
+
+    <article class="rcard">
+      <div class="stars" aria-label="5 ดาว">★★★★★</div>
+      <q>สอนดีครับ เนื้อหาโอเค ตรงตามโจทย์ที่ต้องการเลย เป็นการเรียนกราฟจริง ได้ลองทำจริง</q>
+      <div class="rhead">
+        <!-- คุณไมค์: ภาพผู้ชายทั่วไป (ไม่ใช่หน้าจริง) -->
+        <svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="32" fill="#DBEAFE"/><clipPath id="c3"><circle cx="32" cy="32" r="32"/></clipPath><g clip-path="url(#c3)" stroke="#0F172A" stroke-width="1.6" stroke-linejoin="round">
+          <path d="M8 66c1-13 10-19 24-19s23 6 24 19z" fill="#1D4ED8"/><path d="M26 47l6 7 6-7" fill="#fff"/>
+          <rect x="27" y="38" width="10" height="9" fill="#E8B993"/>
+          <ellipse cx="32" cy="31" rx="11" ry="12.5" fill="#F0C7A2"/>
+          <path d="M20.5 29c-1-10 5-15 11.5-15s13 4 11.5 15c-1-4-3-6-5-7-5 2-12 2-15 0-2 1-2.5 3-3 7z" fill="#3F2A1D"/>
+          <circle cx="27.5" cy="31" r="1.3" fill="#0F172A"/><circle cx="36.5" cy="31" r="1.3" fill="#0F172A"/>
+          <path d="M28 37c2.5 2 5.5 2 8 0" fill="none"/></g></svg>
+        <div><b>คุณไมค์</b><small>ผู้เรียน</small></div>
+      </div>
+    </article>
+  </div>
+</div></section>
+
+<span class="tag">④ ห้องเรียน (มุมผู้ทดลองเรียนฟรี) + ลิงก์ใต้คลิป</span>
+<section class="learn" id="learn"><div class="wrap cols">
+  <div class="panel">
+    <h3>โมดูล 2 · อ่านกราฟพื้นฐาน</h3>
+    <p class="sub">ก่อน: บทที่ลงคลิปแล้วขึ้น "เร็วๆ นี้" → หลัง: ขึ้นว่ามีคลิปแล้วแต่ล็อกอยู่</p>
+    <div class="trial">🎁 คุณกำลังทดลองเรียนฟรี <a href="#">ปลดล็อกทุกบท →</a></div>
+    <div class="row"><span class="n">1</span><span class="t">แท่งเทียน</span><span class="pill p-free">ฟรี · เรียนได้เลย</span></div>
+    <div class="row lock"><span class="n">2</span><span class="t">Timeframe</span><span class="pill p-lock">🔒 มีคลิปแล้ว · สำหรับสมาชิก</span></div>
+    <div class="row lock"><span class="n">3</span><span class="t">Trendline</span><span class="pill p-lock">🔒 มีคลิปแล้ว · สำหรับสมาชิก</span></div>
+    <div class="row soon"><span class="n">4</span><span class="t">Dow Theory</span><span class="pill p-soon">เร็วๆ นี้</span></div>
+  </div>
+
+  <div class="panel">
+    <h3>บทเรียน: แท่งเทียน</h3>
+    <div class="vid">▶ วิดีโอ</div>
+    <div class="att">
+      <h4>ไฟล์และลิงก์ประกอบ</h4>
+      <a href="https://www.tradingview.com" target="_blank" rel="noopener noreferrer">🔗 <span>เปิดกราฟตัวอย่างใน TradingView</span><em>เปิดลิงก์ ↗</em></a>
+      <a href="#">📄 <span>สรุปแท่งเทียน.pdf · 1.2 MB</span><em>ดาวน์โหลด</em></a>
+    </div>
+    <div class="admin">
+      <b>ฝั่ง /admin (เจ้าของเห็นคนเดียว)</b> — เพิ่มช่อง "แนบลิงก์" ข้างปุ่มแนบไฟล์เดิม
+      <div class="r"><input placeholder="ชื่อที่แสดง"><input placeholder="https://..."><button type="button">+ แนบลิงก์</button></div>
+    </div>
+  </div>
+</div></section>
+
+<script>
+(function(){
+  const imgs=[...document.querySelectorAll('#stage img')], dots=[...document.querySelectorAll('#stage .dots i')];
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  let i=0;
+  setInterval(()=>{
+    imgs[i].classList.replace('on','off'); dots[i].classList.remove('on');
+    const prev=imgs[i]; setTimeout(()=>prev.classList.remove('off'),400);
+    i=(i+1)%imgs.length;
+    setTimeout(()=>{imgs[i].classList.add('on'); dots[i].classList.add('on');},250);
+  },4000);
+})();
+</script>
+</body>
+</html>

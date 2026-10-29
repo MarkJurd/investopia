@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>แบบจำลองห้องเรียน INVESTOPIA</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:"Anuphan","Segoe UI",Tahoma,sans-serif;background:#F6F8FB;color:#0F172A}
+header{background:#fff;border-bottom:1px solid #E5E9F0;padding:14px 24px;display:flex;align-items:center;gap:16px}
+header b{font-size:18px;color:#1D4ED8;cursor:pointer}header span{margin-left:auto;font-size:13px;color:#64748B}
+.badge{background:#EEF4FF;color:#1D4ED8;border-radius:99px;padding:4px 12px;font-size:12px}
+main{max-width:860px;margin:0 auto;padding:28px 18px 60px}
+h1{font-size:26px;margin:0 0 6px}p.sub{color:#64748B;margin:0 0 22px}
+.bar{background:#FEF3C7;border:1px solid #FDE68A;border-radius:12px;padding:12px 16px;margin-bottom:22px;display:flex;gap:12px;align-items:center;font-size:14px}
+.bar button{margin-left:auto}
+.card{background:#fff;border:1px solid #E5E9F0;border-radius:16px}
+.courses{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.course{padding:0;overflow:hidden;cursor:pointer;transition:.15s}.course:hover{border-color:#93B4FF;box-shadow:0 6px 20px rgba(29,78,216,.1)}
+.course.soon{opacity:.6;border-style:dashed;cursor:default}.course.soon:hover{box-shadow:none;border-color:#E5E9F0}
+.course .body{padding:20px 24px 24px}.course img{width:100%;display:block;aspect-ratio:1200/760;object-fit:cover}.course .ic{width:56px;height:56px;border-radius:16px;background:#EEF4FF;display:grid;place-items:center;font-size:28px;margin-bottom:14px}
+.course h2{margin:0 0 6px;font-size:22px}.course p{margin:0 0 14px;color:#64748B;font-size:14px}
+.btn{border:0;border-radius:10px;padding:10px 18px;font:inherit;font-weight:600;cursor:pointer;background:#1D4ED8;color:#fff}
+.btn.ghost{background:#fff;color:#1D4ED8;border:1px solid #BFD1FF}
+.crumb{font-size:14px;color:#1D4ED8;cursor:pointer;margin-bottom:14px;display:inline-block}
+.mod{padding:20px 22px;margin-bottom:14px}.mod h3{margin:0 0 4px;font-size:18px}
+.mod .n{display:inline-grid;place-items:center;width:34px;height:34px;border-radius:10px;background:#EEF4FF;color:#1D4ED8;font-weight:700;margin-right:10px}
+.les{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:10px;margin-top:8px;border:1px solid #EEF1F6;cursor:pointer}
+.les:hover{background:#F8FAFF}.les .t{flex:1}.les .st{font-size:12px;color:#64748B}
+.free{background:#DCFCE7;color:#15803D;border-radius:6px;padding:2px 8px;font-size:12px;font-weight:700}
+.lock{font-size:12px;color:#64748B}
+.video{background:#0F172A;color:#CBD5E1;border-radius:14px;aspect-ratio:16/9;display:grid;place-items:center;font-size:18px;margin-bottom:16px}
+.pay{padding:28px;text-align:center}
+.legend{font-size:13px;color:#64748B;margin:0 0 14px}
+.note{position:fixed;bottom:12px;right:12px;background:#0F172A;color:#fff;border-radius:10px;padding:8px 12px;font-size:12px;max-width:260px}
+@media(max-width:640px){.courses{grid-template-columns:1fr}}
+</style></head><body>
+<header><b onclick="go('home')">INVESTOPIA</b><span id="who">ล็อกอินแล้ว · ยังไม่ได้ซื้อ (ทดลองเรียนฟรี)</span></header>
+<main id="app"></main>
+<div class="note">แบบจำลอง: บทที่ติดป้าย "ฟรี" เป็นตัวอย่าง คุณเลือกเองได้ใน /admin</div>
+<script>
+const app=document.getElementById('app');
+const mods=[
+ ['ปลดล็อกกราฟ: เรียนไปทำไม?',[['TradingView: สอนใช้งานแอป',1],['แท่งเทียน',1],['Trend',0],['Dow Theory',0],['Time Frame',0],['แอปซื้อหุ้นที่ผู้สอนชอบและไม่ชอบ',0]]],
+ ['การใช้อินดิเคเตอร์ต่างๆ',[['EMA',0],['RSI',0],['MACD',0],['Fibonacci',0]]],
+ ['Chart Pattern และแนวรับแนวต้าน',[['Chart Pattern',0],['แนวรับแนวต้าน',0]]],
+ ['เทคนิคส่วนตัว',[['Multi-Timeframe',0],['Double Confirmation',0]]],
+ ['Risk Reward',[['การแบ่งไม้เข้าออก',0]]],['SMC',[['BOS',0],['CHoCH',0],['OB',0],['FVG',0]]],['Bonus',[['เทคนิคพ่อมดเทรดเดอร์ Mark Minervini',0]]]];
+function go(p,a){ window.scrollTo(0,0);
+ if(p==='home') app.innerHTML=`<h1>เลือกคอร์สที่อยากเรียน</h1><p class="sub">ล็อกอินแล้ว — เลือกคอร์สเพื่อดูโมดูลข้างใน</p>
+ <div class="bar"><span>คุณกำลังทดลองเรียน — เปิดได้เฉพาะบทที่มีป้าย "ฟรี"</span><button class="btn" onclick="go('pay')">ดูแพ็กเกจ</button></div>
+ <div class="courses">
+  <div class="card course" onclick="go('chart')"><img src="../public/courses/course-chart.jpg" alt=""><div class="body"><h2>คอร์สกราฟ</h2><p>อ่านกราฟและวางแผนเข้า-ออก · 7 โมดูล<br><b style="color:#15803D">มีบทเรียนฟรี 2 บท</b></p><button class="btn">เข้าคอร์สกราฟ</button></div></div>
+  <div class="card course soon"><img src="../public/courses/course-fs.jpg" alt=""><div class="body"><h2>คอร์สงบการเงิน</h2><p>กำลังเตรียมเนื้อหา</p><span class="badge">เร็วๆ นี้</span></div></div>
+ </div>`;
+ if(p==='chart') app.innerHTML=`<span class="crumb" onclick="go('home')">← ทุกคอร์ส</span><h1>คอร์สกราฟ</h1><p class="legend"><span class="free">ฟรี</span> เรียนได้เลย · 🔒 สำหรับสมาชิก</p>`+
+ mods.map((m,i)=>`<div class="card mod"><h3><span class="n">${i+1}</span>${m[0]}</h3>`+m[1].map((l,j)=>`<div class="les" onclick="go('lesson',[${i},${j}])"><span class="t">${l[0]}</span>${l[1]?'<span class="free">ฟรี</span><span class="st">เรียนได้เลย</span>':'<span class="lock">🔒 สำหรับสมาชิก</span>'}</div>`).join('')+'</div>').join('');
+ if(p==='lesson'){const l=mods[a[0]][1][a[1]];
+  app.innerHTML=`<span class="crumb" onclick="go('chart')">← คอร์สกราฟ · โมดูล ${a[0]+1}</span><h1>${l[0]} ${l[1]?'<span class="free">ฟรี</span>':''}</h1>`+(l[1]?`<div class="video">▶ วิดีโอบทเรียน</div><button class="btn" onclick="this.textContent='✓ เรียนจบแล้ว'">เรียนจบบทนี้แล้ว</button>`:`<div class="card pay"><h2>บทนี้สำหรับสมาชิก</h2><p class="sub">ทดลองเรียนบทที่มีป้าย "ฟรี" ได้เลย หรือเลือกแพ็กเกจเพื่อเรียนทุกบท</p><button class="btn" onclick="go('pay')">เลือกแพ็กเกจ</button></div>`)}
+ if(p==='pay') app.innerHTML=`<span class="crumb" onclick="go('home')">← กลับ</span><div class="card pay"><h2>หน้าเลือกแพ็กเกจ</h2><p class="sub">(พาไปหน้าราคาบนหน้าแรกของเว็บจริง)</p></div>`;
+}
+go('home');
+</script></body></html>

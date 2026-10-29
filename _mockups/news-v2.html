@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ข่าวหุ้นสั้น — แบบจำลอง v2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* แบบจำลองเท่านั้น — ข่าว ตัวเลข และวันประกาศงบทั้งหมดในหน้านี้เป็นข้อมูลสมมติ ใช้ดูหน้าตาเท่านั้น */
+:root{
+  --blue:#2563EB;--blue-dark:#1D4ED8;--blue-soft:#EFF6FF;--blue-line:#DBEAFE;
+  --ink:#0F172A;--body:#475569;--muted:#94A3B8;--line:#E2E8F0;
+  --bg:#FFFFFF;--bg-soft:#F8FAFC;--up:#16A34A;--down:#DC2626;--amber:#F59E0B;
+  --radius:16px;--shadow:0 1px 2px rgba(15,23,42,.04),0 8px 24px rgba(15,23,42,.06);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Anuphan,system-ui,sans-serif;color:var(--body);background:var(--bg-soft);line-height:1.6;-webkit-font-smoothing:antialiased}
+h1,h2,h3{color:var(--ink);line-height:1.3;font-weight:700}
+a{color:inherit;text-decoration:none}
+button{font:inherit;cursor:pointer}
+.wrap{max-width:1080px;margin:0 auto;padding:24px 16px 80px}
+.mock{background:#FFFBEB;border:1px solid #FDE68A;color:#92400E;border-radius:10px;padding:8px 12px;font-size:13px;margin-bottom:18px}
+.top{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:12px;margin-bottom:18px}
+.top h1{font-size:30px}
+.top p{font-size:14px;color:var(--muted)}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:24px;align-items:start}
+.card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+
+/* ฟีด */
+.feed{display:flex;flex-direction:column;gap:12px}
+.news{padding:18px 20px;display:flex;flex-direction:column;gap:8px}
+.meta{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:12px}
+.tag{font-weight:700;padding:2px 10px;border-radius:999px;border:1px solid}
+.tag.hot{color:var(--blue-dark);background:var(--blue-soft);border-color:var(--blue-line)}
+.tag.move{color:#7C2D12;background:#FFF7ED;border-color:#FED7AA}
+.tag.earn{color:#14532D;background:#F0FDF4;border-color:#BBF7D0}
+.tk{font-weight:700;color:var(--ink);background:var(--bg-soft);border:1px solid var(--line);padding:2px 8px;border-radius:6px}
+.chg.up{color:var(--up);font-weight:700}.chg.down{color:var(--down);font-weight:700}
+.time{color:var(--muted);margin-left:auto}
+.news h2{font-size:22px}
+.news h2 mark{background:linear-gradient(transparent 55%,var(--blue-line) 55%);color:inherit}
+.news p{font-size:15px}
+.foot{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12px;color:var(--muted)}
+.foot a{color:var(--blue);font-weight:600}
+
+
+/* ข้าง */
+.side{display:flex;flex-direction:column;gap:16px}
+.box{padding:18px}
+.box h3{font-size:17px;margin-bottom:10px}
+.cal{display:flex;flex-direction:column;gap:8px}
+.day{display:grid;grid-template-columns:70px 1fr;gap:8px;font-size:13px;align-items:start}
+.day b{color:var(--ink)}
+.day span{display:flex;flex-wrap:wrap;gap:4px}
+.when{font-size:11px;color:var(--muted)}
+.earn h4{font-size:15px;color:var(--ink);display:flex;justify-content:space-between}
+.earn dl{display:grid;grid-template-columns:1fr auto;gap:4px 10px;font-size:14px;margin:10px 0}
+.earn dd{font-weight:700;text-align:right}
+.note{font-size:12px;color:var(--muted)}
+
+/* ส่วนอธิบายสำหรับเจ้าของ (ไม่ได้อยู่ในหน้าจริง) */
+.owner{margin-top:32px;padding:20px;border:2px dashed var(--blue-line);border-radius:var(--radius);background:#fff}
+.owner h2{font-size:18px;margin-bottom:8px}
+.owner ol{padding-left:20px;font-size:14px}
+.owner li{margin-bottom:6px}
+@media(max-width:880px){.grid{grid-template-columns:minmax(0,1fr)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="mock">แบบจำลอง — ข่าว ตัวเลข และวันประกาศงบทั้งหมดในหน้านี้เป็น <b>ข้อมูลสมมติ</b> ใช้ดูหน้าตาและความยาวเท่านั้น</p>
+
+  <div class="top">
+    <div>
+      <h1>ข่าวหุ้นสั้น</h1>
+      <p>เฉพาะหุ้นที่คนไทยติดตามเยอะ · อ่านจบข่าวละ 20 วินาที · อัปเดตทุกเช้า 08:00</p>
+    </div>
+  </div>
+
+  <div class="grid">
+    <main>
+      <div class="feed" id="feed"></div>
+      </div>
+    </main>
+
+    <aside class="side">
+      <section class="card box">
+        <h3>ปฏิทินประกาศงบ สัปดาห์นี้</h3>
+        <div class="cal">
+          <div class="day"><b>จ. 3 พ.ย.</b><span><span class="tk">PLTR</span><span class="when">หลังตลาดปิด</span></span></div>
+          <div class="day"><b>อ. 4 พ.ย.</b><span><span class="tk">AMD</span><span class="tk">UBER</span><span class="when">หลังปิด / ก่อนเปิด</span></span></div>
+          <div class="day"><b>พ. 5 พ.ย.</b><span><span class="tk">QCOM</span><span class="when">หลังตลาดปิด</span></span></div>
+          <div class="day"><b>พฤ. 6 พ.ย.</b><span><span class="tk">ABNB</span><span class="when">หลังตลาดปิด</span></span></div>
+          <div class="day"><b>ศ. 7 พ.ย.</b><span class="when">—</span></div>
+        </div>
+        <p class="note" style="margin-top:8px">เวลาไทย: "หลังตลาดปิด" ≈ ตี 3–4 ของวันถัดไป</p>
+      </section>
+
+      <section class="card box earn">
+        <h3>สรุปงบล่าสุด</h3>
+        <h4><span>AAPL · งบไตรมาส 3</span><span class="tag earn">ประกาศแล้ว</span></h4>
+        <dl>
+          <dt>รายได้ เทียบปีก่อน</dt><dd class="chg up">+8.0%</dd>
+          <dt>กำไรสุทธิ เทียบปีก่อน</dt><dd class="chg up">+12.1%</dd>
+          <dt>อัตรากำไรขั้นต้น</dt><dd>46.9%</dd>
+        </dl>
+        <p class="note">ตัวเลขจากงบที่บริษัทยื่นต่อ SEC · <a href="#" style="color:var(--blue);font-weight:600">ดูงบเทียบคู่แข่ง →</a></p>
+      </section>
+    </aside>
+  </div>
+
+  <section class="owner">
+    <h2>สำหรับคุณมาร์ค — ระบบจริงจะทำงานแบบนี้ (ยังไม่ได้สร้าง)</h2>
+    <ol>
+      <li><b>เลือกหุ้น:</b> รายชื่อหุ้นที่คนไทยติดตามเยอะ ~50–100 ตัว (เช่น NVDA, TSLA, AAPL, META, PLTR …) คุณแก้รายชื่อได้เอง — หุ้นเล็กที่ไม่ค่อยมีคนพูดถึงไม่เข้าระบบ</li>
+      <li><b>ดึงหัวข้อข่าว:</b> จากผู้ให้ข้อมูลข่าว (เช่น Finnhub ต้องสมัคร key — แบบฟรีเหมาะกับใช้ส่วนตัว ใช้เชิงพาณิชย์ต้องเช็กเงื่อนไข/แบบเสียเงิน)</li>
+      <li><b>AI สรุปเป็นภาษาไทยของเราเอง:</b> หัวข้อ ≤ 8 คำ + 1 บรรทัด + ลิงก์ข่าวต้นฉบับเสมอ · ไม่คัดลอกเนื้อข่าว · ตัวเลขต้องมาจากข่าวต้นฉบับ · ห้ามคำว่าซื้อ/ขาย/น่าลงทุน</li>
+      <li><b>คุณอนุมัติก่อนขึ้นเว็บ:</b> 06:00 ส่งร่างเข้า Telegram ของคุณ → 08:00 เผยแพร่อัตโนมัติถ้าไม่กดยกเลิก (ตามที่ตกลงไว้เดิม)</li>
+      <li><b>ปฏิทินงบ + สรุปงบ:</b> วันประกาศงบจากผู้ให้ข้อมูล · ตัวเลขสรุปงบคำนวณจากงบ SEC ที่ระบบเรามีอยู่แล้ว (ต้องเพิ่มการอ่านงบรายไตรมาส)</li>
+      <li><b>ค่าใช้จ่ายโดยประมาณ:</b> AI สรุปข่าววันละ ~10–20 ข่าว ≈ หลักร้อยบาท/เดือน · ข้อมูลข่าว: ฟรีถึงหลักพันบาท/เดือน แล้วแต่ผู้ให้บริการที่เลือก</li>
+    </ol>
+  </section>
+</div>
+
+<script>
+// ข่าวสมมติทั้งหมด (ใช้ดูหน้าตาเท่านั้น)
+const NEWS = [
+  { tag: "hot", tagText: "ข่าวเด่น", tk: "NVDA", chg: "+2.4%", up: true, head: ["NVDA ได้ดีล", "ชิป AI รอบใหม่"], sub: "ลูกค้าคลาวด์รายใหญ่สั่งซื้อเพิ่มสำหรับศูนย์ข้อมูลปีหน้า", src: "Reuters", ago: "3 ชม.", bg: "linear-gradient(160deg,#1E3A8A,#2563EB)" },
+  { tag: "move", tagText: "ราคาเคลื่อนไหว", tk: "META", chg: "−11.1%", up: false, head: ["META ร่วง 4 วันติด", "−11.1%"], sub: "จาก 697.52 สู่ 620.19 USD ช่วง 21–27 ต.ค.", src: "ข้อมูลราคา", ago: "เมื่อวาน", bg: "linear-gradient(160deg,#4C1D95,#7C3AED)" },
+  { tag: "earn", tagText: "ประกาศงบ", tk: "AAPL", chg: "+0.6%", up: true, head: ["AAPL รายได้ไตรมาส 3", "โต 8% จากปีก่อน"], sub: "กำไรสุทธิเพิ่ม 12% ยอดขายบริการทำสถิติใหม่", src: "SEC 10-Q", ago: "5 ชม.", bg: "linear-gradient(160deg,#14532D,#16A34A)" },
+  { tag: "hot", tagText: "ข่าวเด่น", tk: "TSLA", chg: "+1.1%", up: true, head: ["TSLA เตรียมขยาย", "Robotaxi 2 เมือง"], sub: "เริ่มทดลองให้บริการในฟลอริดาภายในปีนี้", src: "Bloomberg", ago: "8 ชม.", bg: "linear-gradient(160deg,#92400E,#F59E0B)" },
+  { tag: "hot", tagText: "ข่าวเด่น", tk: "AMZN", chg: "−0.4%", up: false, head: ["AMZN บล็อก", "AI ช้อปปิ้งของคู่แข่ง"], sub: "ไม่ให้ผู้ช่วย AI ภายนอกเข้ามาซื้อของบนแพลตฟอร์ม", src: "CNBC", ago: "10 ชม.", bg: "linear-gradient(160deg,#0F172A,#334155)" },
+];
+
+const feed = document.getElementById("feed");
+feed.innerHTML = NEWS.map((n) => `
+  <article class="card news">
+    <div class="meta"><span class="tag ${n.tag}">${n.tagText}</span><span class="tk">${n.tk}</span><span class="chg ${n.up ? "up" : "down"}">${n.chg}</span><span class="time">${n.ago}</span></div>
+    <h2><mark>${n.head[0]}</mark> ${n.head[1]}</h2>
+    <p>${n.sub}</p>
+    <div class="foot"><span>ที่มา: ${n.src}</span><a href="#">ดูหน้าหุ้น ${n.tk} →</a><span>ข้อมูลเพื่อการศึกษา ไม่ใช่คำแนะนำการลงทุน</span></div>
+  </article>`).join("");
+</script>
+</body>
+</html>
