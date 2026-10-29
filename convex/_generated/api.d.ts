@@ -19,6 +19,7 @@ import type * as crons from "../crons.js";
 import type * as http from "../http.js";
 import type * as learn from "../learn.js";
 import type * as market from "../market.js";
+import type * as news from "../news.js";
 import type * as payments from "../payments.js";
 import type * as plans from "../plans.js";
 import type * as screener from "../screener.js";
@@ -45,6 +46,7 @@ declare const fullApi: ApiFromModules<{
   http: typeof http;
   learn: typeof learn;
   market: typeof market;
+  news: typeof news;
   payments: typeof payments;
   plans: typeof plans;
   screener: typeof screener;

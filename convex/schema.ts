@@ -185,6 +185,14 @@ export default defineSchema({
     .index("by_telegramMessageId", ["telegramMessageId"])
     .index("by_postId", ["postId"]),
 
+  // ข่าวหุ้นรายวัน: ร่าง 06:00 → ส่งเข้ากลุ่ม 08:00 ถ้าเจ้าของไม่ยกเลิก
+  newsDrafts: defineTable({
+    day: v.string(),                              // วันที่เวลาไทย YYYY-MM-DD
+    status: v.union(v.literal("draft"), v.literal("cancelled"), v.literal("sent")),
+    items: v.array(v.object({ ticker: v.string(), changePct: v.union(v.number(), v.null()), headline: v.string(), body: v.string(), source: v.string(), url: v.string() })),
+    createdAt: v.number(),
+  }).index("by_day", ["day"]),
+
   // update_id ที่ประมวลผลแล้ว (Telegram อาจส่งซ้ำ)
   telegramSeen: defineTable({ updateId: v.number() }).index("by_updateId", ["updateId"]),
 

@@ -27,7 +27,7 @@ function safeEqual(a: string, b: string): boolean {
 }
 
 /** ส่งข้อความ (ข้อความล้วน ไม่ใช้ markdown เพราะข้อความสมาชิกอาจมีอักขระพิเศษ) — คืน message_id หรือ null */
-async function sendMessage(token: string, chatId: string | number, text: string): Promise<number | null> {
+export async function sendMessage(token: string, chatId: string | number, text: string): Promise<number | null> {
   try {
     const res = await fetch(`${API}/bot${token}/sendMessage`, {
       method: "POST",
@@ -207,6 +207,12 @@ export const webhook = httpAction(async (ctx, req) => {
   if (String(chatId) !== owner) return ok;                  // คนอื่นทักบอท = เงียบ
 
   if (typeof update.update_id === "number" && !(await ctx.runMutation(internal.telegram.markSeen, { updateId: update.update_id }))) return ok;
+
+  if (raw === "/cancel") {
+    const done: boolean = await ctx.runMutation(internal.news.cancelToday, {});
+    await sendMessage(token, chatId, done ? "ยกเลิกข่าววันนี้แล้ว จะไม่ส่งเข้ากลุ่ม" : "ไม่มีร่างข่าวที่รอส่งวันนี้");
+    return ok;
+  }
 
   const text = typeof msg.text === "string" ? msg.text.trim() : "";
   const replyTo = msg.reply_to_message?.message_id;

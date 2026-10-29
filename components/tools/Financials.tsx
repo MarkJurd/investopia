@@ -10,6 +10,7 @@ import { ConvexError } from "convex/values";
 import { api } from "@/convex/_generated/api";
 import { useContent } from "@/components/ContentContext";
 import { pricingPath } from "@/components/learn/steps";
+import RatioChart from "@/components/tools/RatioChart";
 import {
   RATIOS, SCREENER_GROUPS, average, compare, explain, isEstimated, median, passes, type RatioDef, type Why, type YearFacts,
 } from "@/lib/screener";
@@ -27,6 +28,7 @@ export default function Financials({ symbol }: { symbol: string }) {
   const run = useAction(api.screenerSec.compare);
   // ผลลัพธ์ผูกกับ symbol ที่ขอ — symbol เปลี่ยนแล้วผลเก่ายังไม่ตรง = กำลังโหลด
   const [got, setGot] = useState<{ symbol: string; status: "idle" | "error" | "notListed" | "quota"; result: Result | null } | null>(null);
+  const [span, setSpan] = useState<5 | 10>(5);
   const lang = C.locale.code === "en" ? "en" : "th";
 
   useEffect(() => {
@@ -50,7 +52,7 @@ export default function Financials({ symbol }: { symbol: string }) {
     x === null ? D.na : `${y && isEstimated(def, y) ? "≈" : ""}${def.unit === "%" ? `${x.toFixed(1)}%` : `${x.toFixed(1)} ${D.times}`}`;
   const whyText = (w: Why) => (D.why[w.kind] as Record<string, string>)[w.field] ?? "";
   const gaps = self ? [self, ...peers].flatMap((c) => RATIOS.flatMap((r) => { const w = explain(r, latest(c)); return w ? [{ c, r, w }] : []; })) : [];
-  const anyEst = self ? [self, ...peers].some((c) => c.years.slice(-5).some((y) => y.est?.length)) : false;
+  const anyEst = self ? [self, ...peers].some((c) => c.years.slice(-span).some((y) => y.est?.length)) : false;
 
   return (
     <section className="sc-stack" aria-labelledby="fin-title">
@@ -107,30 +109,41 @@ export default function Financials({ symbol }: { symbol: string }) {
             )}
           </section>
 
+          <div className="sc-span" role="group" aria-label={D.span}>
+            <span>{D.span}</span>
+            {([5, 10] as const).map((n) => <button key={n} type="button" className={span === n ? "on" : ""} aria-pressed={span === n} onClick={() => setSpan(n)}>{tpl(D.yrs, n)}</button>)}
+          </div>
           <h3 className="tool-h2 tool-list-title">{tpl(D.summaryTitle, self.ticker)}</h3>
           <div className="sc-grid">
             {RATIOS.map((r) => {
               const T = D.ratios[r.id];
-              const last5 = self.years.slice(-5);
-              const values = last5.map((y) => r.calc(y));
+              const shown = self.years.slice(-span);
+              const values = shown.map((y) => r.calc(y));
               const now = values[values.length - 1];
               const avg = average(values);
               const ref = peerMedian(r);
               const vs = now !== null && ref !== null ? compare(r, now, ref) : null;
               const tr = now !== null && avg !== null && values.filter((x) => x !== null).length >= 2 ? compare(r, now, avg) : null;
+              // จับคู่ปีด้วยปีของวันสิ้นงบ (ปีงบไม่ตรงเดือนกันอาจเหลื่อม 1 ปี — ยอมรับได้สำหรับภาพรวม)
+              const points = shown.map((y, i) => {
+                const m = peers.map((c) => c.years.find((p) => p.end.slice(0, 4) === y.end.slice(0, 4))).map((p) => (p ? r.calc(p) : null)).filter((v): v is number => v !== null);
+                return { year: y.end.slice(0, 4), self: values[i], med: m.length >= 2 ? median(m) : null };
+              });
               const ok = now !== null ? passes(r, now) : null;
-              const w = explain(r, last5[last5.length - 1]);
+              const w = explain(r, shown[shown.length - 1]);
               return (
                 <section key={r.id} className={`card sc-ratio sc-b-${vs ?? "none"}`}>
                   <h4>{T.name}</h4>
                   <p className="sc-formula">{T.formula}</p>
-                  <b className={`sc-value sc-v-${vs ?? "none"}`}>{fmt(r, now, last5[last5.length - 1])}</b>
+                  <b className={`sc-value sc-v-${vs ?? "none"}`}>{fmt(r, now, shown[shown.length - 1])}</b>
                   {w ? <p className="sc-why" role="note">{whyText(w)}</p> : <ul className="sc-facts">
                     <li><span>{D.vsPeers} ({D.peerMedian} {fmt(r, ref)})</span>{vs && <em className={`sc-tag ${vs}`}>{D.verdict[vs]}</em>}</li>
-                    <li><span>{D.trend} ({D.avg5} {fmt(r, avg)})</span>{tr && <em className={`sc-tag ${tr}`}>{D.trendWord[tr]}</em>}</li>
+                    <li><span>{tpl(D.trend, span)} ({tpl(D.avg5, span)} {fmt(r, avg)})</span>{tr && <em className={`sc-tag ${tr}`}>{D.trendWord[tr]}</em>}</li>
                     <li><span>{D.rule}: {T.rule || D.noRule}</span>{ok !== null && <em className={`sc-tag ${ok ? "better" : "worse"}`}>{ok ? D.pass : D.fail}</em>}</li>
                   </ul>}
-                  <p className="sc-history">{last5.map((y, i) => <span key={y.end}>{y.end.slice(0, 4)}: {fmt(r, values[i], y)}</span>)}</p>
+                  <RatioChart points={points} rule={r.threshold} fmt={(v) => fmt(r, v)}
+                    labels={{ self: tpl(D.chartSelf, self.ticker), med: D.peerMedian, rule: `${D.rule} ${r.higherIsBetter ? ">" : "<"} ${fmt(r, r.threshold ?? 0)}`, aria: tpl(D.chartAria, T.name) }} />
+                  <p className="sc-history">{shown.map((y, i) => <span key={y.end}>{y.end.slice(0, 4)}: {fmt(r, values[i], y)}</span>)}</p>
                   <p className="sc-desc">{T.d}</p>
                 </section>
               );
@@ -142,13 +155,13 @@ export default function Financials({ symbol }: { symbol: string }) {
             <div className="sc-scroll">
               <table className="sc-table sc-fin">
                 <thead>
-                  <tr><th scope="col" />{self.years.slice(-5).map((y) => <th scope="col" key={y.end}>{y.end}</th>)}</tr>
+                  <tr><th scope="col" />{self.years.slice(-span).map((y) => <th scope="col" key={y.end}>{y.end}</th>)}</tr>
                 </thead>
                 <tbody>
                   {FIN_KEYS.map((k) => (
                     <tr key={k}>
                       <th scope="row">{D.fin[k]}</th>
-                      {self.years.slice(-5).map((y) => { const n = y[k]; return <td key={y.end}>{n === undefined ? D.na : `${y.est?.includes(k) ? "≈" : ""}${(n / 1e6).toLocaleString("en-US", { maximumFractionDigits: 0 })}`}</td>; })}
+                      {self.years.slice(-span).map((y) => { const n = y[k]; return <td key={y.end}>{n === undefined ? D.na : `${y.est?.includes(k) ? "≈" : ""}${(n / 1e6).toLocaleString("en-US", { maximumFractionDigits: 0 })}`}</td>; })}
                     </tr>
                   ))}
                 </tbody>

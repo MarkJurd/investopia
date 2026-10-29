@@ -504,7 +504,7 @@ export const CONTENT_EN: typeof CONTENT = {
     whatTitle: "What's on a stock page",
     cards: [
       { t: "Price + support & resistance", d: "Latest price, trend, and levels where price has reacted before, with a confidence rating", tag: "Free" },
-      { t: "Financials vs peers", d: "6 key ratios compared with companies in the same industry, 5 years of history", tag: "Free for 5 companies a day · unlimited for members" }
+      { t: "Financials vs peers", d: "6 key ratios compared with companies in the same industry, 5 or 10 years of history", tag: "Free for 5 companies a day · unlimited for members" }
     ],
     dividendTitle: "Portfolio dividend calculator",
     dividendText: "Pick fund/index weights and see your after-tax dividend per year",
@@ -597,8 +597,12 @@ export const CONTENT_EN: typeof CONTENT = {
     summaryTitle: "Ratio-by-ratio summary for {x}",
     vsPeers: "Vs peers",
     peerMedian: "Peer median",
-    trend: "Vs its own 5-year average",
-    avg5: "5-yr avg",
+    trend: "Vs its own {x}-year average",
+    avg5: "{x}-yr avg",
+    span: "History",
+    chartSelf: "{x} (this company)",
+    chartAria: "Line chart of {x} vs peer median by year",
+    yrs: "{x} years",
     rule: "Instructor's rule",
     noRule: "No rule — compare with peers",
     pass: "Pass",
