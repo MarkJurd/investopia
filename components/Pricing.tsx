@@ -140,13 +140,17 @@ export default function Pricing() {
               <ul className="price-feats">
                 {p.feats.map((f) => <li key={f.text} className={f.off ? "off" : undefined}>{f.text}</li>)}
               </ul>
-              <button
-                className={`btn ${p.btnType === "primary" ? "btn-primary" : "btn-ghost"} btn-block`}
-                disabled={full || busy !== null}
-                onClick={() => void choose(id)}
-              >
-                {full ? fullLabel : busy === id ? K.redirecting : p.btn}
-              </button>
+              {p.href ? (
+                <a className={`btn ${p.btnType === "primary" ? "btn-primary" : "btn-ghost"} btn-block`} href={p.href} target="_blank" rel="noopener noreferrer">{p.btn}</a>
+              ) : (
+                <button
+                  className={`btn ${p.btnType === "primary" ? "btn-primary" : "btn-ghost"} btn-block`}
+                  disabled={full || busy !== null}
+                  onClick={() => void choose(id)}
+                >
+                  {full ? fullLabel : busy === id ? K.redirecting : p.btn}
+                </button>
+              )}
             </div>
           );
         })}

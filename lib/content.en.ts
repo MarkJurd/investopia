@@ -190,7 +190,7 @@ export const CONTENT_EN: typeof CONTENT = {
         ],
         badge: "Launch-period option", badgeType: "limited", featured: false,
         btn: "Choose Easy Self-Paced", btnType: "ghost",
-        priceLabel: "฿990 / 30 days"
+        href: "", priceLabel: "฿990 / 30 days"
       },
       {
         id: "vip",                           // plan id in the system (do not change) — now the ฿4,990 / 30-day 1:1 coaching plan
@@ -200,6 +200,7 @@ export const CONTENT_EN: typeof CONTENT = {
         per: "Only 3 seats per month · one payment, never auto-charged",
         feats: [
           { text: "4 one-to-one sessions of 2 hours (one a week) with weekly assignments", off: false },
+          { text: "Held online via Zoom or Google Meet", off: false },
           { text: "The instructor reviews every assignment himself and returns it within 24 hours (business days) — every mistake marked and explained, then you fix it until it passes", off: false },
           { text: "30-day goal: find support and resistance and set your own entry and exit points by yourself, using the method you learn", off: false },
           { text: "🛡️ 30-day skills guarantee — meet the conditions and still don't pass, and you get a full refund (this is not a profit guarantee)", off: false },
@@ -208,7 +209,22 @@ export const CONTENT_EN: typeof CONTENT = {
         ],
         badge: "Recommended · 3 seats/month", badgeType: "best", featured: true,
         btn: "Reserve a 1:1 seat", btnType: "primary",
-        priceLabel: "฿4,990 / 30 days"
+        href: "", priceLabel: "฿4,990 / 30 days"
+      },
+      {
+        id: "inperson",                       // not a checkout plan — booked through LINE (has href)
+        name: "In-Person 1:1",
+        for: "Want to learn face to face — the instructor comes to you or meets you at a cafe, in Bangkok only",
+        num: "5,990", numSuffix: "", numStrike: "",
+        per: "Book through LINE · live sessions in Bangkok only · place and schedule confirmed with the instructor first",
+        feats: [
+          { text: "Face-to-face 1:1 coaching, live in Bangkok only (the instructor comes to you, or you meet at a place that suits you)", off: false },
+          { text: "Number of sessions, place and schedule are confirmed with the instructor when you book", off: false },
+          { text: "Learning coaching only, not personal investment advice", off: false }
+        ],
+        badge: "In person", badgeType: "limited", featured: false,
+        btn: "Book via LINE", btnType: "ghost",
+        href: "https://line.me/R/ti/p/@investopia", priceLabel: "฿5,990"
       }
     ],
     guarantee: {
