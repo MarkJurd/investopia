@@ -37,7 +37,7 @@ async function requireImported(ctx: MutationCtx) {
 const fileOut = v.object({ id: v.union(v.id("lessonFiles"), v.null()), name: v.string(), size: v.number(), url: v.union(v.string(), v.null()) });
 const lessonOut = v.object({
   id: v.union(v.id("courseLessons"), v.null()), key: v.string(), title: v.string(), notes: v.string(), videoId: v.string(),
-  minutes: v.number(), hidden: v.boolean(), indicatorOnly: v.boolean(), free: v.boolean(), gate: v.boolean(), newSince: v.union(v.number(), v.null()), links: v.array(lessonLinkValidator), files: v.array(fileOut),
+  minutes: v.number(), hidden: v.boolean(), indicatorOnly: v.boolean(), free: v.boolean(), gate: v.boolean(), quiz: v.array(quizItemValidator), newSince: v.union(v.number(), v.null()), links: v.array(lessonLinkValidator), files: v.array(fileOut),
 });
 const moduleOut = v.object({
   id: v.union(v.id("courseModules"), v.null()), key: v.string(), title: v.string(), practice: v.string(), hidden: v.boolean(),
@@ -161,31 +161,45 @@ export const saveQuiz = mutation({
   returns: v.null(),
   handler: async (ctx, { moduleId, quiz }) => {
     await requireAdmin(ctx);
-    if (quiz.length > 50) throw new ConvexError("TOO_LONG");
-    const out: QuizItem[] = quiz.map((q) => {
-      const choices = q.choices.map((c) => clean(c, MAX_TITLE)).filter(Boolean);
-      const item = { q: clean(q.q, MAX_TEXT), choices, answer: q.answer, explain: clean(q.explain, MAX_TEXT) };
-      if (!item.q || choices.length < 2 || choices.length > 8) throw new ConvexError("BAD_QUIZ");
-      if (!Number.isInteger(item.answer) || item.answer < 0 || item.answer >= choices.length) throw new ConvexError("BAD_QUIZ");
-      return item;
-    });
-    await ctx.db.patch("courseModules", moduleId, { quiz: out });
+    await ctx.db.patch("courseModules", moduleId, { quiz: cleanQuiz(quiz) });
     return null;
   },
 });
 
+/** คำถามแบบฝึกหัดในบท (ตรวจอัตโนมัติ) */
+export const saveLessonQuiz = mutation({
+  args: { id: v.id("courseLessons"), quiz: v.array(quizItemValidator) },
+  returns: v.null(),
+  handler: async (ctx, { id, quiz }) => {
+    await requireAdmin(ctx);
+    await ctx.db.patch("courseLessons", id, { quiz: cleanQuiz(quiz) });
+    return null;
+  },
+});
+
+function cleanQuiz(quiz: QuizItem[]): QuizItem[] {
+  if (quiz.length > 50) throw new ConvexError("TOO_LONG");
+  return quiz.map((q) => {
+    const choices = q.choices.map((c) => clean(c, MAX_TITLE)).filter(Boolean);
+    const item = { q: clean(q.q, MAX_TEXT), choices, answer: q.answer, explain: clean(q.explain, MAX_TEXT) };
+    if (!item.q || choices.length < 2 || choices.length > 8) throw new ConvexError("BAD_QUIZ");
+    if (!Number.isInteger(item.answer) || item.answer < 0 || item.answer >= choices.length) throw new ConvexError("BAD_QUIZ");
+    return item;
+  });
+}
+
 /* ---------- บทเรียน ---------- */
 export const addLesson = mutation({
-  args: { moduleId: v.id("courseModules"), title: v.string() },
+  args: { moduleId: v.id("courseModules"), title: v.string(), gate: v.optional(v.boolean()) },
   returns: v.id("courseLessons"),
-  handler: async (ctx, { moduleId, title }) => {
+  handler: async (ctx, { moduleId, title, gate }) => {
     await requireAdmin(ctx);
     if ((await ctx.db.get("courseModules", moduleId)) === null) throw new ConvexError("NOT_FOUND");
     const last = await ctx.db.query("courseLessons").withIndex("by_moduleId_and_order", (q) => q.eq("moduleId", moduleId)).order("desc").first();
     // บทใหม่เริ่มแบบ "ซ่อน" — กรอกให้ครบแล้วค่อยกดแสดง
     return await ctx.db.insert("courseLessons", {
       key: await uniqueKey(ctx, "courseLessons", "l"), moduleId, order: (last?.order ?? -1) + 1,
-      title: clean(title, MAX_TITLE) || "บทใหม่", notes: "", videoId: "", minutes: 0, hidden: true, indicatorOnly: false,
+      title: clean(title, MAX_TITLE) || "บทใหม่", notes: "", videoId: "", minutes: 0, hidden: true, indicatorOnly: false, gate: gate ?? false,
     });
   },
 });
@@ -232,11 +246,15 @@ export const reorderLessons = mutation({
   returns: v.null(),
   handler: async (ctx, { moduleId, ids }) => {
     await requireAdmin(ctx);
+    if ((await ctx.db.get("courseModules", moduleId)) === null) throw new ConvexError("NOT_FOUND");
     const all = await ctx.db.query("courseLessons").withIndex("by_moduleId_and_order", (q) => q.eq("moduleId", moduleId)).take(200);
-    if (ids.length !== all.length || new Set(ids).size !== ids.length || !all.every((l) => ids.includes(l._id))) {
+    // ids = ลำดับใหม่ของโมดูลนี้ — มีบทจากโมดูลอื่นได้ 1 บท (ลากข้ามโมดูลมาวาง)
+    const incoming = ids.filter((id) => !all.some((l) => l._id === id));
+    if (incoming.length > 1 || ids.length !== all.length + incoming.length || new Set(ids).size !== ids.length || !all.every((l) => ids.includes(l._id))) {
       throw new ConvexError("STALE");
     }
-    for (let i = 0; i < ids.length; i++) await ctx.db.patch("courseLessons", ids[i], { order: i });
+    for (const id of incoming) if ((await ctx.db.get("courseLessons", id)) === null) throw new ConvexError("STALE");
+    for (let i = 0; i < ids.length; i++) await ctx.db.patch("courseLessons", ids[i], { order: i, moduleId });
     return null;
   },
 });

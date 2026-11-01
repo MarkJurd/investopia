@@ -1,7 +1,7 @@
 "use client";
 
-/* แท็บ "บทเรียน": โมดูล (เรียง/แก้/ซ่อน/ลบ) → บท (เรียง/แก้/ย้าย/ซ่อน/ลบ, วิดีโอ, ไฟล์แนบ, ป้ายใหม่) → แบบทดสอบ */
-import { useEffect, useState } from "react";
+/* แท็บ "บทเรียน": ซ้าย = ทั้งคอร์ส (ลากเรียงบท/โมดูลได้อิสระ ข้ามโมดูลได้) · ขวา = แก้รายละเอียดบท/โมดูลที่เลือก (วิดีโอ, ไฟล์แนบ, แบบทดสอบ ฯลฯ) */
+import { useEffect, useRef, useState } from "react";
 import { useAction, useMutation, useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
 import { api } from "@/convex/_generated/api";
@@ -33,39 +33,6 @@ function moveTo<T>(arr: T[], from: number, to: number): T[] {
   const [x] = out.splice(from, 1);
   out.splice(to, 0, x);
   return out;
-}
-
-/** ลากวางเพื่อเรียงลำดับ (ลากที่แถบหัวแถว แล้วปล่อยบนแถวที่ต้องการ)
- *  ระหว่างรอเซิร์ฟเวอร์บันทึก จะแสดงลำดับใหม่ไปก่อน · บนมือถือที่ลากไม่ได้ ใช้ปุ่ม ▲▼ แทน */
-function useDragOrder<T>(items: T[], keyOf: (t: T) => string, save: (ordered: T[]) => Promise<unknown>) {
-  const [drag, setDrag] = useState<number | null>(null);
-  const [over, setOver] = useState<number | null>(null);
-  const [pending, setPending] = useState<string[] | null>(null);
-  const order = pending
-    ? pending.map((k) => items.find((t) => keyOf(t) === k)).filter((t): t is T => t !== undefined)
-    : items;
-  const commit = (next: T[]) => {
-    setPending(next.map(keyOf));
-    void save(next).finally(() => setPending(null));
-  };
-  const handle = (i: number) => ({
-    draggable: true,
-    onDragStart: (e: React.DragEvent) => { e.stopPropagation(); setDrag(i); e.dataTransfer.effectAllowed = "move"; e.dataTransfer.setData("text/plain", String(i)); },
-    onDragEnd: () => { setDrag(null); setOver(null); },
-  });
-  const target = (i: number) => ({
-    onDragOver: (e: React.DragEvent) => { if (drag === null) return; e.preventDefault(); e.stopPropagation(); if (over !== i) setOver(i); },
-    onDrop: (e: React.DragEvent) => {
-      if (drag === null) return;
-      e.preventDefault();
-      e.stopPropagation();
-      if (drag !== i) commit(moveTo(order, drag, i));
-      setDrag(null);
-      setOver(null);
-    },
-  });
-  const cls = (i: number) => (drag === i ? " is-dragging" : over === i && drag !== null ? (drag < i ? " drop-below" : " drop-above") : "");
-  return { order, handle, target, cls, commit };
 }
 
 function DragHandle() {
@@ -118,126 +85,208 @@ export default function CourseTab() {
   return <CourseList tree={tree} />;
 }
 
+type Sel = { kind: "module" | "lesson"; id: string } | null;
+type Drag = { kind: "module" | "lesson"; key: string } | null;
+
+/** ทั้งคอร์สกางอยู่ทางซ้าย (ลากบท/โมดูลได้อิสระ ข้ามโมดูลได้) · คลิกแล้วแก้รายละเอียดในแผงขวา */
 function CourseList({ tree }: { tree: Tree }) {
   const C = useContent();
   const A = C.admin;
   const addModule = useMutation(api.adminCourse.addModule);
-  const reorder = useMutation(api.adminCourse.reorderModules);
+  const addLesson = useMutation(api.adminCourse.addLesson);
+  const reorderModules = useMutation(api.adminCourse.reorderModules);
+  const reorderLessons = useMutation(api.adminCourse.reorderLessons);
   const { busy, msg, run } = useRun();
-  const [open, setOpen] = useState<string | null>(null);
-  const dnd = useDragOrder(tree.modules, (m) => m.key, (next) => run(() => reorder({ ids: next.map((m) => m.id as Id<"courseModules">) })));
+  const [sel, setSel] = useState<Sel>(null);
+  const [drag, setDrag] = useState<Drag>(null);
+  const [over, setOver] = useState<string | null>(null);
+  // ลำดับใหม่ที่รอเซิร์ฟเวอร์บันทึก — แสดงไปก่อนเพื่อไม่ให้กระตุก
+  const [pendingMods, setPendingMods] = useState<string[] | null>(null);
+  const [pendingLes, setPendingLes] = useState<Record<string, string[]>>({});
+  const [now] = useState(() => Date.now());
+  const panelRef = useRef<HTMLElement>(null);
+
+  const lessonByKey = new Map(tree.modules.flatMap((m) => m.lessons.map((l) => [l.key, l] as const)));
+  const modByKey = new Map(tree.modules.map((m) => [m.key, m]));
+  const modules = pendingMods ? pendingMods.flatMap((k) => modByKey.get(k) ?? []) : tree.modules;
+  const lessonsOf = (m: Mod): Les[] => {
+    const p = pendingLes[m.key];
+    if (p) return p.flatMap((k) => lessonByKey.get(k) ?? []);
+    // บทที่เพิ่งลากออกไปโมดูลอื่น (ยังรอบันทึก) ไม่ต้องแสดงซ้ำที่นี่
+    const away = new Set(Object.entries(pendingLes).filter(([k]) => k !== m.key).flatMap(([, ks]) => ks));
+    return m.lessons.filter((l) => !away.has(l.key));
+  };
+
+  const selMod = sel?.kind === "module" ? tree.modules.find((m) => m.id === sel.id) : undefined;
+  const selLessonMod = sel?.kind === "lesson" ? tree.modules.find((m) => m.lessons.some((l) => l.id === sel.id)) : undefined;
+  const selLesson = selLessonMod?.lessons.find((l) => l.id === sel?.id);
+
+  // มือถือ: แผงแก้ไขอยู่ใต้รายการ → เลื่อนลงไปให้เห็น
+  useEffect(() => {
+    if (sel && window.matchMedia("(max-width: 900px)").matches) panelRef.current?.scrollIntoView({ block: "start" });
+  }, [sel]);
+
+  const saveLessons = (m: Mod, keys: string[]) => {
+    setPendingLes((p) => ({ ...p, [m.key]: keys }));
+    void run(() => reorderLessons({ moduleId: m.id as Id<"courseModules">, ids: keys.map((k) => lessonByKey.get(k)?.id as Id<"courseLessons">) }))
+      .finally(() => setPendingLes((p) => { const next = { ...p }; delete next[m.key]; return next; }));
+  };
+  const saveModules = (keys: string[]) => {
+    setPendingMods(keys);
+    void run(() => reorderModules({ ids: keys.map((k) => modByKey.get(k)?.id as Id<"courseModules">) })).finally(() => setPendingMods(null));
+  };
+  /** วางบทที่ลากไว้ในโมดูล m ก่อนแถวที่ index (null = ท้ายโมดูล) */
+  const placeLesson = (m: Mod, index: number | null) => {
+    if (drag?.kind !== "lesson") return;
+    const keys = lessonsOf(m).map((l) => l.key);
+    const rest = keys.filter((k) => k !== drag.key);
+    rest.splice(index ?? rest.length, 0, drag.key);
+    if (rest.join() !== keys.join()) saveLessons(m, rest);
+  };
+  const endDrag = () => { setDrag(null); setOver(null); };
+  const add = (m: Mod, gate: boolean) => void run(async () => {
+    const id = await addLesson({ moduleId: m.id as Id<"courseModules">, title: gate ? A.newExerciseTitle : A.newLessonTitle, gate });
+    setSel({ kind: "lesson", id });
+  });
+
   let visibleIndex = 0;
   return (
-    <div className="adm-course">
-      <p className="adm-hint">{A.courseHint}</p>
-      {dnd.order.map((m, i) => {
-        const tag = m.hidden ? A.hiddenBadge : `${A.moduleTag} ${visibleIndex++}`;
-        return (
-          <ModuleCard key={m.key} mod={m} tag={tag} modules={tree.modules} bunnyReady={tree.bunnyListReady}
-            open={open === m.key} onToggle={() => setOpen(open === m.key ? null : m.key)}
-            dragProps={dnd.handle(i)} dropProps={dnd.target(i)} dragCls={dnd.cls(i)}
-            arrows={<Arrows disabled={busy} onUp={() => dnd.commit(move(dnd.order, i, -1))} onDown={() => dnd.commit(move(dnd.order, i, 1))} />} />
-        );
-      })}
-      <button className="btn btn-ghost" disabled={busy} onClick={() => void run(() => addModule({ title: A.newModuleTitle }))}>{A.addModule}</button>
-      {msg && <p className="adm-msg">{msg}</p>}
+    <div className="adm-course2">
+      <div className="adm-tree">
+        <p className="adm-hint">{A.courseHint}</p>
+        {modules.map((m, mi) => {
+          const tag = m.hidden ? A.hiddenBadge : `${A.moduleTag} ${++visibleIndex}`;
+          const lessons = lessonsOf(m);
+          const modOver = over === m.key && drag !== null;
+          return (
+            <section key={m.key}
+              className={`adm-mod2${m.hidden ? " is-hidden" : ""}${modOver && drag?.kind === "module" ? " drop-above" : ""}${modOver && drag?.kind === "lesson" ? " drop-in" : ""}`}
+              onDragOver={(e) => { if (!drag) return; e.preventDefault(); if (over !== m.key) setOver(m.key); }}
+              onDrop={(e) => {
+                e.preventDefault();
+                if (drag?.kind === "lesson") placeLesson(m, null);
+                if (drag?.kind === "module" && drag.key !== m.key) {
+                  const keys = modules.map((x) => x.key);
+                  saveModules(moveTo(keys, keys.indexOf(drag.key), mi));
+                }
+                endDrag();
+              }}>
+              <div className={`adm-mod2-head${sel?.kind === "module" && sel.id === m.id ? " on" : ""}`}
+                draggable onDragStart={(e) => { setDrag({ kind: "module", key: m.key }); e.dataTransfer.effectAllowed = "move"; e.dataTransfer.setData("text/plain", m.key); }}
+                onDragEnd={endDrag}>
+                <DragHandle />
+                <button type="button" className="adm-mod2-title" onClick={() => setSel({ kind: "module", id: m.id as string })}>
+                  <span className="lo-tag">{tag}</span> <b>{m.title}</b>
+                  {m.quiz.length > 0 && <span className="adm-sub">· {m.quiz.length} {A.quizCount}</span>}
+                </button>
+                <button type="button" className="btn btn-ghost btn-sm" disabled={busy} onClick={() => add(m, false)}>{A.addLesson}</button>
+                <button type="button" className="btn btn-ghost btn-sm" disabled={busy} onClick={() => add(m, true)}>{A.addExercise}</button>
+              </div>
+              <ol className="adm-rows">
+                {lessons.map((l, i) => {
+                  const dragFrom = drag?.kind === "lesson" ? lessons.findIndex((x) => x.key === drag.key) : -1;
+                  const isOver = over === l.key && drag?.kind === "lesson" && drag.key !== l.key;
+                  return (
+                    <li key={l.key}
+                      className={`${drag?.kind === "lesson" && drag.key === l.key ? "is-dragging" : ""}${isOver ? (dragFrom !== -1 && dragFrom < i ? " drop-below" : " drop-above") : ""}`}
+                      draggable
+                      onDragStart={(e) => { e.stopPropagation(); setDrag({ kind: "lesson", key: l.key }); e.dataTransfer.effectAllowed = "move"; e.dataTransfer.setData("text/plain", l.key); }}
+                      onDragEnd={endDrag}
+                      onDragOver={(e) => { if (drag?.kind !== "lesson") return; e.preventDefault(); e.stopPropagation(); if (over !== l.key) setOver(l.key); }}
+                      onDrop={(e) => { if (drag?.kind !== "lesson") return; e.preventDefault(); e.stopPropagation(); placeLesson(m, i); endDrag(); }}>
+                      <button type="button" className={`adm-row2${sel?.kind === "lesson" && sel.id === l.id ? " on" : ""}${l.hidden ? " is-hidden" : ""}`}
+                        onClick={() => setSel({ kind: "lesson", id: l.id as string })}>
+                        <DragHandle />
+                        <span className="adm-ico" title={l.gate ? A.gateBadge : l.videoId ? A.hasVideoBadge : A.noVideo}>{l.gate ? "📝" : l.videoId ? "🎬" : "⚪"}</span>
+                        <span className="adm-row2-title">{l.title}</span>
+                        <span className="adm-badges">
+                          {l.hidden && <i className="b-hidden">{A.hiddenBadge}</i>}
+                          {l.gate && <i>{A.gateBadge}</i>}
+                          {l.quiz.length > 0 && <i>❓ {l.quiz.length} {A.lessonQuizCount}</i>}
+                          {l.free && <i className="b-ok">{A.freeBadge}</i>}
+                          {l.indicatorOnly && <i>{A.indicatorBadge}</i>}
+                          {l.files.length + l.links.length > 0 && <i>📎 {l.files.length + l.links.length}</i>}
+                          {isRecent(l.newSince, now) && <i className="b-new">{C.learn.newBadge}</i>}
+                        </span>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ol>
+              {lessons.length === 0 && <p className="adm-empty">{A.emptyModule}</p>}
+            </section>
+          );
+        })}
+        <button className="btn btn-ghost" disabled={busy} onClick={() => void run(async () => {
+          const id = await addModule({ title: A.newModuleTitle });
+          setSel({ kind: "module", id });
+        })}>{A.addModule}</button>
+        {msg && <p className="adm-msg">{msg}</p>}
+      </div>
+
+      <aside className="adm-panel card" ref={panelRef}>
+        {selLesson && selLessonMod ? (
+          <>
+            <h3 className="adm-h3">{A.lessonSettings}</h3>
+            <LessonEditor key={selLesson.key} lesson={selLesson} moduleId={selLessonMod.id as Id<"courseModules">} modules={tree.modules}
+              bunnyReady={tree.bunnyListReady} onClose={() => setSel(null)}
+              onMove={(dir) => {
+                const keys = lessonsOf(selLessonMod).map((l) => l.key);
+                const next = move(keys, keys.indexOf(selLesson.key), dir);
+                if (next !== keys) saveLessons(selLessonMod, next);
+              }} />
+          </>
+        ) : selMod ? (
+          <>
+            <h3 className="adm-h3">{A.moduleSettings}</h3>
+            <ModulePanel key={selMod.key} mod={selMod} onClose={() => setSel(null)} />
+          </>
+        ) : (
+          <p className="adm-sub">{A.pickHint}</p>
+        )}
+      </aside>
     </div>
   );
 }
 
-type DragProps = ReturnType<ReturnType<typeof useDragOrder>["handle"]>;
-type DropProps = ReturnType<ReturnType<typeof useDragOrder>["target"]>;
-
-function ModuleCard({ mod, tag, modules, bunnyReady, open, onToggle, arrows, dragProps, dropProps, dragCls }: {
-  mod: Mod; tag: string; modules: Mod[]; bunnyReady: boolean; open: boolean; onToggle: () => void; arrows: React.ReactNode;
-  dragProps: DragProps; dropProps: DropProps; dragCls: string;
-}) {
-  const C = useContent();
-  const A = C.admin;
+function ModulePanel({ mod, onClose }: { mod: Mod; onClose: () => void }) {
+  const A = useContent().admin;
   const saveModule = useMutation(api.adminCourse.saveModule);
   const deleteModule = useMutation(api.adminCourse.deleteModule);
-  const addLesson = useMutation(api.adminCourse.addLesson);
-  const reorderLessons = useMutation(api.adminCourse.reorderLessons);
+  const saveQuiz = useMutation(api.adminCourse.saveQuiz);
   const [title, setTitle] = useState(mod.title);
   const [practice, setPractice] = useState(mod.practice);
   const [hidden, setHidden] = useState(mod.hidden);
-  const [editLesson, setEditLesson] = useState<string | null>(null);
-  const [quizOpen, setQuizOpen] = useState(false);
-  const [now] = useState(() => Date.now());
   const { busy, msg, run } = useRun();
   const id = mod.id as Id<"courseModules">;
   const dirty = title !== mod.title || practice !== mod.practice || hidden !== mod.hidden;
-  const lessons = useDragOrder(mod.lessons, (l) => l.key, (next) => run(() => reorderLessons({ moduleId: id, ids: next.map((l) => l.id as Id<"courseLessons">) })));
 
   return (
-    <section className={`card adm-mod${mod.hidden ? " is-hidden" : ""}${dragCls}`} {...dropProps}>
-      <div className="adm-mod-head" {...dragProps}>
-        <DragHandle />
-        {arrows}
-        <button type="button" className="adm-mod-title" onClick={onToggle} aria-expanded={open}>
-          <span className="lo-tag">{tag}</span> <b>{mod.title}</b>
-          <span className="adm-sub">{mod.lessons.length} {A.lessonsCount} · {mod.quiz.length} {A.quizCount}</span>
-        </button>
-      </div>
-      {open && (
-        <div className="adm-mod-body">
-          <div className="adm-form">
-            <label>{A.moduleTitle}<input value={title} onChange={(e) => setTitle(e.target.value)} maxLength={200} /></label>
-            <label>{A.practice}<textarea value={practice} onChange={(e) => setPractice(e.target.value)} rows={2} maxLength={5000} /></label>
-            <label className="adm-check"><input type="checkbox" checked={hidden} onChange={(e) => setHidden(e.target.checked)} /> {A.hidden}</label>
-            <div className="adm-row">
-              <button className="btn btn-primary btn-sm" disabled={busy || !dirty} onClick={() => void run(() => saveModule({ id, title, practice, hidden }), A.saved)}>{busy ? A.saving : A.save}</button>
-              <button className="btn btn-ghost btn-sm" onClick={() => setQuizOpen((o) => !o)}>{A.editQuiz} ({mod.quiz.length})</button>
-              <button className="btn btn-ghost btn-sm adm-danger" disabled={busy} onClick={() => {
-                const n = mod.lessons.length;
-                const text = n === 0 ? A.confirmDelete : A.confirmDeleteModule.replace("{title}", mod.title).replace("{n}", String(n));
-                if (confirm(text)) void run(() => deleteModule({ id, deleteLessons: n > 0 }));
-              }}>{A.deleteModule}</button>
-              {msg && <span className="adm-msg">{msg}</span>}
-            </div>
-          </div>
-
-          {quizOpen && <QuizEditor moduleId={id} quiz={mod.quiz} onClose={() => setQuizOpen(false)} />}
-
-          <ol className="adm-lessons">
-            {lessons.order.map((l, i) => (
-              <li key={l.key} className={lessons.cls(i)} {...lessons.target(i)}>
-                <div className="adm-lesson-row" {...lessons.handle(i)}>
-                  <DragHandle />
-                  <Arrows disabled={busy}
-                    onUp={() => lessons.commit(move(lessons.order, i, -1))}
-                    onDown={() => lessons.commit(move(lessons.order, i, 1))} />
-                  <button type="button" className="adm-lesson-title" onClick={() => setEditLesson(editLesson === l.key ? null : l.key)} aria-expanded={editLesson === l.key}>
-                    <span>{l.title}</span>
-                    <span className="adm-badges">
-                      {l.hidden && <i className="b-hidden">{A.hiddenBadge}</i>}
-                      {l.indicatorOnly && <i>{A.indicatorBadge}</i>}
-                      {l.free && <i className="b-ok">{A.freeBadge}</i>}
-                      {l.gate && <i>{A.gateBadge}</i>}
-                      <i className={l.videoId ? "b-ok" : "b-muted"}>{l.videoId ? A.hasVideoBadge : A.noVideo}</i>
-                      {l.files.length > 0 && <i>📄 {l.files.length}</i>}
-                      {isRecent(l.newSince, now) && <i className="b-new">{C.learn.newBadge}</i>}
-                    </span>
-                  </button>
-                </div>
-                {editLesson === l.key && (
-                  <LessonEditor lesson={l} moduleId={id} modules={modules} bunnyReady={bunnyReady} onClose={() => setEditLesson(null)} />
-                )}
-              </li>
-            ))}
-          </ol>
-          <button className="btn btn-ghost btn-sm" disabled={busy} onClick={() => void run(async () => {
-            await addLesson({ moduleId: id, title: A.newLessonTitle });
-          })}>{A.addLesson}</button>
+    <div className="adm-editor">
+      <div className="adm-form">
+        <label>{A.moduleTitle}<input value={title} onChange={(e) => setTitle(e.target.value)} maxLength={200} /></label>
+        <label>{A.practice}<textarea value={practice} onChange={(e) => setPractice(e.target.value)} rows={2} maxLength={5000} /></label>
+        <label className="adm-check"><input type="checkbox" checked={hidden} onChange={(e) => setHidden(e.target.checked)} /> {A.hidden}</label>
+        <div className="adm-row">
+          <button className="btn btn-primary btn-sm" disabled={busy || !dirty} onClick={() => void run(() => saveModule({ id, title, practice, hidden }), A.saved)}>{busy ? A.saving : A.save}</button>
+          <button className="btn btn-ghost btn-sm" onClick={onClose}>{A.close}</button>
+          {msg && <span className="adm-msg">{msg}</span>}
         </div>
-      )}
-    </section>
+      </div>
+      <QuizEditor name={mod.key} quiz={mod.quiz} save={(quiz) => saveQuiz({ moduleId: id, quiz })} title={A.quizTitle} hint={A.quizHint} />
+      <div className="adm-extra">
+        <button className="btn btn-ghost btn-sm adm-danger" disabled={busy} onClick={() => {
+          const n = mod.lessons.length;
+          const text = n === 0 ? A.confirmDelete : A.confirmDeleteModule.replace("{title}", mod.title).replace("{n}", String(n));
+          if (confirm(text)) void run(() => deleteModule({ id, deleteLessons: n > 0 }));
+        }}>{A.deleteModule}</button>
+      </div>
+    </div>
   );
 }
 
-
-function LessonEditor({ lesson, moduleId, modules, bunnyReady, onClose }: {
-  lesson: Les; moduleId: Id<"courseModules">; modules: Mod[]; bunnyReady: boolean; onClose: () => void;
+function LessonEditor({ lesson, moduleId, modules, bunnyReady, onClose, onMove }: {
+  lesson: Les; moduleId: Id<"courseModules">; modules: Mod[]; bunnyReady: boolean; onClose: () => void; onMove: (dir: -1 | 1) => void;
 }) {
   const C = useContent();
   const A = C.admin;
@@ -251,6 +300,7 @@ function LessonEditor({ lesson, moduleId, modules, bunnyReady, onClose }: {
   const delFile = useMutation(api.adminCourse.deleteLessonFile);
   const addLink = useMutation(api.adminCourse.addLessonLink);
   const delLink = useMutation(api.adminCourse.deleteLessonLink);
+  const saveLessonQuiz = useMutation(api.adminCourse.saveLessonQuiz);
   const [link, setLink] = useState({ title: "", url: "" });
   const id = lesson.id as Id<"courseLessons">;
 
@@ -311,6 +361,8 @@ function LessonEditor({ lesson, moduleId, modules, bunnyReady, onClose }: {
         </div>
       </div>
 
+      <QuizEditor name={lesson.key} quiz={lesson.quiz} save={(quiz) => saveLessonQuiz({ id, quiz })} title={A.lessonQuizTitle} hint={A.lessonQuizHint} />
+
       <div className="adm-files">
         <h4>{A.files}</h4>
         {lesson.files.length === 0 && <p className="adm-sub">{A.noFiles}</p>}
@@ -361,6 +413,7 @@ function LessonEditor({ lesson, moduleId, modules, bunnyReady, onClose }: {
           )}
         </div>
         <div className="adm-row">
+          <Arrows disabled={busy} onUp={() => onMove(-1)} onDown={() => onMove(1)} />
           <label className="adm-inline">{A.moveTo}
             <select value={moduleId} onChange={(e) => void run(() => moveLesson({ id, moduleId: e.target.value as Id<"courseModules"> }))}>
               {modules.map((m) => <option key={m.key} value={m.id ?? ""}>{m.title}</option>)}
@@ -416,24 +469,23 @@ function VideoPicker({ onPick }: { onPick: (guid: string) => void }) {
   );
 }
 
-function QuizEditor({ moduleId, quiz, onClose }: { moduleId: Id<"courseModules">; quiz: QuizItem[]; onClose: () => void }) {
+function QuizEditor({ name, quiz, save, title, hint }: { name: string; quiz: QuizItem[]; save: (quiz: QuizItem[]) => Promise<unknown>; title: string; hint: string }) {
   const A = useContent().admin;
-  const saveQuiz = useMutation(api.adminCourse.saveQuiz);
   const [items, setItems] = useState<QuizItem[]>(() => quiz.map((q) => ({ ...q, choices: [...q.choices] })));
   const { busy, msg, run } = useRun();
   const upd = (i: number, patch: Partial<QuizItem>) => setItems((arr) => arr.map((q, j) => (j === i ? { ...q, ...patch } : q)));
 
   return (
     <div className="adm-quiz">
-      <h4>{A.quizTitle}</h4>
-      <p className="adm-sub">{A.quizHint}</p>
+      <h4>{title}</h4>
+      <p className="adm-sub">{hint}</p>
       {items.map((q, i) => (
         <fieldset key={i} className="adm-q">
           <legend>{i + 1}.</legend>
           <label>{A.question}<textarea value={q.q} onChange={(e) => upd(i, { q: e.target.value })} rows={2} /></label>
           {q.choices.map((c, ci) => (
             <div key={ci} className="adm-choice">
-              <input type="radio" name={`ans-${moduleId}-${i}`} checked={q.answer === ci} onChange={() => upd(i, { answer: ci })} aria-label={`${A.choice} ${ci + 1}`} />
+              <input type="radio" name={`ans-${name}-${i}`} checked={q.answer === ci} onChange={() => upd(i, { answer: ci })} aria-label={`${A.choice} ${ci + 1}`} />
               <input value={c} onChange={(e) => upd(i, { choices: q.choices.map((x, xi) => (xi === ci ? e.target.value : x)) })} placeholder={`${A.choice} ${ci + 1}`} />
               {q.choices.length > 2 && (
                 <button type="button" className="adm-x" aria-label={A.delete} onClick={() => upd(i, {
@@ -450,8 +502,7 @@ function QuizEditor({ moduleId, quiz, onClose }: { moduleId: Id<"courseModules">
       ))}
       <div className="adm-row">
         <button type="button" className="btn btn-ghost btn-sm" onClick={() => setItems((arr) => [...arr, { q: "", choices: ["", ""], answer: 0, explain: "" }])}>{A.addQuestion}</button>
-        <button className="btn btn-primary btn-sm" disabled={busy} onClick={() => void run(() => saveQuiz({ moduleId, quiz: items }), A.saved)}>{busy ? A.saving : A.save}</button>
-        <button className="btn btn-ghost btn-sm" onClick={onClose}>{A.close}</button>
+        <button className="btn btn-primary btn-sm" disabled={busy} onClick={() => void run(() => save(items), A.saved)}>{busy ? A.saving : A.save}</button>
         {msg && <span className="adm-msg">{msg}</span>}
       </div>
     </div>

@@ -10,6 +10,47 @@ import { Outline, StepNav } from "@/components/learn/Outline";
 import type { Step } from "@/components/learn/steps";
 
 type Result = FunctionReturnType<typeof api.learn.submitQuiz>;
+type Graded = { correct: boolean; answer: number; explain: string };
+
+/** รายการคำถามแบบเลือกตอบ + เฉลยหลังตรวจ (ใช้ทั้งแบบทดสอบท้ายโมดูลและแบบฝึกหัดในบท) */
+export function QuizList({ quiz, answers, setAnswers, results, disabled }: {
+  quiz: { q: string; choices: string[] }[];
+  answers: (number | null)[];
+  setAnswers: React.Dispatch<React.SetStateAction<(number | null)[]>>;
+  results: Graded[] | undefined;
+  disabled: boolean;
+}) {
+  const L = useContent().learn;
+  return (
+    <ol className="quiz-list">
+      {quiz.map((q, qi) => {
+        const r = results?.[qi];
+        return (
+          <li key={qi} className="quiz-q card">
+            <fieldset disabled={disabled}>
+              <legend>{qi + 1}. {q.q}</legend>
+              {q.choices.map((choice, ci) => {
+                const state = r ? (ci === r.answer ? " right" : ci === answers[qi] ? " wrong" : "") : "";
+                return (
+                  <label key={ci} className={`quiz-choice${answers[qi] === ci ? " sel" : ""}${state}`}>
+                    <input type="radio" name={`q${qi}`} checked={answers[qi] === ci}
+                      onChange={() => setAnswers((a) => a.map((v, i) => (i === qi ? ci : v)))} />
+                    <span>{choice}</span>
+                  </label>
+                );
+              })}
+            </fieldset>
+            {r && (
+              <p className={`quiz-explain ${r.correct ? "ok" : ""}`}>
+                <b>{r.correct ? L.correct : `${L.wrongBefore} “${q.choices[r.answer]}”`}</b> {r.explain}
+              </p>
+            )}
+          </li>
+        );
+      })}
+    </ol>
+  );
+}
 
 export default function QuizView({ steps, index, passPercent }: { steps: Step[]; index: number; passPercent: number }) {
   const C = useContent();
@@ -58,33 +99,7 @@ export default function QuizView({ steps, index, passPercent }: { steps: Step[];
           </div>
         )}
 
-        <ol className="quiz-list">
-          {mod.quiz.map((q, qi) => {
-            const r = result?.results[qi];
-            return (
-              <li key={qi} className="quiz-q card">
-                <fieldset disabled={!!result || busy}>
-                  <legend>{qi + 1}. {q.q}</legend>
-                  {q.choices.map((choice, ci) => {
-                    const state = r ? (ci === r.answer ? " right" : ci === answers[qi] ? " wrong" : "") : "";
-                    return (
-                      <label key={ci} className={`quiz-choice${answers[qi] === ci ? " sel" : ""}${state}`}>
-                        <input type="radio" name={`q${qi}`} checked={answers[qi] === ci}
-                          onChange={() => setAnswers((a) => a.map((v, i) => (i === qi ? ci : v)))} />
-                        <span>{choice}</span>
-                      </label>
-                    );
-                  })}
-                </fieldset>
-                {r && (
-                  <p className={`quiz-explain ${r.correct ? "ok" : ""}`}>
-                    <b>{r.correct ? L.correct : `${L.wrongBefore} “${q.choices[r.answer]}”`}</b> {r.explain}
-                  </p>
-                )}
-              </li>
-            );
-          })}
-        </ol>
+        <QuizList quiz={mod.quiz} answers={answers} setAnswers={setAnswers} results={result?.results} disabled={!!result || busy} />
 
         <div className="learn-done">
           {result

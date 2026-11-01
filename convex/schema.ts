@@ -78,7 +78,8 @@ export default defineSchema({
     minutes: v.number(),
     hidden: v.boolean(),
     indicatorOnly: v.boolean(),               // เปิดเฉพาะผู้ได้ Indicator + แอดมิน
-    gate: v.optional(v.boolean()),            // แบบฝึกหัด: ต้องกด "ทำเสร็จแล้ว" ก่อนถึงจะเปิดบทถัดไปได้
+    gate: v.optional(v.boolean()),
+    quiz: v.optional(v.array(quizItemValidator)),  // คำถามแบบฝึกหัดในบท (ตรวจอัตโนมัติ — ส่งแล้วนับว่าทำบทนี้เสร็จ)            // แบบฝึกหัด: ต้องกด "ทำเสร็จแล้ว" ก่อนถึงจะเปิดบทถัดไปได้
     free: v.optional(v.boolean()),            // บทเรียนฟรี: คนที่ล็อกอิน Google (ยังไม่ซื้อ) ดูได้ — แก้ที่ /admin
     newSince: v.optional(v.number()),         // ป้าย "ใหม่" นับจากเวลานี้
     links: v.optional(v.array(v.object({ title: v.string(), url: v.string() }))),  // ลิงก์เว็บใต้คลิป (เช่น TradingView, Google Drive)
@@ -100,6 +101,8 @@ export default defineSchema({
     userId: v.id("users"),
     lessonId: v.string(),
     completedAt: v.number(),
+    correct: v.optional(v.number()),          // คะแนนแบบฝึกหัดล่าสุด (บทที่มีคำถาม)
+    total: v.optional(v.number()),
   }).index("by_userId_and_lessonId", ["userId", "lessonId"]),
 
   // ผลแบบทดสอบท้ายโมดูล (1 แถว = 1 โมดูล) — เก็บคะแนนดีสุดไว้ตัดสินว่าผ่านหรือยัง

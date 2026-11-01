@@ -81,6 +81,8 @@ const lessonOut = v.object({
   free: v.boolean(),                            // บทเรียนฟรี (ป้าย "ฟรี")
   gate: v.boolean(),                            // แบบฝึกหัด: ต้องกดทำเสร็จก่อนบทถัดไปจะเปิด
   blocked: v.boolean(),                         // true = ต้องทำแบบฝึกหัดก่อนหน้าให้เสร็จก่อน (ไม่ส่งเนื้อหา)
+  quiz: v.array(v.object({ q: v.string(), choices: v.array(v.string()) })),   // คำถามแบบฝึกหัด (ไม่มีเฉลย · ว่างถ้าล็อก)
+  score: v.union(v.null(), v.object({ correct: v.number(), total: v.number() })),  // คะแนนแบบฝึกหัดล่าสุด
   isNew: v.boolean(),                           // ป้าย "ใหม่"
   files: v.array(fileOut),                      // ไฟล์แนบใต้คลิป (ว่างถ้าล็อก)
   links: v.array(lessonLinkValidator),          // ลิงก์เว็บใต้คลิป (ว่างถ้าล็อก)
@@ -124,6 +126,7 @@ export const overview = query({
     const modules = [];
     const shown = visibleModules((await loadCourse(ctx)).modules);
     const doneSet = new Set(lessons.map((l) => l.lessonId));
+    const scores = new Map(lessons.flatMap((p) => (p.total !== undefined ? [[p.lessonId, { correct: p.correct ?? 0, total: p.total }] as const] : [])));
     const blockedSet = blockedKeys(shown, doneSet, (l) => !(l.indicatorOnly && !canIndicator) && !(preview && !l.free));
     for (const m of shown) {
       const outLessons = [];
@@ -139,6 +142,8 @@ export const overview = query({
           isNew: l.newSince !== null && now - l.newSince < NEW_LESSON_DAYS * DAY,
           files,
           links: locked || paywalled || blocked ? [] : l.links,
+          quiz: locked || paywalled || blocked ? [] : l.quiz.map((q) => ({ q: q.q, choices: q.choices })),
+          score: scores.get(l.key) ?? null,
         });
       }
       modules.push({
@@ -169,22 +174,27 @@ async function isBlocked(ctx: QueryCtx, userId: Id<"users">, lessonId: string, n
 }
 
 /* ---------- กด "เรียนจบบทนี้" / ยกเลิก ---------- */
+/** ผู้เรียนที่เปิดบทนี้ได้ (บทฟรี = แค่ล็อกอิน · บท Indicator = ต้องได้สิทธิ์) */
+async function lessonUser(ctx: QueryCtx, lesson: CourseLesson, now: number): Promise<Id<"users">> {
+  const authed = await getAuthUserId(ctx);
+  if (authed === null) throw new ConvexError("NOT_SIGNED_IN");
+  const userId = lesson.free && !lesson.indicatorOnly ? authed : await requireMember(ctx, now);
+  if (lesson.indicatorOnly) {
+    const m = await getAccess(ctx, userId, now);
+    if (!(await canSeeIndicator(ctx, userId, m?.indicatorBonus ?? false))) throw new ConvexError("LOCKED");
+  }
+  return userId;
+}
+
 export const setLessonDone = mutation({
   args: { lessonId: v.string(), done: v.boolean() },
   returns: v.null(),
   handler: async (ctx, { lessonId, done }) => {
     const now = Date.now();
-    const authed = await getAuthUserId(ctx);
-    if (authed === null) throw new ConvexError("NOT_SIGNED_IN");
     const lesson = await findVisibleLesson(ctx, lessonId);
     if (lesson === null) throw new ConvexError("UNKNOWN_LESSON");
-    // ผู้ยังไม่ซื้อ: กดเรียนจบได้เฉพาะบทฟรี
-    const isFreeOpen = lesson.free && !lesson.indicatorOnly;
-    const userId = isFreeOpen ? authed : await requireMember(ctx, now);
-    if (lesson.indicatorOnly) {
-      const m = await getAccess(ctx, userId, now);
-      if (!(await canSeeIndicator(ctx, userId, m?.indicatorBonus ?? false))) throw new ConvexError("LOCKED");
-    }
+    const userId = await lessonUser(ctx, lesson, now);
+    if (done && lesson.quiz.length > 0) throw new ConvexError("USE_QUIZ");   // บทที่มีคำถาม: ต้องส่งคำตอบ (submitLessonQuiz)
     const row = await ctx.db
       .query("lessonProgress")
       .withIndex("by_userId_and_lessonId", (q) => q.eq("userId", userId).eq("lessonId", lessonId))
@@ -193,6 +203,35 @@ export const setLessonDone = mutation({
     if (done && !row) await ctx.db.insert("lessonProgress", { userId, lessonId, completedAt: now });
     if (!done && row) await ctx.db.delete("lessonProgress", row._id);
     return null;
+  },
+});
+
+/* ---------- ส่งคำตอบแบบฝึกหัดในบท — ตรวจที่เซิร์ฟเวอร์ · ส่งแล้ว = ทำบทนี้เสร็จ (เปิดบทถัดไป) ไม่ว่าได้กี่คะแนน ---------- */
+export const submitLessonQuiz = mutation({
+  args: { lessonId: v.string(), answers: v.array(v.number()) },
+  returns: v.object({
+    correct: v.number(),
+    total: v.number(),
+    results: v.array(v.object({ correct: v.boolean(), answer: v.number(), explain: v.string() })),
+  }),
+  handler: async (ctx, { lessonId, answers }) => {
+    const now = Date.now();
+    const lesson = await findVisibleLesson(ctx, lessonId);
+    if (lesson === null || lesson.quiz.length === 0) throw new ConvexError("UNKNOWN_QUIZ");
+    const userId = await lessonUser(ctx, lesson, now);
+    if (await isBlocked(ctx, userId, lessonId, now)) throw new ConvexError("BLOCKED");
+    if (answers.length !== lesson.quiz.length) throw new ConvexError("BAD_ANSWERS");
+
+    const results = lesson.quiz.map((q, i) => ({ correct: answers[i] === q.answer, answer: q.answer, explain: q.explain }));
+    const correct = results.filter((r) => r.correct).length;
+    const total = lesson.quiz.length;
+    const row = await ctx.db
+      .query("lessonProgress")
+      .withIndex("by_userId_and_lessonId", (q) => q.eq("userId", userId).eq("lessonId", lessonId))
+      .unique();
+    if (row) await ctx.db.patch("lessonProgress", row._id, { correct, total });
+    else await ctx.db.insert("lessonProgress", { userId, lessonId, completedAt: now, correct, total });
+    return { correct, total, results };
   },
 });
 

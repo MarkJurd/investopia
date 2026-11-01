@@ -9,7 +9,9 @@ import { Outline, StepNav } from "@/components/learn/Outline";
 import LessonVideo from "@/components/learn/LessonVideo";
 import Link from "next/link";
 import { communityPath } from "@/components/community/helpers";
-import { learnPath, moduleStepId, pricingPath, type Step } from "@/components/learn/steps";
+import { learnPath, moduleStepId, pricingPath, type Lesson, type Step } from "@/components/learn/steps";
+import { QuizList } from "@/components/learn/QuizView";
+import type { FunctionReturnType } from "convex/server";
 
 export function formatSize(bytes: number): string {
   if (bytes >= 1024 * 1024) return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
@@ -91,8 +93,10 @@ export default function LessonView({ steps, index }: { steps: Step[]; index: num
           </section>
         )}
 
+        {lesson.quiz.length > 0 && <LessonQuiz key={lesson.id} lesson={lesson} />}
+
         <div className="learn-done">
-          {step.done ? (
+          {lesson.quiz.length > 0 ? null : step.done ? (
             <>
               <span className="done-pill">{L.doneLabel}</span>
               <button className="btn btn-ghost btn-sm" disabled={busy} onClick={() => void toggle(false)}>{L.undoDone}</button>
@@ -114,5 +118,53 @@ export default function LessonView({ steps, index }: { steps: Step[]; index: num
       </article>
       <Outline steps={steps} current={step} />
     </div>
+  );
+}
+
+type QuizResult = FunctionReturnType<typeof api.learn.submitLessonQuiz>;
+
+/** แบบฝึกหัดในบท: ตอบ → ส่ง → ตรวจที่เซิร์ฟเวอร์ → คะแนน + ถูก/ผิด · ส่งแล้วนับว่าทำบทนี้เสร็จ */
+function LessonQuiz({ lesson }: { lesson: Lesson }) {
+  const L = useContent().learn;
+  const submit = useMutation(api.learn.submitLessonQuiz);
+  const [answers, setAnswers] = useState<(number | null)[]>(() => lesson.quiz.map(() => null));
+  const [result, setResult] = useState<QuizResult | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const send = async () => {
+    if (answers.some((a) => a === null)) { setError(L.answerAll); return; }
+    setBusy(true);
+    setError(null);
+    try {
+      setResult(await submit({ lessonId: lesson.id, answers: answers as number[] }));
+    } catch {
+      setError(L.error);
+    } finally {
+      setBusy(false);
+    }
+  };
+  const retake = () => { setAnswers(lesson.quiz.map(() => null)); setResult(null); setError(null); };
+
+  return (
+    <section className="learn-exercise">
+      <h2>📝 {L.exerciseTitle}</h2>
+      <p className="learn-meta">
+        {L.exerciseIntro}{lesson.gate && <> · {L.exerciseUnlock}</>}
+        {lesson.score && !result && <> · {L.lastScore} {lesson.score.correct}/{lesson.score.total}</>}
+      </p>
+      {result && (
+        <div className={`quiz-result${result.correct === result.total ? " ok" : ""}`} role="status">
+          <b>{L.scoreBefore} {result.correct}/{result.total} {L.scoreAfter}</b>
+        </div>
+      )}
+      <QuizList quiz={lesson.quiz} answers={answers} setAnswers={setAnswers} results={result?.results} disabled={!!result || busy} />
+      <div className="learn-done">
+        {result
+          ? <button className="btn btn-ghost" onClick={retake}>{L.retake}</button>
+          : <button className="btn btn-primary" disabled={busy} onClick={() => void send()}>{L.submit}</button>}
+        {error && <span className="learn-error" role="alert">{error}</span>}
+      </div>
+    </section>
   );
 }

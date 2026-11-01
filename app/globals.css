@@ -453,6 +453,9 @@ footer{padding:56px 0 40px;border-top:1px solid var(--line);background:var(--bg-
 .learn-notes{margin:0 0 22px;padding:22px 24px}
 .learn-notes h2{font-size:16px;margin-bottom:8px}
 .learn-notes p{white-space:pre-line}
+.learn-exercise{margin:0 0 22px}
+.learn-exercise h2{font-size:18px;margin-bottom:4px}
+.learn-exercise>.learn-meta{margin-bottom:14px}
 .learn-done{display:flex;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:28px}
 .done-pill{font-weight:600;color:#15803D;background:#F0FDF4;border:1px solid #BBF7D0;padding:8px 16px;border-radius:999px}
 .btn:disabled{opacity:.6;cursor:not-allowed;transform:none}
@@ -900,6 +903,27 @@ fieldset:disabled .quiz-choice{cursor:default}
 .drop-above{box-shadow:0 -3px 0 0 var(--blue)}
 .drop-below{box-shadow:0 3px 0 0 var(--blue)}
 @media (hover:none){.adm-drag-handle{display:none}}
+
+/* แท็บบทเรียน: ซ้าย = ทั้งคอร์ส · ขวา = แผงแก้ไข (ติดจอ) */
+.adm-course2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:16px;align-items:start}
+.adm-tree{display:flex;flex-direction:column;gap:10px;min-width:0}
+.adm-panel{position:sticky;top:76px;max-height:calc(100vh - 92px);overflow:auto;padding:16px;min-width:0}
+.adm-panel .adm-editor{border-top:0;padding:0}
+@media (max-width:900px){.adm-course2{grid-template-columns:1fr}.adm-panel{position:static;max-height:none;scroll-margin-top:72px}}
+.adm-mod2{background:#fff;border:1px solid var(--line);border-radius:14px;padding:6px}
+.adm-mod2.is-hidden{border-style:dashed;opacity:.8}
+.adm-mod2.drop-in{border-color:var(--blue);background:var(--bg-soft)}
+.adm-mod2-head{display:flex;align-items:center;gap:6px;padding:6px;border-radius:10px;flex-wrap:wrap}
+.adm-mod2-head.on{background:var(--bg-soft);outline:2px solid var(--blue)}
+.adm-mod2-title{flex:1;min-width:140px;text-align:left;font:inherit;background:none;border:0;cursor:pointer;color:var(--ink);display:flex;flex-wrap:wrap;gap:4px 8px;align-items:baseline}
+.adm-rows{list-style:none;display:flex;flex-direction:column;gap:2px;padding:2px 0 2px 14px}
+.adm-row2{width:100%;display:flex;align-items:center;gap:8px;font:inherit;font-size:14px;text-align:left;background:none;border:1px solid transparent;border-radius:8px;padding:5px 8px;cursor:pointer;color:var(--ink)}
+.adm-row2:hover{background:var(--bg-soft)}
+.adm-row2.on{border-color:var(--blue);background:var(--bg-soft)}
+.adm-row2.is-hidden .adm-row2-title{color:var(--muted)}
+.adm-row2-title{flex:1;min-width:0;overflow-wrap:anywhere}
+.adm-ico{flex-shrink:0;width:1.4em;text-align:center}
+.adm-empty{font-size:13px;color:var(--muted);padding:6px 14px 8px}
 
 /* ห้องเรียน: การ์ดโมดูลใหญ่ + หน้ารวมบท (2026-10-18) */
 .mod-list{grid-template-columns:minmax(0,1fr);gap:16px}
