@@ -59,7 +59,7 @@ export default function LessonView({ steps, index }: { steps: Step[]; index: num
           </div>
         ) : (
         <>
-        <LessonVideo key={lesson.id} lessonId={lesson.id} title={lesson.title} hasVideo={lesson.hasVideo} />
+        <LessonVideo lessonId={lesson.id} title={lesson.title} hasVideo={lesson.hasVideo} />
 
         <p className="learn-kicker"><Link href={learnPath(C, moduleStepId(module.id))}>← {module.tag} · {module.title}</Link></p>
         <h1 className="learn-h1">{lesson.title}{lesson.free && <span className="new-badge">{L.freeBadge}</span>}{lesson.isNew && <span className="new-badge">{L.newBadge}</span>}</h1>

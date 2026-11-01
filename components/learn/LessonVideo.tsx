@@ -1,7 +1,7 @@
 "use client";
 
 /* กรอบวิดีโอของบทเรียน: มีวิดีโอ = ขอลิงก์เล่นที่เซ็นแล้วจาก server (เฉพาะสมาชิก) · ไม่มี = "เร็วๆ นี้"
- * ใส่ key={lessonId} ตอนเรียกใช้ เปลี่ยนบทแล้วสถานะจะรีเซ็ตเอง */
+ * ใช้ <iframe> ตัวเดียวตลอด เปลี่ยนบท = เปลี่ยน src (ไม่สร้างกรอบใหม่) — เคยเกิดปัญหาเครื่องเล่นของบทก่อนๆ ค้างซ้อนกันบนหน้าเว็บจริง */
 import { useEffect, useState } from "react";
 import { useAction } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -12,8 +12,15 @@ type State = { kind: "loading" } | { kind: "ready"; url: string } | { kind: "soo
 export default function LessonVideo({ lessonId, title, hasVideo }: { lessonId: string; title: string; hasVideo: boolean }) {
   const L = useContent().learn;
   const getUrl = useAction(api.learn.videoUrl);
-  const [state, setState] = useState<State>(hasVideo ? { kind: "loading" } : { kind: "soon" });
+  const initial = (): State => (hasVideo ? { kind: "loading" } : { kind: "soon" });
+  const [state, setState] = useState<State>(initial);
+  const [shownFor, setShownFor] = useState(lessonId);
   const [attempt, setAttempt] = useState(0);
+  // เปลี่ยนบท → รีเซ็ตสถานะทันที (ไม่ให้คลิปบทเก่าค้างระหว่างรอลิงก์ใหม่)
+  if (shownFor !== lessonId) {
+    setShownFor(lessonId);
+    setState(initial());
+  }
 
   useEffect(() => {
     if (!hasVideo) return;
@@ -24,12 +31,12 @@ export default function LessonVideo({ lessonId, title, hasVideo }: { lessonId: s
     return () => { alive = false; };
   }, [hasVideo, lessonId, getUrl, attempt]);
 
+  const ready = state.kind === "ready";
   return (
     <div className="learn-video">
-      {state.kind === "ready" ? (
-        <iframe src={state.url} title={title} loading="lazy"
-          allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture; fullscreen" allowFullScreen />
-      ) : (
+      <iframe src={ready ? state.url : "about:blank"} title={title} hidden={!ready}
+        allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture; fullscreen" allowFullScreen />
+      {!ready && (
         <div className="lv-soon">
           {state.kind === "loading" && <p role="status">{L.loading}</p>}
           {state.kind === "error" && (
