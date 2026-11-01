@@ -32,7 +32,6 @@ export const CONTENT = {
       { text: "เหมาะกับใคร",  href: "#fit" },
       { text: "ผู้สอน",        href: "#instructor" },
       { text: "ราคา",          href: "#pricing" },
-      { text: "เครื่องมือ", href: "/tools" },
       { text: "ถาม-ตอบ",       href: "#faq" }
     ],
     primary: "เริ่มเรียน"
@@ -329,7 +328,6 @@ export const CONTENT = {
       { text: "หลักสูตร", href: "#curriculum" },
       { text: "ผู้สอน",   href: "#instructor" },
       { text: "แพ็กเกจ",  href: "#pricing" },
-      { text: "เครื่องมือ", href: "/tools" },
       { text: "ถาม-ตอบ",  href: "#faq" }
     ],
     contactTitle: "ติดต่อ",

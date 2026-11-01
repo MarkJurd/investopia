@@ -24,7 +24,6 @@ export const CONTENT_EN: typeof CONTENT = {
       { text: "For you", href: "#fit" },
       { text: "Instructor",  href: "#instructor" },
       { text: "Pricing",     href: "#pricing" },
-      { text: "Tools", href: "/en/tools" },
       { text: "FAQ",         href: "#faq" }
     ],
     primary: "Start learning"
@@ -280,7 +279,6 @@ export const CONTENT_EN: typeof CONTENT = {
       { text: "Curriculum", href: "#curriculum" },
       { text: "Instructor", href: "#instructor" },
       { text: "Plans",      href: "#pricing" },
-      { text: "Tools", href: "/en/tools" },
       { text: "FAQ",        href: "#faq" }
     ],
     contactTitle: "Contact",
