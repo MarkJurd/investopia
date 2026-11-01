@@ -40,7 +40,14 @@ export default function LessonView({ steps, index }: { steps: Step[]; index: num
   return (
     <div className="learn-grid">
       <article className="learn-content">
-        {lesson.locked || (lesson.paywalled && lesson.hasVideo) ? (
+        {lesson.blocked ? (
+          <div className="card locked-card">
+            <span className="lo-soon">🔒 {L.blockedBadge}</span>
+            <h1 className="learn-h1">{lesson.title}</h1>
+            <h2>{L.blockedTitle}</h2>
+            <p>{L.blockedText}</p>
+          </div>
+        ) : lesson.locked || (lesson.paywalled && lesson.hasVideo) ? (
           <div className="card locked-card">
             <span className="lo-soon">🔒 {lesson.paywalled ? L.paywallBadge : L.lockedBadge}</span>
             <h1 className="learn-h1">{lesson.title}</h1>
@@ -91,7 +98,10 @@ export default function LessonView({ steps, index }: { steps: Step[]; index: num
               <button className="btn btn-ghost btn-sm" disabled={busy} onClick={() => void toggle(false)}>{L.undoDone}</button>
             </>
           ) : (
-            <button className="btn btn-primary" disabled={busy} onClick={() => void toggle(true)}>{L.markDone}</button>
+            <>
+              {lesson.gate && <p className="learn-meta">{L.gateNote}</p>}
+              <button className="btn btn-primary" disabled={busy} onClick={() => void toggle(true)}>{lesson.gate ? L.markExerciseDone : L.markDone}</button>
+            </>
           )}
           {error && <span className="learn-error" role="alert">{L.error}</span>}
           <Link href={`${communityPath(C)}?ask=${lesson.id}`} className="btn btn-ghost btn-sm">{L.askLesson}</Link>

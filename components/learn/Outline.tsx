@@ -28,7 +28,7 @@ export function Outline({ steps, current }: { steps: Step[]; current: Step }) {
                 <li key={s.id}>
                   <Link href={learnPath(C, s.id)} className={`lo-step${s.id === current.id ? " on" : ""}${s.done ? " done" : ""}`}
                     aria-current={s.id === current.id ? "page" : undefined}>
-                    <span className="lo-check" aria-hidden="true">{isLocked(s) ? "🔒" : s.done ? "✓" : s.kind === "quiz" ? "?" : ""}</span>
+                    <span className="lo-check" aria-hidden="true">{isLocked(s) || (s.kind === "lesson" && s.lesson.blocked) ? "🔒" : s.done ? "✓" : s.kind === "quiz" ? "?" : ""}</span>
                     <span className="lo-label">{s.kind === "lesson" ? s.lesson.title : L.quizTitle}</span>
                     {s.kind === "lesson" && s.lesson.isNew && <span className="new-badge sm">{L.newBadge}</span>}
                     {s.kind === "lesson" && !s.lesson.locked && !s.lesson.hasVideo && <span className="lo-soon">{L.comingSoon}</span>}

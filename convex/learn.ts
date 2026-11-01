@@ -11,6 +11,7 @@ import { getMembership } from "./payments";
 import { isAdminUser } from "./admin";
 import { planValidator } from "./plans";
 import { signBunnyEmbedUrl } from "./bunny";
+import type { CourseLesson, CourseModule } from "./course";
 import { findVisibleLesson, findVisibleModule, lessonLinkValidator, loadCourse, NEW_LESSON_DAYS, visibleModules } from "./course";
 
 const PASS_PERCENT = 70;        // ผ่านแบบทดสอบเมื่อได้ ≥ 70%
@@ -58,6 +59,18 @@ async function loadProgress(ctx: QueryCtx, userId: Id<"users">) {
   return { lessons, quizzes };
 }
 
+/** บทที่ถูกล็อกเพราะมีบทแบบฝึกหัด (gate) ก่อนหน้าที่ยังไม่กด "ทำเสร็จแล้ว" — นับเฉพาะบทที่ผู้เรียนเปิดได้ */
+export function blockedKeys(modules: CourseModule[], done: Set<string>, canOpen: (l: CourseLesson) => boolean): Set<string> {
+  const out = new Set<string>();
+  let blocking = false;
+  for (const m of modules) for (const l of m.lessons) {
+    if (!canOpen(l)) continue;
+    if (blocking) out.add(l.key);
+    else if (l.gate && !done.has(l.key)) blocking = true;
+  }
+  return out;
+}
+
 /* ---------- หน้าห้องเรียน: เนื้อหา (ไม่มีเฉลย) + ความคืบหน้าของฉัน ---------- */
 const fileOut = v.object({ name: v.string(), size: v.number(), url: v.union(v.string(), v.null()) });
 const lessonOut = v.object({
@@ -66,6 +79,8 @@ const lessonOut = v.object({
   locked: v.boolean(),                          // true = บทนี้สำหรับผู้ที่ได้ Indicator เท่านั้น (ไม่ส่งเนื้อหา)
   paywalled: v.boolean(),                       // true = ผู้ทดลองเรียนฟรีเปิดบทนี้ไม่ได้ (ต้องซื้อแพ็กเกจ — ไม่ส่งเนื้อหา)
   free: v.boolean(),                            // บทเรียนฟรี (ป้าย "ฟรี")
+  gate: v.boolean(),                            // แบบฝึกหัด: ต้องกดทำเสร็จก่อนบทถัดไปจะเปิด
+  blocked: v.boolean(),                         // true = ต้องทำแบบฝึกหัดก่อนหน้าให้เสร็จก่อน (ไม่ส่งเนื้อหา)
   isNew: v.boolean(),                           // ป้าย "ใหม่"
   files: v.array(fileOut),                      // ไฟล์แนบใต้คลิป (ว่างถ้าล็อก)
   links: v.array(lessonLinkValidator),          // ลิงก์เว็บใต้คลิป (ว่างถ้าล็อก)
@@ -107,19 +122,23 @@ export const overview = query({
     const videosOn = bunnyReady();
     const canIndicator = membership !== null && (await canSeeIndicator(ctx, userId, membership.indicatorBonus));
     const modules = [];
-    for (const m of visibleModules((await loadCourse(ctx)).modules)) {
+    const shown = visibleModules((await loadCourse(ctx)).modules);
+    const doneSet = new Set(lessons.map((l) => l.lessonId));
+    const blockedSet = blockedKeys(shown, doneSet, (l) => !(l.indicatorOnly && !canIndicator) && !(preview && !l.free));
+    for (const m of shown) {
       const outLessons = [];
       for (const l of m.lessons) {
         const locked = l.indicatorOnly && !canIndicator;
         const paywalled = !locked && preview && !l.free;
+        const blocked = blockedSet.has(l.key);
         const files = [];
-        if (!locked && !paywalled) for (const f of l.files) files.push({ name: f.name, size: f.size, url: await ctx.storage.getUrl(f.storageId) });
+        if (!locked && !paywalled && !blocked) for (const f of l.files) files.push({ name: f.name, size: f.size, url: await ctx.storage.getUrl(f.storageId) });
         outLessons.push({
-          id: l.key, title: l.title, notes: locked || paywalled ? "" : l.notes, minutes: l.minutes, locked, paywalled, free: l.free,
+          id: l.key, title: l.title, notes: locked || paywalled || blocked ? "" : l.notes, minutes: l.minutes, locked, paywalled, free: l.free, gate: l.gate, blocked,
           hasVideo: !locked && videosOn && l.videoId !== "",   // ผู้ทดลองเรียนก็รู้ได้ว่าบทนี้มีคลิปแล้ว (ขึ้น 🔒 แทน "เร็วๆ นี้") — ลิงก์วิดีโอยังเช็กสิทธิ์ใน videoUrl
           isNew: l.newSince !== null && now - l.newSince < NEW_LESSON_DAYS * DAY,
           files,
-          links: locked || paywalled ? [] : l.links,
+          links: locked || paywalled || blocked ? [] : l.links,
         });
       }
       modules.push({
@@ -139,6 +158,15 @@ export const overview = query({
     };
   },
 });
+
+/** บทนี้ถูกล็อกด้วยแบบฝึกหัดก่อนหน้าสำหรับผู้เรียนคนนี้หรือไม่ */
+async function isBlocked(ctx: QueryCtx, userId: Id<"users">, lessonId: string, now: number): Promise<boolean> {
+  const m = await getAccess(ctx, userId, now);
+  const canIndicator = m !== null && (await canSeeIndicator(ctx, userId, m.indicatorBonus));
+  const { lessons } = await loadProgress(ctx, userId);
+  const mods = visibleModules((await loadCourse(ctx)).modules);
+  return blockedKeys(mods, new Set(lessons.map((l) => l.lessonId)), (l) => !(l.indicatorOnly && !canIndicator) && !(m === null && !l.free)).has(lessonId);
+}
 
 /* ---------- กด "เรียนจบบทนี้" / ยกเลิก ---------- */
 export const setLessonDone = mutation({
@@ -161,6 +189,7 @@ export const setLessonDone = mutation({
       .query("lessonProgress")
       .withIndex("by_userId_and_lessonId", (q) => q.eq("userId", userId).eq("lessonId", lessonId))
       .unique();
+    if (done && (await isBlocked(ctx, userId, lessonId, now))) throw new ConvexError("BLOCKED");
     if (done && !row) await ctx.db.insert("lessonProgress", { userId, lessonId, completedAt: now });
     if (!done && row) await ctx.db.delete("lessonProgress", row._id);
     return null;
@@ -212,8 +241,10 @@ export const videoIdForMember = internalQuery({
     const m = await getAccess(ctx, userId, Date.now());
     const lesson = await findVisibleLesson(ctx, lessonId);
     if (lesson === null || lesson.videoId === "") return null;
-    if (m === null) return lesson.free && !lesson.indicatorOnly ? lesson.videoId : null;   // ผู้ทดลองเรียน: เฉพาะบทฟรี
-    if (lesson.indicatorOnly && !(await canSeeIndicator(ctx, userId, m.indicatorBonus))) return null;
+    if (m === null) {
+      if (!(lesson.free && !lesson.indicatorOnly)) return null;   // ผู้ทดลองเรียน: เฉพาะบทฟรี
+    } else if (lesson.indicatorOnly && !(await canSeeIndicator(ctx, userId, m.indicatorBonus))) return null;
+    if (await isBlocked(ctx, userId, lessonId, Date.now())) return null;   // ยังไม่ทำแบบฝึกหัดก่อนหน้า
     return lesson.videoId;
   },
 });

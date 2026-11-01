@@ -213,6 +213,7 @@ function ModuleCard({ mod, tag, modules, bunnyReady, open, onToggle, arrows, dra
                       {l.hidden && <i className="b-hidden">{A.hiddenBadge}</i>}
                       {l.indicatorOnly && <i>{A.indicatorBadge}</i>}
                       {l.free && <i className="b-ok">{A.freeBadge}</i>}
+                      {l.gate && <i>{A.gateBadge}</i>}
                       <i className={l.videoId ? "b-ok" : "b-muted"}>{l.videoId ? A.hasVideoBadge : A.noVideo}</i>
                       {l.files.length > 0 && <i>📄 {l.files.length}</i>}
                       {isRecent(l.newSince, now) && <i className="b-new">{C.learn.newBadge}</i>}
@@ -255,7 +256,7 @@ function LessonEditor({ lesson, moduleId, modules, bunnyReady, onClose }: {
 
   const [f, setF] = useState({
     title: lesson.title, notes: lesson.notes, videoId: lesson.videoId, minutes: lesson.minutes,
-    hidden: lesson.hidden, indicatorOnly: lesson.indicatorOnly, free: lesson.free,
+    hidden: lesson.hidden, indicatorOnly: lesson.indicatorOnly, free: lesson.free, gate: lesson.gate,
   });
   const [notify, setNotify] = useState(true);
   const [picker, setPicker] = useState(false);
@@ -302,6 +303,7 @@ function LessonEditor({ lesson, moduleId, modules, bunnyReady, onClose }: {
         <label className="adm-check"><input type="checkbox" checked={f.hidden} onChange={(e) => set("hidden", e.target.checked)} /> {A.hidden}</label>
         <label className="adm-check"><input type="checkbox" checked={f.indicatorOnly} onChange={(e) => set("indicatorOnly", e.target.checked)} /> {A.indicatorOnly}</label>
         <label className="adm-check"><input type="checkbox" checked={f.free} onChange={(e) => set("free", e.target.checked)} /> {A.freeLesson}</label>
+        <label className="adm-check"><input type="checkbox" checked={f.gate} onChange={(e) => set("gate", e.target.checked)} /> {A.gateLesson}</label>
         <div className="adm-row">
           <button className="btn btn-primary btn-sm" disabled={busy} onClick={() => void run(() => saveLesson({ id, ...f }), A.saved)}>{busy ? A.saving : A.save}</button>
           <button className="btn btn-ghost btn-sm" onClick={onClose}>{A.close}</button>
