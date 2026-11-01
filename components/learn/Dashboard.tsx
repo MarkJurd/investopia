@@ -30,7 +30,8 @@ export default function Dashboard({ data, steps, now }: { data: Overview; steps:
   const newLessons = steps.filter((s) => s.kind === "lesson" && s.lesson.isNew && !s.lesson.locked);
   const freeCount = data.modules.reduce((n, m) => n + m.lessons.filter((l) => l.free).length, 0);
   const mem = data.membership;   // null = ทดลองเรียนฟรี
-  const daysLeft = mem ? Math.ceil((mem.expiresAt - now) / DAY) : Infinity;
+  const lifetime = !!mem && mem.expiresAt >= Date.UTC(2100, 0, 1);   // = LIFETIME_AT ใน convex/plans.ts
+  const daysLeft = mem && !lifetime ? Math.ceil((mem.expiresAt - now) / DAY) : Infinity;
   const until = mem ? new Date(mem.expiresAt).toLocaleDateString(C.locale.dateLocale, { day: "numeric", month: "long", year: "numeric" }) : "";
 
   return (
@@ -39,7 +40,7 @@ export default function Dashboard({ data, steps, now }: { data: Overview; steps:
         <div>
           <h1 className="learn-h1">{L.welcome}</h1>
           <p className="learn-meta">
-            {mem ? <><span className="plan-badge">{C.planLabels[mem.plan]}</span> {L.validUntil} {until}</> : <span className="plan-badge">{L.previewBadge}</span>}
+            {mem ? <><span className="plan-badge">{C.planLabels[mem.plan]}</span> {lifetime ? L.lifetime : <>{L.validUntil} {until}</>}</> : <span className="plan-badge">{L.previewBadge}</span>}
           </p>
         </div>
       </div>

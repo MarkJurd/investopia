@@ -21,7 +21,7 @@ export async function insertManualGrant(
   const now = Date.now();
   // ต่อจากวันหมดอายุของแพ็กเกจเดียวกัน (ถ้ายังไม่หมด) — เหมือนการซื้อต่ออายุ
   const rows = await ctx.db.query("memberships").withIndex("by_userId", (q) => q.eq("userId", a.userId)).take(500);
-  const startsAt = Math.max(now, ...rows.filter((m) => m.status === "active" && m.plan === a.plan).map((m) => m.expiresAt));
+  const startsAt = Math.max(now, ...rows.filter((m) => m.status === "active" && m.plan === a.plan && !m.lifetime).map((m) => m.expiresAt));
   return await ctx.db.insert("memberships", {
     userId: a.userId,
     plan: a.plan,
@@ -46,7 +46,7 @@ export async function applyPendingGrants(ctx: MutationCtx, userId: Id<"users">):
   const pending = await ctx.db.query("pendingGrants").withIndex("by_email", (q) => q.eq("email", email)).take(20);
   for (const p of pending) {
     if (p.appliedAt !== null) continue;
-    await insertManualGrant(ctx, { userId, plan: p.plan, days: p.days, note: p.note, indicatorBonus: p.plan === "vip" });
+    await insertManualGrant(ctx, { userId, plan: p.plan, days: p.days, note: p.note, indicatorBonus: true });
     await ctx.db.patch("pendingGrants", p._id, { appliedAt: Date.now() });
   }
 }
@@ -269,7 +269,7 @@ export const salesSummary = query({
       const paid = (m.source ?? "stripe") === "stripe";
       if (m.status === "refunded") out.allTime.refunded += m.amount;
       if (m.status === "active" && m.startsAt <= now && m.expiresAt > now) active.add(m.userId);
-      if (m.status === "active" && m.indicatorBonus && m.plan === "vip") indicatorGiven++;
+      if (m.status === "active" && m.indicatorBonus) indicatorGiven++;
       if (!paid || m.status === "refunded") continue;
       out.allTime.revenue += m.amount; out.allTime.count++;
       if (m.monthKey === thisKey) { out.thisMonth.revenue += m.amount; out.thisMonth.count++; }

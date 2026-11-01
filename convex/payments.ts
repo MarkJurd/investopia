@@ -5,7 +5,7 @@ import { internal } from "./_generated/api";
 import { ConvexError, v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import {
-  PLANS, FOR_SALE, type PlanId, planValidator, VIP_SEATS_PER_MONTH, INDICATOR_BONUS_LIMIT, LAUNCH, daysToMs, bangkokMonthKey,
+  PLANS, FOR_SALE, type PlanId, planValidator, VIP_SEATS_PER_MONTH, LAUNCH, daysToMs, bangkokMonthKey, LIFETIME_AT, LIFETIME_PLANS, INDICATOR_DAYS_MONTHLY,
 } from "./plans";
 
 /* ---------- ที่นั่ง VIP ที่เหลือเดือนนี้ ---------- */
@@ -59,14 +59,18 @@ export type Membership = { plan: PlanId; expiresAt: number; indicatorBonus: bool
 export async function getMembership(ctx: QueryCtx, userId: Id<"users">, now: number): Promise<Membership | null> {
   const rows = await ctx.db.query("memberships").withIndex("by_userId", (q) => q.eq("userId", userId)).take(500);
   const live = rows.filter((m) => m.status === "active" && m.startsAt <= now && m.expiresAt > now);
-  if (live.length === 0) return null;
+  const lifetimeRow = rows.find((m) => m.status === "active" && m.lifetime);
+  if (live.length === 0 && !lifetimeRow) return null;
+  // Indicator: เรียนชิลๆ ได้ 1 เดือนนับจากวันซื้อ · แพ็กเกจอื่นถาวร
+  const indicatorBonus = rows.some((m) => m.status === "active" && m.indicatorBonus && (m.plan !== "monthly" || now < m.startsAt + daysToMs(INDICATOR_DAYS_MONTHLY)));
+  if (live.length === 0) return { plan: lifetimeRow!.plan, expiresAt: LIFETIME_AT, indicatorBonus };   // ติว 1:1 ครบ 30 วันแล้ว แต่คอร์สกราฟยังเรียนได้
   // แพ็กเกจที่สูงสุดที่ใช้อยู่ตอนนี้ + วันหมดอายุของแพ็กเกจนั้น (รวมที่ต่ออายุไว้ล่วงหน้า)
   const top = live.reduce((a, b) => (PLANS[b.plan].rank > PLANS[a.plan].rank ? b : a));
   const sameLater = rows.filter((m) => m.status === "active" && m.plan === top.plan && m.expiresAt > now);
   return {
     plan: top.plan,
-    expiresAt: Math.max(...sameLater.map((m) => m.expiresAt)),
-    indicatorBonus: rows.some((m) => m.status === "active" && m.indicatorBonus),
+    expiresAt: lifetimeRow ? LIFETIME_AT : Math.max(...sameLater.map((m) => m.expiresAt)),
+    indicatorBonus,
   };
 }
 
@@ -209,26 +213,22 @@ export const grantFromCheckout = internalMutation({
     const now = Date.now();
     // ต่ออายุแพ็กเกจเดิม = ต่อจากวันหมดอายุเดิม / เปลี่ยนแพ็กเกจ = เริ่มทันที
     const rows = await ctx.db.query("memberships").withIndex("by_userId", (q) => q.eq("userId", userId)).take(500);
-    const samePlanEnd = Math.max(now, ...rows.filter((m) => m.status === "active" && m.plan === a.plan).map((m) => m.expiresAt));
+    const lifetime = LIFETIME_PLANS.has(a.plan);
+    // แถวตลอดไปไม่นับ (ไม่งั้นการซื้อซ้ำจะไปเริ่มปี 2100)
+    const samePlanEnd = Math.max(now, ...rows.filter((m) => m.status === "active" && m.plan === a.plan && !m.lifetime).map((m) => m.expiresAt));
     const startsAt = samePlanEnd;
 
-    let indicatorBonus = false;
-    if (a.plan === "vip") {
-      const given = await ctx.db
-        .query("memberships")
-        .withIndex("by_plan_and_indicatorBonus", (q) => q.eq("plan", "vip").eq("indicatorBonus", true))
-        .take(1000);
-      // นับเป็น "คน" ที่ยังได้สิทธิ์อยู่ — รายการที่คืนเงิน/ยกเลิกแล้วไม่กินโควตา 10 คน · ต่ออายุ = ได้ต่อโดยไม่นับเพิ่ม
-      const holders = new Set(given.filter((m) => m.status === "active").map((m) => m.userId));
-      indicatorBonus = holders.has(userId) || holders.size < INDICATOR_BONUS_LIMIT;
-    }
+    // 2026-10-31: ทุกแพ็กเกจที่ขายอยู่ (รายเดือน + ติว 1:1) แถม Indicator ไม่จำกัดจำนวน (เดิมติว 1:1 5 คนแรก)
+    const indicatorBonus = true;
 
     const membershipId = await ctx.db.insert("memberships", {
       userId,
       plan: a.plan,
       status: "active",
       startsAt,
-      expiresAt: startsAt + daysToMs(PLANS[a.plan].days),
+      // ติว 1:1 ยังมีกรอบ 30 วัน (ติว/รับประกัน) แต่คอร์สกราฟเรียนได้ตลอดไป (ดู getMembership)
+      expiresAt: a.plan === "monthly" ? LIFETIME_AT : startsAt + daysToMs(PLANS[a.plan].days),
+      lifetime: lifetime || undefined,
       amount: a.amount,
       stripeSessionId: a.stripeSessionId,
       paymentIntentId: a.paymentIntentId,

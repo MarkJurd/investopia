@@ -26,6 +26,7 @@ export default defineSchema({
     couponCode: v.optional(v.string()),       // โค้ดส่วนลดที่ใช้
     note: v.optional(v.string()),             // บันทึกของแอดมิน (เช่น "ลูกค้าเก่า ให้ฟรี 1 เดือน")
     changedAt: v.optional(v.number()),        // เวลาที่แอดมินแก้/ยกเลิกล่าสุด
+    lifetime: v.optional(v.boolean()),        // true = ซื้อตั้งแต่ 2026-11-01: เรียนคอร์สกราฟได้ตลอดไป (ไม่มี = หมดอายุตาม expiresAt)
   })
     .index("by_userId", ["userId"])
     .index("by_stripeSessionId", ["stripeSessionId"])

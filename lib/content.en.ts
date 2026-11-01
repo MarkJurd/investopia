@@ -83,7 +83,7 @@ export const CONTENT_EN: typeof CONTENT = {
   facts: [
     "🎁 Free trial — no card needed",
     "💬 Ask the instructor on the site",
-    "📺 Group live session twice a month",
+    "📺 Group live sessions with the instructor",
     "🛡️ 1:1 coaching: 30-day skills guarantee (conditions apply)"
   ],
 
@@ -171,44 +171,44 @@ export const CONTENT_EN: typeof CONTENT = {
       full: ""
     },
     regular: { num: "", per: "", badge: "" },
-    rolling: "The Easy Self-Paced plan is a launch-period option and may be withdrawn when more courses are added · Prices may change as content grows; people who already bought pay nothing extra for the period they bought",
+    rolling: "The Easy Self-Paced plan is a launch-period option and may be withdrawn when more courses are added · Prices may change as content grows; people who already bought pay nothing extra for what they bought",
     packages: [
       {
         id: "monthly",
         name: "Easy Self-Paced",
-        for: "Learn from recorded lessons on your own — no rush, no long commitment",
-        num: "990", numSuffix: "/30 days", numStrike: "",
-        per: "One payment per 30 days, never auto-charged · launch-period option",
+        for: "Learn from recorded lessons on your own — no rush, one payment, yours to keep",
+        num: "1,290", numSuffix: "", numStrike: "",
+        per: "One payment, learn forever · never auto-charged · launch-period option",
         feats: [
-          { text: "Watch the recorded lessons — all open lessons plus lessons added within the 30 days (chart course)", off: false },
+          { text: "Watch the recorded lessons forever — every lesson of the chart course, including lessons added to it", off: false },
           { text: "Q&A in the members community", off: false },
-          { text: "Group live session twice a month + replays", off: false },
+          { text: "2 group live sessions with the instructor + replays", off: false },
+          { text: "🎁 Bonus: the instructor's trend-reading Indicator (worth ฿2,990), usable for 1 month from purchase + how-to lesson", off: false },
           { text: "No 1:1 sessions and no individual assignment review", off: true },
           { text: "New courses not included (e.g. the financial statements course)", off: true },
           { text: "No guarantee of results and no refunds — try the free lessons before you buy", off: true }
         ],
         badge: "Launch-period option", badgeType: "limited", featured: false,
         btn: "Choose Easy Self-Paced", btnType: "ghost",
-        href: "", priceLabel: "฿990 / 30 days"
+        href: "", priceLabel: "฿1,290"
       },
       {
         id: "vip",                           // plan id in the system (do not change) — now the ฿4,990 / 30-day 1:1 coaching plan
         name: "Fast-Track 1:1 in 30 Days",
         for: "Want to get good fast, with every assignment reviewed by the instructor",
-        num: "4,990", numSuffix: "/30 days", numStrike: "",
-        per: "Only 3 seats per month · one payment, never auto-charged",
+        num: "4,990", numSuffix: "", numStrike: "",
+        per: "One payment, done within 30 days, nothing more to pay · never auto-charged · only 3 seats per month",
         feats: [
           { text: "4 one-to-one sessions of 2 hours (one a week) with weekly assignments", off: false },
           { text: "Held online via Zoom or Google Meet", off: false },
           { text: "The instructor reviews every assignment himself and returns it within 24 hours (business days) — every mistake marked and explained, then you fix it until it passes", off: false },
           { text: "30-day goal: find support and resistance and set your own entry and exit points by yourself, using the method you learn", off: false },
           { text: "🛡️ 30-day skills guarantee — meet the conditions and still don't pass, and you get a full refund (this is not a profit guarantee)", off: false },
-          { text: "Everything in the Easy Self-Paced plan + quick answers within 24 hours (business days)", off: false },
-          { text: "🎁 The instructor's trend-reading Indicator (worth ฿2,990) — for the first 5 buyers", off: false }
+          { text: "Everything in the Easy Self-Paced plan (chart course forever) + the trend-reading Indicator, permanently + quick answers within 24 hours (business days)", off: false }
         ],
         badge: "Recommended · 3 seats/month", badgeType: "best", featured: true,
         btn: "Reserve a 1:1 seat", btnType: "primary",
-        href: "", priceLabel: "฿4,990 / 30 days"
+        href: "", priceLabel: "฿4,990"
       },
       {
         id: "inperson",                       // not a checkout plan — booked through LINE (has href)
@@ -230,7 +230,7 @@ export const CONTENT_EN: typeof CONTENT = {
       title: "30-day skills guarantee (Fast-Track 1:1 plan)",
       text: "Attend all 4 sessions, hand in every weekly assignment and fix each one as the instructor marks it — and if you still don't pass the end-of-course test against the criteria announced in advance (finding support and resistance and setting your own entry and exit points), ask for a full refund within 7 days of the result, under the conditions in the terms · We guarantee learning skills, not investment profits (the Easy Self-Paced plan has no guarantee and no refunds)"
     },
-    note: "Every plan is a single payment per period with no automatic charge — pay with PromptPay or card · 1:1 sessions are learning coaching, not personal investment advice"
+    note: "Every plan is a single payment — no monthly fees and no automatic charge — pay with PromptPay or card · 1:1 sessions are learning coaching, not personal investment advice"
   },
 
   faq: {
@@ -245,15 +245,15 @@ export const CONTENT_EN: typeof CONTENT = {
       { q: "Which indicators do you teach?",
         a: "EMA and MACD (the ones the instructor uses most), with RSI to be added — content is being added gradually." },
       { q: "Is all the content open yet?",
-        a: "Not yet — this is the launch round and content is added continuously with no fixed dates. Exercises, files and answer clips are added gradually too. Every plan gets what is added during its 30-day access period. The 1:1 coaching plan does not have to wait for lessons to be released, because the instructor takes you through the core skills (reading charts, finding support and resistance, planning entries and exits) within 30 days through the sessions and assignments." },
+        a: "Not yet — this is the launch round and content is added continuously with no fixed dates. Exercises, files and answer clips are added gradually too. Every plan gets lessons added to the chart course at no extra cost. The 1:1 coaching plan does not have to wait for lessons to be released, because the instructor takes you through the core skills (reading charts, finding support and resistance, planning entries and exits) within 30 days through the sessions and assignments." },
       { q: "If you release a new course, will I get it?",
-        a: "The 1:1 coaching plan includes every new course opened during its 30-day access period (for example the financial statements course, which is in progress with no opening date). The Easy Self-Paced plan does not include new courses and is a launch-period option that may be withdrawn when more courses are added." },
+        a: "The 1:1 coaching plan includes the new courses opened within 30 days after purchase (for example the financial statements course, which is in progress with no opening date). The Easy Self-Paced plan does not include new courses and is a launch-period option that may be withdrawn when more courses are added." },
       { q: "Can I get a refund if I'm not happy?",
-        a: "1:1 coaching plan: there is a 30-day skills guarantee — if you attend all 4 sessions, hand in every weekly assignment and fix it as the instructor marks until it passes, but still do not pass the end-of-course test against the criteria announced in advance, you can ask for a full refund within 7 days of the result (full conditions are in the terms), and you can also be refunded before the first session · Easy Self-Paced (monthly) plan: no guarantee of results and no refunds, try the free lessons before buying · We guarantee learning skills, not investment profits." },
+        a: "1:1 coaching plan: there is a 30-day skills guarantee — if you attend all 4 sessions, hand in every weekly assignment and fix it as the instructor marks until it passes, but still do not pass the end-of-course test against the criteria announced in advance, you can ask for a full refund within 7 days of the result (full conditions are in the terms), and you can also be refunded before the first session · Easy Self-Paced plan: no guarantee of results and no refunds, try the free lessons before buying · We guarantee learning skills, not investment profits." },
       { q: "What happens in the 1:1 sessions and the assignment reviews?",
         a: "It is learning coaching — for example explaining lessons you don't understand yet, reviewing every assignment, showing exactly where you went wrong and why, and having you fix it until it passes. It is not advice to buy or sell any particular stock, and we do not manage portfolios." },
-      { q: "Will I be charged again when it expires?",
-        a: "No — every plan is a single payment per period with no automatic charge. The site reminds you before it expires, and if you want to continue you renew yourself (both plans run for 30 days and must be renewed manually)." },
+      { q: "Do I pay monthly? Will I be charged automatically?",
+        a: "No — every plan is a single payment, with no monthly fees and no automatic charge. Easy Self-Paced gives you the chart course forever; with 1:1 coaching, the sessions and assignments finish within 30 days and you keep the chart course forever too." },
       { q: "How do I pay, and is it secure?",
         a: "We accept PromptPay (QR) and credit/debit cards. Access opens as soon as payment succeeds." },
       { q: "Where can I ask questions?",
@@ -306,6 +306,7 @@ export const CONTENT_EN: typeof CONTENT = {
     successTitle: "Payment successful! Welcome to INVESTOPIA 🎉",
     successText: "Your plan:",
     until: "until",
+    lifetime: "with lifetime access",
     indicatorNote: "🎁 You are entitled to the trend-reading Indicator — message LINE @investopia to receive it",
     goLearn: "Go to the classroom →",
     cancelText: "Payment cancelled — you have not been charged. You can choose a plan again any time.",
@@ -322,7 +323,7 @@ export const CONTENT_EN: typeof CONTENT = {
     couponNotForPlan: "This code cannot be used with this plan"
   },
   planLabels: {
-    monthly: "Monthly member",
+    monthly: "Easy Self-Paced member",
     quarterly: "3-month member",
     yearly: "Yearly member",
     vip: "1:1 coaching member"
@@ -338,6 +339,7 @@ export const CONTENT_EN: typeof CONTENT = {
     seePlans: "See plans",
     welcome: "Welcome to the classroom",
     validUntil: "Valid until",
+    lifetime: "Lifetime access",
     expiringBefore: "Your plan expires in",
     expiringAfter: "days — renew before it ends to keep learning without a break.",
     renew: "Renew",
@@ -397,7 +399,7 @@ export const CONTENT_EN: typeof CONTENT = {
     bestScore: "Best score",
     notFound: "Lesson not found",
     lockedTitle: "This lesson is for people who received the Indicator",
-    lockedText: "The Indicator is a bonus for the first 5 buyers of the 1:1 coaching plan — if you are entitled to it, this lesson opens automatically.",
+    lockedText: "The Indicator is a bonus for buyers of the Easy Self-Paced or 1:1 coaching plan — if you are entitled to it, this lesson opens automatically.",
     lockedBadge: "Indicator holders only",
     askLesson: "Ask about this lesson in the community",
     error: "Could not save. Please try again.",
@@ -900,26 +902,26 @@ export const CONTENT_EN: typeof CONTENT = {
         { h: "4. Plans and payment",
           list: [
             "The price and benefits of each plan are as shown on the plans page on the date you pay",
-            "A single payment per period, with no automatic charge. When the period ends, access expires and you can renew by paying again (continuing from the previous expiry date if it is the same plan)",
+            "A single payment, with no monthly fees and no automatic charge. The Easy Self-Paced and 1:1 coaching plans bought on or after 1 November 2026 give access to the chart course forever, meaning for as long as we keep operating this website (if we ever close it, we will give reasonable advance notice)",
             "Payment is made through Stripe by card or PromptPay. Access opens automatically when payment succeeds",
-            "Limited bonuses (for example the Indicator for the first 5 buyers of the 1:1 coaching plan) are counted in the order of successful payments",
-            "Course content (videos, exercises, files, answer clips and new courses) is added gradually with no fixed dates. Lessons not yet open show “Coming soon”. Buyers get content added later while their access has not expired, according to their plan",
-            "The Easy Self-Paced plan (monthly, ฿990 / 30 days) is a launch-period option: you learn on your own from recorded lessons, covering only the chart course. It does not include new courses (for example the financial statements course), 1:1 sessions or individual assignment review, and it does not guarantee results. We may change its price or stop selling it when more courses are added, without affecting people who have already paid until their 30 days end",
-            "An Easy Self-Paced (monthly) member who wants to switch to the 1:1 coaching plan may ask for the latest monthly payment to be deducted while their monthly access has not expired, by contacting us by email before paying",
-            "Answers and assignment reviews within 24 hours are a target on business days and may be slower on holidays or in unforeseen circumstances. If the instructor is late reviewing, we extend the deadline or access period by the delay. For the twice-monthly group live session, the instructor may reschedule with reasonable notice",
-            "The 1:1 coaching plan (฿4,990 / 30 days) accepts a limited number of people per month as announced. It includes 4 one-to-one sessions of about 2 hours each, one per week, with weekly assignments. Dates are agreed between learner and instructor, and all sessions must be used within the 30-day access period (counted from the payment date)",
+            "The Indicator is a bonus of the Easy Self-Paced and 1:1 coaching plans. Easy Self-Paced buyers can use the Indicator and its how-to lesson for 1 month from the payment date; 1:1 coaching buyers keep it permanently. Other limited bonuses are counted in the order of successful payments",
+            "Course content (videos, exercises, files, answer clips and new courses) is added gradually with no fixed dates. Lessons not yet open show “Coming soon”. Buyers get lessons added later to the chart course; new courses depend on the plan",
+            "The Easy Self-Paced plan (฿1,290, one payment) is a launch-period option: you learn on your own from recorded lessons, covering only the chart course, with 2 group live sessions. It does not include new courses (for example the financial statements course), 1:1 sessions or individual assignment review, and it does not guarantee results. We may change its price or stop selling it when more courses are added, without affecting people who have already paid",
+            "An Easy Self-Paced member who wants to switch to the 1:1 coaching plan may ask for the latest Easy Self-Paced payment to be deducted, by contacting us by email before paying",
+            "Answers and assignment reviews within 24 hours are a target on business days and may be slower on holidays or in unforeseen circumstances. If the instructor is late reviewing, we extend the deadline or access period by the delay. For group live sessions, the instructor may reschedule with reasonable notice",
+            "The 1:1 coaching plan (฿4,990, one payment, sessions and assignments finished within 30 days) accepts a limited number of people per month as announced. It includes 4 one-to-one sessions of about 2 hours each, one per week, with weekly assignments. Dates are agreed between learner and instructor, and all sessions must be used within 30 days of the payment date",
             "Discount codes are valid under each code's conditions (plan, number of uses and expiry date) and cannot be exchanged for cash",
           ], p: [] },
         { h: "5. Skills guarantee and refunds",
           p: ["We guarantee learning skills (only for the 1:1 coaching plan, under the conditions below), not investment profits."],
           list: [
             "1:1 coaching plan (30-day skills guarantee): a full refund can be requested within 7 days of the end-of-course test result when every condition below is met",
-            "1:1 condition 1: you attended all 4 sessions (sessions can be rescheduled by agreement, but all must be completed within the 30-day access period)",
+            "1:1 condition 1: you attended all 4 sessions (sessions can be rescheduled by agreement, but all must be completed within 30 days of the payment date)",
             "1:1 condition 2: you handed in every weekly assignment and fixed each one as the instructor marked it until it passed",
             "1:1 condition 3: you took the end-of-course test and did not meet the criteria announced in advance (finding support and resistance and setting your own entry and exit points on charts you have not seen before, using the method taught in the course)",
             "1:1 condition 4: one refund request per account. We check against your assignments, test result and progress in the system",
             "This guarantee covers learning skills only. It does not take into account the results, profits or losses of your actual investing",
-            "Easy Self-Paced (monthly) plan: no guarantee of results and no refunds, because the period is short and free lessons are available to try before you buy",
+            "Easy Self-Paced (monthly) plan: no guarantee of results and no refunds, because it is a purchase of access to digital content and free lessons are available to try before you buy",
             "All plans: if you are charged twice, or cannot access the course because of a system fault, we will always fix it or refund the relevant amount",
             "1:1 coaching plan: a full refund can be requested before the first session; once the first session has started, a refund is possible only under the skills guarantee conditions above",
             "How to request a refund: email {email} from the email address used to buy, stating the purchase date",

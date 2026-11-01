@@ -40,7 +40,7 @@ export default function CheckoutBanner() {
     body = (
       <>
         <b>{K.successTitle}</b>
-        <p>{K.successText} {CONTENT.planLabels[me.plan]} {K.until} {until}</p>
+        <p>{K.successText} {CONTENT.planLabels[me.plan]} {me.expiresAt >= Date.UTC(2100, 0, 1) ? K.lifetime : `${K.until} ${until}`}</p>
         {me.indicatorBonus && <p>{K.indicatorNote}</p>}
         <a href={learnPath(CONTENT)} className="cb-link">{K.goLearn}</a>
       </>
