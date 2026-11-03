@@ -83,7 +83,7 @@ export const CONTENT_EN: typeof CONTENT = {
   facts: [
     "🎁 Free trial — no card needed",
     "💬 Ask the instructor on the site",
-    "📺 Group live sessions with the instructor",
+    "📺 Group Q&A meetings with the instructor",
     "🛡️ 1:1 coaching: 30-day skills guarantee (conditions apply)"
   ],
 
@@ -171,24 +171,21 @@ export const CONTENT_EN: typeof CONTENT = {
       full: ""
     },
     regular: { num: "", per: "", badge: "" },
-    rolling: "The Easy Self-Paced plan is a launch-period option and may be withdrawn when more courses are added · Prices may change as content grows; people who already bought pay nothing extra for what they bought",
+    rolling: "฿1,290 is the launch price of the chart course and will go up as content is added · People who already bought pay nothing extra for lessons added to the chart course",
     packages: [
       {
         id: "monthly",
         name: "Easy Self-Paced",
         for: "Learn from recorded lessons on your own — no rush, one payment, yours to keep",
         num: "1,290", numSuffix: "", numStrike: "",
-        per: "One payment, learn forever · never auto-charged · launch-period option",
+        per: "🚀 Launch price — it will go up as content is added · One payment, learn forever · never auto-charged",
         feats: [
           { text: "Watch the recorded lessons forever — every lesson of the chart course, including lessons added to it", off: false },
           { text: "Q&A in the members community", off: false },
-          { text: "2 group live sessions with the instructor + replays", off: false },
+          { text: "Weekly group Q&A meeting with the instructor for the first 4 weeks after purchase — ask about anything you haven't understood + replays", off: false },
           { text: "🎁 Bonus: the instructor's trend-reading Indicator (worth ฿2,990), usable for 1 month from purchase + how-to lesson", off: false },
-          { text: "No 1:1 sessions and no individual assignment review", off: true },
-          { text: "New courses not included (e.g. the financial statements course)", off: true },
-          { text: "No guarantee of results and no refunds — try the free lessons before you buy", off: true }
         ],
-        badge: "Launch-period option", badgeType: "limited", featured: false,
+        badge: "Chart course", badgeType: "limited", featured: false,
         btn: "Choose Easy Self-Paced", btnType: "ghost",
         href: "", priceLabel: "฿1,290"
       },
@@ -297,6 +294,7 @@ export const CONTENT_EN: typeof CONTENT = {
     redirecting: "Taking you to checkout...",
     signInFirst: "Sign in with Google first — we will then take you straight to checkout.",
     vipFull: "Full this month",
+    alreadyOwned: "You already have lifetime access to the chart course — no need to buy again.",
     launchClosed: "Launch round closed",
     launchFull: "Launch seats are full",
     error: "Could not open checkout. Please try again or email us.",
@@ -915,9 +913,9 @@ export const CONTENT_EN: typeof CONTENT = {
             "Payment is made through Stripe by card or PromptPay. Access opens automatically when payment succeeds",
             "The Indicator is a bonus of the Easy Self-Paced and 1:1 coaching plans. Easy Self-Paced buyers can use the Indicator and its how-to lesson for 1 month from the payment date; 1:1 coaching buyers keep it permanently. Other limited bonuses are counted in the order of successful payments",
             "Course content (videos, exercises, files, answer clips and new courses) is added gradually with no fixed dates. Lessons not yet open show “Coming soon”. Buyers get lessons added later to the chart course; new courses depend on the plan",
-            "The Easy Self-Paced plan (฿1,290, one payment) is a launch-period option: you learn on your own from recorded lessons, covering only the chart course, with 2 group live sessions. It does not include new courses (for example the financial statements course), 1:1 sessions or individual assignment review, and it does not guarantee results. We may change its price or stop selling it when more courses are added, without affecting people who have already paid",
+            "The Easy Self-Paced plan (฿1,290, one payment) is the launch price of the chart course and will go up as content is added: you learn on your own from recorded lessons, covering only the chart course, with a weekly group Q&A meeting for the first 4 weeks after payment. It does not include new courses (for example the financial statements course), 1:1 sessions or individual assignment review, and it does not guarantee results. We may change its price or stop selling it when more courses are added, without affecting people who have already paid",
             "An Easy Self-Paced member who wants to switch to the 1:1 coaching plan may ask for the latest Easy Self-Paced payment to be deducted, by contacting us by email before paying",
-            "Answers and assignment reviews within 24 hours are a target on business days and may be slower on holidays or in unforeseen circumstances. If the instructor is late reviewing, we extend the deadline or access period by the delay. For group live sessions, the instructor may reschedule with reasonable notice",
+            "Answers and assignment reviews within 24 hours are a target on business days and may be slower on holidays or in unforeseen circumstances. If the instructor is late reviewing, we extend the deadline or access period by the delay. For the group Q&A meetings, the instructor may reschedule with reasonable notice",
             "The 1:1 coaching plan (฿4,990, one payment, sessions and assignments finished within 30 days) accepts a limited number of people per month as announced. It includes 4 one-to-one sessions of about 2 hours each, one per week, with weekly assignments. Dates are agreed between learner and instructor, and all sessions must be used within 30 days of the payment date",
             "Discount codes are valid under each code's conditions (plan, number of uses and expiry date) and cannot be exchanged for cash",
           ], p: [] },
@@ -930,7 +928,7 @@ export const CONTENT_EN: typeof CONTENT = {
             "1:1 condition 3: you took the end-of-course test and did not meet the criteria announced in advance (finding support and resistance and setting your own entry and exit points on charts you have not seen before, using the method taught in the course)",
             "1:1 condition 4: one refund request per account. We check against your assignments, test result and progress in the system",
             "This guarantee covers learning skills only. It does not take into account the results, profits or losses of your actual investing",
-            "Easy Self-Paced (monthly) plan: no guarantee of results and no refunds, because it is a purchase of access to digital content and free lessons are available to try before you buy",
+            "Easy Self-Paced plan: no guarantee of results and no refunds, because it is a purchase of access to digital content and free lessons are available to try before you buy",
             "All plans: if you are charged twice, or cannot access the course because of a system fault, we will always fix it or refund the relevant amount",
             "1:1 coaching plan: a full refund can be requested before the first session; once the first session has started, a refund is possible only under the skills guarantee conditions above",
             "How to request a refund: email {email} from the email address used to buy, stating the purchase date",

@@ -54,6 +54,7 @@ http.route({
       const meta = (obj.metadata ?? {}) as Record<string, unknown>;
       const plan = meta.plan, userId = meta.userId, amountTotal = obj.amount_total, sessionId = obj.id;
       if (!isPlanId(plan) || typeof userId !== "string" || typeof sessionId !== "string" || typeof amountTotal !== "number") {
+        await ctx.runAction(internal.telegram.alert, { text: `Stripe: ข้อมูลเซสชันไม่ครบ ${String(sessionId)} — เช็กใน Stripe แล้วเปิดสิทธิ์ด้วยมือที่ /admin` });
         return new Response("bad session data", { status: 400 });
       }
       // ยอดที่ต้องได้รับ = ราคาหลังส่วนลดที่ server ของเราใส่ไว้ตอนสร้างหน้าจ่ายเงิน (ไม่เกินราคาเต็ม)
@@ -64,6 +65,7 @@ http.route({
       const coupon = typeof meta.coupon === "string" && meta.coupon !== "" ? meta.coupon : undefined;
       if (!Number.isFinite(expected) || expected > fullPrice || amountTotal !== expected * 100 || obj.currency !== "thb") {
         console.error("amount mismatch", sessionId, plan, amountTotal);
+        await ctx.runAction(internal.telegram.alert, { text: `Stripe: ยอดไม่ตรง ${sessionId} (${plan}, ฿${amountTotal / 100}) ลูกค้าจ่ายแล้วแต่สิทธิ์ไม่เปิด — เช็กใน Stripe` });
         return new Response("amount mismatch", { status: 400 });
       }
       await ctx.runMutation(internal.payments.grantFromCheckout, {
@@ -78,7 +80,13 @@ http.route({
     } else if (event.type === "charge.refunded") {
       // คืนเงินเต็มจำนวน (จากหน้า Stripe) = ยกเลิกสิทธิ์อัตโนมัติ
       if (obj.refunded === true && typeof obj.payment_intent === "string") {
-        await ctx.runMutation(internal.payments.revokeByPaymentIntent, { paymentIntentId: obj.payment_intent });
+        await ctx.runMutation(internal.payments.revokeByPaymentIntent, { paymentIntentId: obj.payment_intent, status: "refunded" });
+      }
+    } else if (event.type === "charge.dispute.created") {
+      // ลูกค้าโต้แย้งกับธนาคาร (chargeback) = ระงับสิทธิ์ก่อน แล้วแจ้งเจ้าของไปตอบข้อพิพาทใน Stripe
+      if (typeof obj.payment_intent === "string") {
+        await ctx.runMutation(internal.payments.revokeByPaymentIntent, { paymentIntentId: obj.payment_intent, status: "revoked" });
+        await ctx.runAction(internal.telegram.alert, { text: `Stripe: ลูกค้าโต้แย้งการชำระเงิน (${obj.payment_intent}) ระงับสิทธิ์แล้ว — ไปตอบข้อพิพาทใน Stripe ภายในกำหนด` });
       }
     }
     return new Response("ok", { status: 200 });

@@ -87,6 +87,16 @@ export const myMembership = query({
   },
 });
 
+/** มีสิทธิ์ตลอดไปอยู่แล้ว (เรียนชิลๆ หรือติว 1:1) = ซื้อเรียนชิลๆ ซ้ำไม่มีประโยชน์ */
+export const ownsLifetime = internalQuery({
+  args: { userId: v.id("users") },
+  returns: v.boolean(),
+  handler: async (ctx, { userId }) => {
+    const rows = await ctx.db.query("memberships").withIndex("by_userId", (q) => q.eq("userId", userId)).take(500);
+    return rows.some((m) => m.status === "active" && m.lifetime);
+  },
+});
+
 export const userEmail = internalQuery({
   args: { userId: v.id("users") },
   returns: v.union(v.string(), v.null()),
@@ -138,6 +148,7 @@ export const createCheckout = action({
     const userId = await getAuthUserId(ctx);
     if (userId === null) throw new Error("NOT_SIGNED_IN");
     if (!FOR_SALE.has(plan)) throw new Error("PLAN_NOT_FOR_SALE");
+    if (plan === "monthly" && (await ctx.runQuery(internal.payments.ownsLifetime, { userId }))) throw new ConvexError("ALREADY_OWNED");
     if (plan === "vip") {
       const left: number = await ctx.runQuery(internal.payments.vipSeatsLeftInternal, {});
       if (left <= 0) throw new Error("VIP_FULL");
@@ -208,6 +219,7 @@ export const grantFromCheckout = internalMutation({
     const userId = ctx.db.normalizeId("users", a.userId) as Id<"users"> | null;
     if (userId === null) {
       console.error("grantFromCheckout: unknown user", a.userId);
+      await ctx.scheduler.runAfter(0, internal.telegram.alert, { text: `Stripe: จ่ายแล้วแต่ไม่พบผู้ใช้ ${a.stripeSessionId} (${a.plan}) — เปิดสิทธิ์ด้วยมือที่ /admin` });
       return null;
     }
     const now = Date.now();
@@ -250,14 +262,14 @@ export const grantFromCheckout = internalMutation({
 
 /* ---------- เรียกจาก webhook: คืนเงินเต็มจำนวนแล้ว = ยกเลิกสิทธิ์ ---------- */
 export const revokeByPaymentIntent = internalMutation({
-  args: { paymentIntentId: v.string() },
+  args: { paymentIntentId: v.string(), status: v.union(v.literal("refunded"), v.literal("revoked")) },
   returns: v.null(),
-  handler: async (ctx, { paymentIntentId }) => {
+  handler: async (ctx, { paymentIntentId, status }) => {
     const rows = await ctx.db
       .query("memberships")
       .withIndex("by_paymentIntentId", (q) => q.eq("paymentIntentId", paymentIntentId))
       .take(10);
-    for (const m of rows) await ctx.db.patch(m._id, { status: "refunded" });
+    for (const m of rows) await ctx.db.patch(m._id, { status });
     return null;
   },
 });

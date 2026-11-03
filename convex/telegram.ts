@@ -133,6 +133,18 @@ export const notifySale = internalAction({
   },
 });
 
+/** เตือนเจ้าของเรื่องการเงินที่ต้องดูเอง (จ่ายแล้วสิทธิ์ไม่เปิด / มีข้อพิพาท) — ไม่ตั้ง env = เงียบ */
+export const alert = internalAction({
+  args: { text: v.string() },
+  returns: v.null(),
+  handler: async (_ctx, { text }) => {
+    const token = process.env.TELEGRAM_BOT_TOKEN;
+    const chatId = process.env.TELEGRAM_CHAT_ID;
+    if (token && chatId) await sendMessage(token, chatId, `⚠️ ${text}`);
+    return null;
+  },
+});
+
 /* ---------- ขาเข้า: เจ้าของ reply ใน Telegram ---------- */
 export const markSeen = internalMutation({
   args: { updateId: v.number() },

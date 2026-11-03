@@ -70,7 +70,7 @@ export default function Pricing() {
     } catch (e) {
       setBusy(null);
       const code = e instanceof ConvexError && typeof e.data === "string" ? e.data : String(e);
-      setMsg(code.includes("VIP_FULL") ? K.vipFull : code.startsWith("COUPON_") ? couponError(code, K) : K.error);
+      setMsg(code.includes("VIP_FULL") ? K.vipFull : code.includes("ALREADY_OWNED") ? K.alreadyOwned : code.startsWith("COUPON_") ? couponError(code, K) : K.error);
     }
   }, [createCheckout, K]);
 
