@@ -34,7 +34,8 @@ export const CONTENT = {
       { text: "ราคา",          href: "#pricing" },
       { text: "ถาม-ตอบ",       href: "#faq" }
     ],
-    primary: "เริ่มเรียน"
+    primary: "เริ่มเรียน",
+    studentPrimary: "เข้าห้องเรียน"
   },
 
   // ปุ่มล็อกอิน (ล็อกอินด้วย Google เท่านั้น)
@@ -44,6 +45,7 @@ export const CONTENT = {
     signOut: "ออกจากระบบ",
     classroom: "เข้าห้องเรียน",
     community: "คอมมูนิตี้",
+    student: "Student",                  // ป้ายเล็กข้างรูปโปรไฟล์ของผู้ที่ซื้อแพ็กเกจแล้ว
     member: "สมาชิก",                    // ใช้แทนชื่อ ถ้าบัญชี Google ไม่มีชื่อ
     admin: "คอนโซลแอดมิน"
   },
@@ -64,6 +66,7 @@ export const CONTENT = {
     ctaFree: "ทดลองเรียนฟรี",            // ปุ่มเขียว (พาไป /learn — ล็อกอิน Google แล้วเรียนบทฟรีได้)
     ctaFreeHint: "ล็อกอินด้วย Google แล้วเข้าเรียนบทฟรีได้ทันที ไม่ต้องจ่ายเงิน",
     ctaPrimary: "ดูแพ็กเกจการันตีติว 4 ครั้ง",          // ปุ่มรอง
+    ctaStudent: "เข้าห้องเรียน",           // ปุ่มเขียวของผู้ที่ซื้อแล้ว แทน "ทดลองเรียนฟรี"
     photo: "/hero.png",                    // รูปตัดพื้นหลังด้านขวา (public/hero.png)
     // ป้ายคำรอบรูป: 4 อันแรกเป็นป้ายเล็กด้านบน, 2 อันสุดท้ายเป็นการ์ดใหญ่ด้านล่าง (บังขอบรูป — ต้องมี 6 อัน)
     // icon: steps | user | compass | flag | bulb | abc · ใช้ \n ขึ้นบรรทัดใหม่
@@ -127,6 +130,9 @@ export const CONTENT = {
       legendFree: "ฟรี",
       legendFreeText: "ล็อกอินแล้วเรียนได้เลย",
       legendMember: "🔒 สำหรับสมาชิก",
+      studentLegend: "คุณเป็นนักเรียนแล้ว กดบทไหนก็เรียนได้เลย",
+      openBadge: "เรียนได้",
+      goClass: "เข้าห้องเรียน",
       freeBadge: "ฟรี",
       memberBadge: "🔒 สำหรับสมาชิก",
       soonBadge: "เร็วๆ นี้",

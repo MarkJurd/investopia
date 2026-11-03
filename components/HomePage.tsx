@@ -1,7 +1,5 @@
 /* หน้าแรก — ข้อความมาจาก lib/content.ts
  * อย่าพิมพ์ข้อความลงไฟล์นี้ตรงๆ */
-import Link from "next/link";
-import { learnPath } from "@/components/learn/steps";
 import InstructorIntro from "@/components/InstructorIntro";
 import { ContentProvider, type Content } from "@/components/ContentContext";
 import Effects from "@/components/Effects";
@@ -12,6 +10,7 @@ import Pricing from "@/components/Pricing";
 import QABox from "@/components/QABox";
 import AuthButton from "@/components/AuthButton";
 import CheckoutBanner from "@/components/CheckoutBanner";
+import { HeroCta, NavPrimary } from "@/components/HomeButtons";
 
 type Vars = React.CSSProperties & Record<`--${string}`, string>;
 
@@ -52,7 +51,7 @@ export default function HomePage({ C }: { C: Content }) {
           <div className="nav-cta">
             <a href={C.locale.switchHref} className="lang-switch" hrefLang={C.locale.code === "th" ? "en" : "th"}>{C.locale.switchLabel}</a>
             <AuthButton />
-            <a href="#pricing" className="btn btn-primary">{C.nav.primary}</a>
+            <NavPrimary />
           </div>
         </div>
       </header>
@@ -72,11 +71,7 @@ export default function HomePage({ C }: { C: Content }) {
             {/* หัวข้อ 3 บรรทัด: แต่ละบรรทัดไม่ถูกตัดกลางคำ */}
             <h1><span>{H.title.before}</span><span>{H.title.accent}</span><span className="blue">{H.title.after}</span></h1>
             <p className="lead">{H.lead}</p>
-            <div className="hero-cta">
-              <Link href={learnPath(C)} className="btn btn-free btn-lg">▶ {H.ctaFree}</Link>
-              <a href="#pricing" className="btn btn-ghost btn-lg">{H.ctaPrimary}</a>
-              <span className="free-hint">{H.ctaFreeHint}</span>
-            </div>
+            <HeroCta />
             <div className="hero-points">
               {H.points.map((p) => <div className="hero-point" key={p}><span className="check">✓</span> {p}</div>)}
             </div>

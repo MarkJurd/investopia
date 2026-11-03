@@ -8,6 +8,8 @@ import { useAuthActions } from "@convex-dev/auth/react";
 import { useRouter } from "next/navigation";
 import { api } from "@/convex/_generated/api";
 import { useContent } from "@/components/ContentContext";
+import { useStudent } from "@/components/useStudent";
+import { learnPath } from "@/components/learn/steps";
 
 export default function CoursePublic() {
   const C = useContent();
@@ -19,9 +21,11 @@ export default function CoursePublic() {
   const router = useRouter();
   const [showMember, setShowMember] = useState(false);
 
+  const { isStudent } = useStudent();
+
   const open = (id: string, free: boolean) => {
-    if (!free) { setShowMember(true); return; }
-    const path = `/learn/${id}`;
+    if (!free && !isStudent) { setShowMember(true); return; }
+    const path = learnPath(C, id);
     if (isAuthenticated) router.push(path);
     else void signIn("google", { redirectTo: path });
   };
@@ -37,7 +41,9 @@ export default function CoursePublic() {
           <p>{K.chart.desc}</p>
         </div>
       </div>
-      <p className="legend"><span className="free-pill">{P.legendFree}</span> {P.legendFreeText} · {P.legendMember}</p>
+      {isStudent
+        ? <p className="legend legend-student"><span className="student-chip">{C.auth.student}</span> {P.studentLegend} <Link href={learnPath(C)} className="btn btn-primary btn-sm">{P.goClass}</Link></p>
+        : <p className="legend"><span className="free-pill">{P.legendFree}</span> {P.legendFreeText} · {P.legendMember}</p>}
 
       {outline === undefined && <p role="status">{P.loading}</p>}
       {outline?.map((m, i) => (
@@ -48,7 +54,7 @@ export default function CoursePublic() {
               <li key={l.id}>
                 <button type="button" className="cp-les" onClick={() => open(l.id, l.free)}>
                   <span className="t">{l.title}</span>
-                  {l.free ? <span className="free-pill">{P.freeBadge}</span> : <span className="lock">{P.memberBadge}</span>}
+                  {l.free ? <span className="free-pill">{P.freeBadge}</span> : isStudent ? <span className="open-pill">{P.openBadge}</span> : <span className="lock">{P.memberBadge}</span>}
                   {l.soon && <span className="soon-pill">{P.soonBadge}</span>}
                 </button>
               </li>
@@ -65,7 +71,9 @@ export default function CoursePublic() {
         </div>
       )}
       <div style={{ textAlign: "center", margin: "28px 0 60px" }}>
-        <Link href={`${home}#pricing`} className="btn btn-primary">{P.cta}</Link>
+        {isStudent
+          ? <Link href={learnPath(C)} className="btn btn-primary">{P.goClass}</Link>
+          : <Link href={`${home}#pricing`} className="btn btn-primary">{P.cta}</Link>}
       </div>
     </div>
   );

@@ -389,6 +389,9 @@ footer{padding:56px 0 40px;border-top:1px solid var(--line);background:var(--bg-
 .avatar-btn:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
 .user-avatar{width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid var(--blue-soft);display:block}
 .user-initial{display:grid;place-items:center;background:var(--blue);color:#fff;font-weight:700;font-size:15px}
+.student-chip{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#92400E;background:#FEF3C7;border:1px solid #FDE68A;padding:2px 8px;border-radius:999px;white-space:nowrap}
+.legend-student{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.open-pill{font-size:13px;font-weight:600;color:var(--blue)}
 .member-dot{position:absolute;right:-1px;bottom:-1px;width:12px;height:12px;border-radius:50%;background:#F5C842;border:2px solid #fff}
 .user-pop{position:absolute;right:0;top:calc(100% + 10px);min-width:220px;background:#fff;border:1px solid var(--line);
   border-radius:14px;box-shadow:var(--shadow-lg);padding:14px;display:flex;flex-direction:column;gap:10px;align-items:flex-start;z-index:70}

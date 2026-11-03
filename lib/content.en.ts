@@ -26,7 +26,8 @@ export const CONTENT_EN: typeof CONTENT = {
       { text: "Pricing",     href: "#pricing" },
       { text: "FAQ",         href: "#faq" }
     ],
-    primary: "Start learning"
+    primary: "Start learning",
+    studentPrimary: "Go to classroom"
   },
 
   auth: {
@@ -35,6 +36,7 @@ export const CONTENT_EN: typeof CONTENT = {
     signOut: "Sign out",
     classroom: "Classroom",
     community: "Community",
+    student: "Student",
     member: "Member",
     admin: "Admin console"
   },
@@ -55,6 +57,7 @@ export const CONTENT_EN: typeof CONTENT = {
     ctaFree: "Try it free",
     ctaFreeHint: "Sign in with Google and open the free lessons right away — no payment needed.",
     ctaPrimary: "See the 4-session guarantee plan",
+    ctaStudent: "Go to classroom",
     photo: "/hero.png",
     badges: [
       { icon: "steps",   text: "Step by step" },
@@ -105,6 +108,9 @@ export const CONTENT_EN: typeof CONTENT = {
       legendFree: "Free",
       legendFreeText: "Sign in and start right away",
       legendMember: "🔒 Members only",
+      studentLegend: "You're a student — open any lesson",
+      openBadge: "Open",
+      goClass: "Go to classroom",
       freeBadge: "Free",
       memberBadge: "🔒 Members only",
       soonBadge: "Coming soon",

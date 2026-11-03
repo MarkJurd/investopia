@@ -39,6 +39,7 @@ function UserMenu() {
           : <span className="user-avatar user-initial">{name.charAt(0)}</span>}
         {member && <span className="member-dot" aria-hidden="true" />}
       </button>
+      {member && <span className="student-chip">{A.student}</span>}
       {open && (
         <div className="user-pop" role="menu">
           <div className="up-name">{name}</div>
