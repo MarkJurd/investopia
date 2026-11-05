@@ -45,7 +45,6 @@ function Card({ name, avatar, photo, text, role, more, less }: { name: string; a
   const long = text.length > LONG;
   return (
     <article className="card rcard reveal">
-      <div className="stars" aria-label="5/5">★★★★★</div>
       <q className={long && !open ? "clamp" : undefined}>{text}</q>
       {long && <button type="button" className="rmore" onClick={() => setOpen(!open)}>{open ? less : more}</button>}
       <div className="rhead">
@@ -62,14 +61,44 @@ function Card({ name, avatar, photo, text, role, more, less }: { name: string; a
   );
 }
 
+type Comment = { text: string; avatar: string; name: string };
+
+/* คอมเมนต์วิ่งตลอดเวลา: รูปและชื่อเป็นไฟล์ที่เบลอมาแล้วใน public/comments (ไม่มีต้นฉบับบนเว็บ) */
+function CommentCard({ c, source }: { c: Comment; source: string }) {
+  return (
+    <figure className="cmt">
+      <figcaption>
+        <img className="cmt-av" src={c.avatar} alt="" width={44} height={44} />
+        <span><img className="cmt-name" src={c.name} alt="" height={20} /><small>{source}</small></span>
+      </figcaption>
+      <blockquote>“{c.text}”</blockquote>
+    </figure>
+  );
+}
+
+function CommentMarquee({ items, source }: { items: Comment[]; source: string }) {
+  return (
+    <div className="cmt-marquee">
+      <div className="cmt-track">
+        <div className="cmt-set">{items.map((c) => <CommentCard key={c.text} c={c} source={source} />)}</div>
+        <div className="cmt-set" aria-hidden="true">{items.map((c) => <CommentCard key={c.text} c={c} source={source} />)}</div>
+      </div>
+    </div>
+  );
+}
+
 export default function Reviews() {
   const R = useContent().reviews;
   return (
     <section className="section section-soft" id="reviews">
       <div className="container">
-        <div className="section-head"><span className="eyebrow">{R.eyebrow}</span><h2>{R.title}</h2></div>
+        <div className="section-head"><span className="eyebrow">{R.eyebrow}</span><h2>{R.title}</h2><p>{R.sub}</p></div>
+        </div>
+      <CommentMarquee items={R.comments} source={R.commentSource} />
+      <div className="container">
+        <p className="known-line">{R.knownLine}</p>
         <div className="rev-grid">
-          {R.items.map((it) => <Card key={it.name} {...it} role={R.role} more={R.more} less={R.less} />)}
+          {R.items.map((it) => <Card key={it.name} {...it} more={R.more} less={R.less} />)}
         </div>
       </div>
     </section>

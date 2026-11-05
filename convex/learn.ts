@@ -304,6 +304,21 @@ export const videoUrl = action({
   },
 });
 
+/** คลิปตัวอย่างหน้าแรก: เปิดให้ทุกคนดูได้ และเซ็นได้เฉพาะคลิปนี้คลิปเดียว (ผู้ใช้เลือก videoId เองไม่ได้) */
+const LANDING_VIDEO_ID = "14371ee8-0202-43d2-871a-b3e0f9a192e5";
+
+export const landingVideoUrl = action({
+  args: {},
+  returns: v.union(v.string(), v.null()),
+  handler: async (): Promise<string | null> => {
+    const libraryId = process.env.BUNNY_LIBRARY_ID;
+    const tokenKey = process.env.BUNNY_TOKEN_KEY;
+    if (!libraryId || !tokenKey) return null;
+    const expires = Math.floor(Date.now() / 1000) + VIDEO_LINK_HOURS * 3600;
+    return await signBunnyEmbedUrl(libraryId, tokenKey, LANDING_VIDEO_ID, expires);
+  },
+});
+
 /* ---------- ใบประกาศเรียนจบ: เรียนจบทุกบท (ที่เปิดได้) + ผ่านแบบทดสอบทุกโมดูล ---------- */
 export const certificate = query({
   args: { now: v.number() },

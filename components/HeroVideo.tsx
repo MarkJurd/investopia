@@ -1,39 +1,39 @@
 "use client";
 
-/* วิดีโอแนะนำตัว: file > youtubeId (โหลดเมื่อกดเล่น) > กรอบ "เร็วๆ นี้" — ตั้งค่าใน lib/content.ts → hero.video */
+/* คลิปตัวอย่างหน้าแรก: แสดงรูปปกก่อน กดเล่นแล้วค่อยขอลิงก์ Bunny จากเซิร์ฟเวอร์ (convex/learn.ts → landingVideoUrl)
+ * ขอลิงก์ไม่สำเร็จ = เล่นไฟล์สำรองใน public · ข้อความและรูปปกตั้งใน lib/content.ts → hero.video */
 import { useState } from "react";
+import { useAction } from "convex/react";
+import { api } from "@/convex/_generated/api";
 import { useContent } from "@/components/ContentContext";
 
+type State = { kind: "idle" } | { kind: "loading" } | { kind: "bunny"; url: string } | { kind: "file" };
+
 export default function HeroVideo() {
-  const CONTENT = useContent();
-  const V = CONTENT.hero.video;
-  const [playing, setPlaying] = useState(false);
-  const poster = V.poster ? <img className="vid-poster" src={V.poster} alt="" /> : null;
+  const V = useContent().hero.video;
+  const getUrl = useAction(api.learn.landingVideoUrl);
+  const [state, setState] = useState<State>({ kind: "idle" });
+
+  const play = () => {
+    setState({ kind: "loading" });
+    // รอลิงก์ไม่เกิน 8 วินาที ถ้าช้ากว่านั้นเล่นไฟล์สำรอง
+    const timeout = new Promise<null>((resolve) => setTimeout(() => resolve(null), 8000));
+    Promise.race([getUrl({}), timeout])
+      .then((url) => setState(url ? { kind: "bunny", url: `${url}&autoplay=true` } : { kind: "file" }))
+      .catch(() => setState({ kind: "file" }));
+  };
 
   let box;
-  if (V.file) {
-    box = <video controls playsInline preload="none" poster={V.poster || undefined} src={V.file} />;
-  } else if (V.youtubeId && playing) {
-    box = (
-      <iframe
-        src={`https://www.youtube-nocookie.com/embed/${encodeURIComponent(V.youtubeId)}?autoplay=1&rel=0`}
-        title={V.placeholderTitle}
-        allow="autoplay; encrypted-media; picture-in-picture"
-        allowFullScreen
-      />
-    );
-  } else if (V.youtubeId) {
-    box = (
-      <button className="vid-ph" type="button" aria-label={V.placeholderTitle} onClick={() => setPlaying(true)}>
-        {poster}<span className="play">▶</span><span className="vid-t">{V.placeholderTitle}</span>
-      </button>
-    );
+  if (state.kind === "bunny") {
+    box = <iframe src={state.url} title={V.placeholderTitle} allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture; fullscreen" allowFullScreen />;
+  } else if (state.kind === "file") {
+    box = <video controls autoPlay playsInline poster={V.poster} src={V.file} />;
   } else {
     box = (
-      <div className="vid-ph">
-        {poster}<span className="play">▶</span><span className="vid-t">{V.placeholderTitle}</span>
-        <span className="vid-s">{V.placeholderText}</span>
-      </div>
+      <button className="vid-ph" type="button" aria-label={V.placeholderTitle} onClick={play} disabled={state.kind === "loading"}>
+        <img className="vid-poster" src={V.poster} alt="" />
+        <span className="play">▶</span>
+      </button>
     );
   }
 

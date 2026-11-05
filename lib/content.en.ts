@@ -42,21 +42,22 @@ export const CONTENT_EN: typeof CONTENT = {
   },
 
   hero: {
-    eyebrow: "For beginners who want to learn to read charts for investing",
+    eyebrow: "Chart-reading course for beginners, no background needed",
     title: {
-      before: "30-day challenge",
-      accent: "Finish the course and still can't find support, resistance and your own entries and exits?",
-      after: "I refund you 100%"
+      before: "Still buying stocks",
+      accent: "on guesswork,",
+      after: "aren't you?"
     },
-    lead: "Finish 4 one-to-one sessions and still can't find support and resistance yourself? I refund you in full — 1:1 coaching plan only, conditions apply, no profit guarantee.",
+    lead: "Learn with me and focus on real use, not finishing a course and still being unable to do anything. We practise until you can find support, resistance, entries and exits on your own.",
     points: [
       "Understand buying and selling pressure (Demand & Supply) first — the core of every technique",
       "Step by step, from basic chart reading to splitting your entries and exits",
       "Ask the instructor right on the website — no questions lost in a chat"
     ],
-    ctaFree: "Try it free",
-    ctaFreeHint: "Sign in with Google and open the free lessons right away — no payment needed.",
-    ctaPrimary: "See the 4-session guarantee plan",
+    ctaFree: "Start the free lesson",
+    ctaFreeHint: "Sign in with Google · no card needed · lessons are in Thai",
+    freeLessonId: "l-mvdo923n1c51",
+    ctaPrimary: "See all pricing",
     ctaStudent: "Go to classroom",
     photo: "/hero.png",
     badges: [
@@ -75,13 +76,17 @@ export const CONTENT_EN: typeof CONTENT = {
     ],
     video: {
       youtubeId: "",
-      file: "",
-      poster: "",
-      caption: "Meet the instructor and the course overview",
-      placeholderTitle: "Instructor introduction video",
+      file: "/landing-1on1-highlight.mp4",
+      poster: "/landing-1on1-poster.jpg",
+      caption: "Highlights from real 1:1 sessions with students · 38 seconds",
+      placeholderTitle: "Play highlights from real 1:1 sessions",
       placeholderText: "Coming soon"
     }
   },
+
+  proofBand: { quote: "Others just give you exercises, but nobody ever taught whether what we did was right. He does.", name: "Fang · real 1:1 student (translated from Thai)", photo: "/reviews/fang.jpg" },
+
+  stickyCta: { pricing: "Pricing" },
 
   facts: [
     "🎁 Free trial — no card needed",
@@ -92,11 +97,16 @@ export const CONTENT_EN: typeof CONTENT = {
 
   courses: {
     eyebrow: "INVESTOPIA courses",
-    title: "Choose a course",
-    sub: "Open a course to see its lessons and which ones are free. Lessons are taught in Thai.",
+    title: "A clear order, until you can do it yourself",
+    sub: "A chart course for beginners, built on exercises and step-by-step practice. Lessons are taught in Thai.",
+    homeSteps: [
+      { title: "Read charts", text: "Supply and demand, candlesticks, trendlines" },
+      { title: "Use the tools properly", text: "MACD and Fibonacci, with exercises" },
+      { title: "Find your own entries and exits", text: "Multi-Timeframe and splitting positions" }
+    ],
     level: "Beginner friendly — no background needed",
     hasFree: "Free lessons available",
-    view: "View course →",
+    view: "See every lesson →",
     soon: "Coming soon",
     chart: { title: "Chart course", desc: "Trade and invest with a system — you will not need to ask anyone for support and resistance, because it will be in your head.", href: "/en/course/chart" },
     fs: { title: "Financial statements course", desc: "Find good businesses by analysing both quality and numbers, and read financial statements in plain language." },
@@ -144,20 +154,34 @@ export const CONTENT_EN: typeof CONTENT = {
 
   reviews: {
     eyebrow: "What learners say",
-    title: "Real reviews from people who studied with me",
+    title: "What viewers and learners say about my teaching",
+    sub: "Real comments under Investopia videos, translated from Thai. Names and photos are blurred for privacy.",
+    knownLine: "Look familiar? Fang and Net are real 1:1 students in the video above.",
+    commentSource: "Investopia video viewer",
+    comments: [
+      { text: "Very good. I'm from the countryside and learned so much. Simple teaching, easy to understand. Thank you.", avatar: "/comments/c1.jpg", name: "/comments/c1-n.jpg" },
+      { text: "Very useful for beginners.", avatar: "/comments/c2.jpg", name: "/comments/c2-n.jpg" },
+      { text: "Clear visuals and easy explanations.", avatar: "/comments/c3.jpg", name: "/comments/c3-n.jpg" },
+      { text: "Really great teaching.", avatar: "/comments/c7.jpg", name: "/comments/c7-n.jpg" },
+      { text: "Thanks for the knowledge. Following this channel is time well spent.", avatar: "/comments/c4.jpg", name: "/comments/c4-n.jpg" },
+      { text: "Your videos are so useful for older folks like us. Thank you so much.", avatar: "/comments/c5.jpg", name: "/comments/c5-n.jpg" },
+      { text: "Easy to understand after watching. Thank you.", avatar: "/comments/c8.jpg", name: "/comments/c8-n.jpg" },
+      { text: "Thanks for making and sharing videos like this. So easy to understand.", avatar: "/comments/c6.jpg", name: "/comments/c6-n.jpg" },
+      { text: "Thank you so much, easy to understand.", avatar: "/comments/c9.jpg", name: "/comments/c9-n.jpg" }
+    ],
     role: "Learner",
     more: "Read more",
     less: "Show less",
     items: [
-      { name: "Net", avatar: "net", photo: "/reviews/net.jpg", text: "I feel he's a young person who stays focused — and I don't even know how old the teacher is, haha 555 — but he also seems really calm. If someone I know wants to learn this, I'd recommend him." },
-      { name: "Fang", avatar: "fang", photo: "/reviews/fang.jpg", text: "It's all good. He teaches in a way that's easy to follow, and even people who don't know the terms aren't lost. He focuses on the basics and how to think so you can build on them — if this part is checked and done, what should come next. I think it suits people who want things easy to understand. What I got is the basics you should know, the basics few people go into detail about, like Higher High and Lower Low, and drawing trendlines. Others just tell you to try it, but nobody teaches whether what you did is right. He does, and I love that part. In future I can check by myself whether it's right or wrong, which I don't think other places ever give." },
-      { name: "Mike", avatar: "mike", photo: "/reviews/mike.jpg", text: "Great teaching and solid content, exactly what I needed. It's real chart learning where you actually practise." }
+      { name: "Net", role: "Real 1:1 student in the video", avatar: "net", photo: "/reviews/net.jpg", text: "If someone I know wants to learn this, I would recommend him." },
+      { name: "Fang", role: "Real 1:1 student in the video", avatar: "fang", photo: "/reviews/fang.jpg", text: "In the future I can check for myself whether something is right or wrong." },
+      { name: "Mike", role: "1:1 student", avatar: "mike", photo: "/reviews/mike.jpg", text: "It\'s real chart learning where you actually practise." }
     ]
   },
 
   instructor: {
     eyebrow: "Instructor",
-    title: { before: "Learn it, then", accent: "do it yourself", after: "without depending on anyone" },
+    title: { before: "I once lost tens of thousands of baht", accent: "buying whatever", after: "others recommended" },
     photos: ["/instructor-1.png", "/instructor-2.png", "/instructor-3.png", "/instructor-4.png"],
     name: "Mark",
     role: "Founder and instructor, INVESTOPIA",
@@ -184,7 +208,7 @@ export const CONTENT_EN: typeof CONTENT = {
         name: "Easy Self-Paced",
         for: "Learn from recorded lessons on your own — no rush, one payment, yours to keep",
         num: "1,290", numSuffix: "", numStrike: "",
-        per: "🚀 Launch price — it will go up as content is added · One payment, learn forever · never auto-charged",
+        per: "🚀 Launch price — it will go up as content is added · One payment, learn forever · never auto-charged · no guarantee and no refunds on this plan",
         feats: [
           { text: "Watch the recorded lessons forever — every lesson of the chart course, including lessons added to it", off: false },
           { text: "Q&A in the members community", off: false },
@@ -279,7 +303,7 @@ export const CONTENT_EN: typeof CONTENT = {
     about: "A course on reading charts and investing for beginners who want to “do” rather than just “know” — hands-on, with purpose-built exercises.",
     menuTitle: "Menu",
     menu: [
-      { text: "Curriculum", href: "#curriculum" },
+      { text: "Curriculum", href: "#courses" },
       { text: "Instructor", href: "#instructor" },
       { text: "Plans",      href: "#pricing" },
       { text: "FAQ",        href: "#faq" }
@@ -287,8 +311,7 @@ export const CONTENT_EN: typeof CONTENT = {
     contactTitle: "Contact",
     contact: [
       { text: "investopia.admin@gmail.com", href: "mailto:investopia.admin@gmail.com" },
-      { text: "Facebook",     href: "#" },
-      { text: "YouTube",      href: "#" },
+      { text: "Facebook",     href: "https://www.facebook.com/profile.php?id=61585278721377" },
       { text: "LINE Official", href: "https://line.me/R/ti/p/@investopia" }
     ],
     disclaimerLabel: "Disclaimer:",
@@ -336,8 +359,8 @@ export const CONTENT_EN: typeof CONTENT = {
   learn: {
     title: "Classroom",
     loading: "Loading...",
-    signInTitle: "Sign in to enter the classroom",
-    signInText: "The classroom is for members — sign in with the Google account you used to buy a plan.",
+    signInTitle: "Sign in to start learning",
+    signInText: "Free lessons need no card, just sign in with Google once. Already bought a plan? Use the same account.",
     noMemberTitle: "This classroom is for members",
     noMemberText: "This account has no active plan, or the plan has expired — your progress is all saved. Renew and pick up where you left off.",
     seePlans: "See plans",

@@ -29,7 +29,7 @@ export function HeroCta() {
   }
   return (
     <div className="hero-cta">
-      <Link href={learnPath(C)} className="btn btn-free btn-lg">▶ {H.ctaFree}</Link>
+      <Link href={learnPath(C, H.freeLessonId || undefined)} className="btn btn-free btn-lg">{H.ctaFree}</Link>
       <a href="#pricing" className="btn btn-ghost btn-lg">{H.ctaPrimary}</a>
       <span className="free-hint">{H.ctaFreeHint}</span>
     </div>

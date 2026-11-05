@@ -3,7 +3,8 @@
 import InstructorIntro from "@/components/InstructorIntro";
 import { ContentProvider, type Content } from "@/components/ContentContext";
 import Effects from "@/components/Effects";
-import HeroStage from "@/components/HeroStage";
+import HeroVideo from "@/components/HeroVideo";
+import StickyCta from "@/components/StickyCta";
 import Reviews from "@/components/Reviews";
 import CourseCards from "@/components/CourseCards";
 import Pricing from "@/components/Pricing";
@@ -66,28 +67,35 @@ export default function HomePage({ C }: { C: Content }) {
           ))}
         </div>
         <div className="container hero-grid">
-          <div>
+          <div className="hero-head">
             <span className="eyebrow">{H.eyebrow}</span>
-            {/* หัวข้อ 3 บรรทัด: แต่ละบรรทัดไม่ถูกตัดกลางคำ */}
             <h1><span>{H.title.before}</span><span>{H.title.accent}</span><span className="blue">{H.title.after}</span></h1>
             <p className="lead">{H.lead}</p>
-            <HeroCta />
-            <div className="hero-points">
-              {H.points.map((p) => <div className="hero-point" key={p}><span className="check">✓</span> {p}</div>)}
-            </div>
           </div>
-          <HeroStage H={H} />
+          <div className="hero-media"><HeroVideo /></div>
+          <div className="hero-act"><HeroCta /></div>
         </div>
       </section>
 
-      {/* แถบจุดเด่น */}
-      <div className="facts"><div className="container">{C.facts.map((f) => <span key={f}>{f}</span>)}</div></div>
+      {/* คำพูดผู้เรียนใต้ Hero */}
+      <section className="proof-band" aria-label={C.proofBand.name}>
+        <div className="container proof-inner">
+          <img src={C.proofBand.photo} alt="" width={56} height={56} />
+          <blockquote>“{C.proofBand.quote}”</blockquote>
+          <span>{C.proofBand.name}</span>
+        </div>
+      </section>
 
-      {/* เลือกคอร์ส */}
-      <CourseCards />
-
-      {/* รีวิว */}
+      {/* คอมเมนต์และรีวิว */}
       <Reviews />
+
+      {/* INSTRUCTOR */}
+      <section className="ins-section" id="instructor">
+        <InstructorIntro />
+      </section>
+
+      {/* เรียนอะไร */}
+      <CourseCards />
 
       {/* FIT */}
       <section className="section" id="fit">
@@ -106,11 +114,6 @@ export default function HomePage({ C }: { C: Content }) {
             </div>
           </div>
         </div>
-      </section>
-
-      {/* INSTRUCTOR */}
-      <section className="ins-section" id="instructor">
-        <InstructorIntro />
       </section>
 
       {/* PRICING */}
@@ -162,6 +165,7 @@ export default function HomePage({ C }: { C: Content }) {
         </div>
       </footer>
 
+      <StickyCta />
       <Effects />
     </div>
     </ContentProvider>
