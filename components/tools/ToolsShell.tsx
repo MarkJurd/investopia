@@ -30,7 +30,7 @@ export default function ToolsShell({ C, path, chip, children }: { C: Content; pa
           <div className="container">
             <div className="disclaimer">
               <strong style={{ color: "var(--body)" }}>{C.footer.disclaimerLabel}</strong> {C.footer.disclaimer}<br /><br />
-              <span className="legal-links"><Link href={`${prefix}/privacy`}>{C.legal.footerPrivacy}</Link> · <Link href={`${prefix}/terms`}>{C.legal.footerTerms}</Link></span><br />
+              <span className="legal-links"><Link href={`${prefix}/privacy`}>{C.legal.footerPrivacy}</Link> · <Link href={`${prefix}/terms`}>{C.legal.footerTerms}</Link> · <a href="#analytics-settings">{C.consent.settings}</a></span><br />
               {C.footer.copyright}
             </div>
           </div>

@@ -5,6 +5,7 @@ import { ContentProvider, type Content } from "@/components/ContentContext";
 import Effects from "@/components/Effects";
 import HeroVideo from "@/components/HeroVideo";
 import StickyCta from "@/components/StickyCta";
+import ChartFlow from "@/components/ChartFlow";
 import Reviews from "@/components/Reviews";
 import CourseCards from "@/components/CourseCards";
 import Pricing from "@/components/Pricing";
@@ -77,14 +78,8 @@ export default function HomePage({ C }: { C: Content }) {
         </div>
       </section>
 
-      {/* คำพูดผู้เรียนใต้ Hero */}
-      <section className="proof-band" aria-label={C.proofBand.name}>
-        <div className="container proof-inner">
-          <img src={C.proofBand.photo} alt="" width={56} height={56} />
-          <blockquote>“{C.proofBand.quote}”</blockquote>
-          <span>{C.proofBand.name}</span>
-        </div>
-      </section>
+      {/* สิ่งที่ผู้เรียนจะได้ใต้ Hero */}
+      <ChartFlow />
 
       {/* คอมเมนต์และรีวิว */}
       <Reviews />
@@ -159,7 +154,7 @@ export default function HomePage({ C }: { C: Content }) {
           </div>
           <div className="disclaimer">
             <strong style={{ color: "var(--body)" }}>{C.footer.disclaimerLabel}</strong> {C.footer.disclaimer}<br /><br />
-            <span className="legal-links"><a href={`${prefix}/privacy`}>{C.legal.footerPrivacy}</a> · <a href={`${prefix}/terms`}>{C.legal.footerTerms}</a></span><br />
+            <span className="legal-links"><a href={`${prefix}/privacy`}>{C.legal.footerPrivacy}</a> · <a href={`${prefix}/terms`}>{C.legal.footerTerms}</a> · <a href="#analytics-settings">{C.consent.settings}</a></span><br />
             {C.footer.copyright}
           </div>
         </div>

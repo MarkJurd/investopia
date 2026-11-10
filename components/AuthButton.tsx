@@ -32,7 +32,7 @@ function UserMenu() {
   }, [open]);
 
   return (
-    <div className="user-menu" ref={ref}>
+    <div className="user-menu" ref={ref} data-clarity-mask="true">
       <button className="avatar-btn" onClick={() => setOpen((o) => !o)} aria-expanded={open} aria-haspopup="menu" aria-label={name}>
         {me?.image
           ? <img src={me.image} alt="" className="user-avatar" referrerPolicy="no-referrer" />

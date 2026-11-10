@@ -1,7 +1,11 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { Anuphan } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import { CONTENT } from "@/lib/content";
+import { CONTENT_EN } from "@/lib/content.en";
 import ConvexClientProvider from "@/components/ConvexClientProvider";
+import AnalyticsConsent from "@/components/AnalyticsConsent";
 import "./globals.css";
 
 const anuphan = Anuphan({
@@ -22,6 +26,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="th" className={anuphan.variable}>
       <body>
         <ConvexClientProvider>{children}</ConvexClientProvider>
+        <Suspense fallback={null}><AnalyticsConsent th={CONTENT.consent} en={CONTENT_EN.consent} /></Suspense>
+        <Analytics />
       </body>
     </html>
   );

@@ -84,9 +84,37 @@ export const CONTENT_EN: typeof CONTENT = {
     }
   },
 
-  proofBand: { quote: "Others just give you exercises, but nobody ever taught whether what we did was right. He does.", name: "Fang · real 1:1 student (translated from Thai)", photo: "/reviews/fang.jpg" },
+  // Scroll-driven chart animation (components/ChartFlow.tsx) — the instructor's 7-step thinking
+  flow: {
+    eyebrow: "How I teach it",
+    title: "Find your own entries and exits, in this order",
+    forLabel: "Great for",
+    forItems: ["Beginners starting from zero", "People who have studied in many places but still can't do it for real"],
+    stepLabel: "Step",
+    steps: [
+      { title: "Read the trend first", text: "How far has it fallen? Then confirm the trend again with MACD." },
+      { title: "Check every timeframe", text: "Go from large to small to see the big picture before the details." },
+      { title: "Has it fallen to support?", text: "See whether price has come down to touch support." },
+      { title: "Is the bounce real?", text: "See whether there is a real bounce from support, or just a touch before falling on." },
+      { title: "Wait for the reversal to confirm", text: "Has it really made a higher high and a higher low?" },
+      { title: "Only now look for the entry", text: "Enter when the reasons add up, not because you want to be in." },
+      { title: "Read resistance to find the exit", text: "Know where resistance is, and you know where to exit — I teach it one step at a time." }
+    ],
+    timeframes: ["1D", "4H", "1H", "30m", "15m"],
+    labels: { support: "Support", resistance: "Resistance", entry: "Entry", exit: "Exit", hl: "Higher Low", hh: "Higher High", macd: "MACD" },
+    note: "Illustrative chart for education only, not real data, not a trading signal and not investment advice."
+  },
 
   stickyCta: { pricing: "Pricing" },
+
+  consent: {
+    title: "May we collect usage data?",
+    text: "We'd like to see where visitors click and scroll so we can make the site easier to use. This uses Microsoft Clarity, which sets cookies and records activity on public pages. You can change your mind at any time from the footer.",
+    more: "Read the policy",
+    accept: "Accept",
+    decline: "Decline",
+    settings: "Cookie settings",
+  },
 
   facts: [
     "🎁 Free trial — no card needed",
@@ -154,7 +182,7 @@ export const CONTENT_EN: typeof CONTENT = {
 
   reviews: {
     eyebrow: "What learners say",
-    title: "What viewers and learners say about my teaching",
+    title: "What do they say about Investopia?",
     sub: "Real comments under Investopia videos, translated from Thai. Names and photos are blurred for privacy.",
     knownLine: "Look familiar? Fang and Net are real 1:1 students in the video above.",
     commentSource: "Investopia video viewer",
@@ -173,9 +201,9 @@ export const CONTENT_EN: typeof CONTENT = {
     more: "Read more",
     less: "Show less",
     items: [
-      { name: "Net", role: "Real 1:1 student in the video", avatar: "net", photo: "/reviews/net.jpg", text: "If someone I know wants to learn this, I would recommend him." },
-      { name: "Fang", role: "Real 1:1 student in the video", avatar: "fang", photo: "/reviews/fang.jpg", text: "In the future I can check for myself whether something is right or wrong." },
-      { name: "Mike", role: "1:1 student", avatar: "mike", photo: "/reviews/mike.jpg", text: "It\'s real chart learning where you actually practise." }
+      { name: "Net", role: "Real 1:1 student in the video", avatar: "net", photo: "/reviews/net.jpg", text: "I feel he's a young person who stays focused — and I don't even know how old the teacher is, haha 555 — but he also seems really calm. If someone I know wants to learn this, I'd recommend him." },
+      { name: "Fang", role: "Real 1:1 student in the video", avatar: "fang", photo: "/reviews/fang.jpg", text: "It's all good. He teaches in a way that's easy to follow, and even people who don't know the terms aren't lost. He focuses on the basics and how to think so you can build on them — if this part is checked and done, what should come next. I think it suits people who want things easy to understand. What I got is the basics you should know, the basics few people go into detail about, like Higher High and Lower Low, and drawing trendlines. Others just tell you to try it, but nobody teaches whether what you did is right. He does, and I love that part. In future I can check by myself whether it's right or wrong, which I don't think other places ever give." },
+      { name: "Mike", role: "1:1 student", avatar: "mike", photo: "/reviews/mike.jpg", text: "Great teaching and solid content, exactly what I needed. It's real chart learning where you actually practise." }
     ]
   },
 
@@ -841,7 +869,7 @@ export const CONTENT_EN: typeof CONTENT = {
     operator: "Naphat Jurdwichit (ณภัทร เจิดวิจิตร), founder and instructor of INVESTOPIA",
     email: "investopia.admin@gmail.com",
     updatedLabel: "Last updated",
-    updated: "23 October 2026",
+    updated: "10 November 2026",
     chip: "Legal",
     backHome: "← Back to home",
     footerPrivacy: "Privacy policy",
@@ -863,6 +891,8 @@ export const CONTENT_EN: typeof CONTENT = {
             "Learning data: lessons completed, quiz results and completion dates (used to show progress and issue certificates)",
             "Community data: your display name (a nickname you choose), posts, comments, images, files, likes, votes and reports",
             "Technical data: what a browser normally sends, such as your IP address and device type, which our hosting and video providers may log briefly for security and delivery",
+            "Aggregated visit statistics: pages viewed, referring site, country/city, device type and browser, through Vercel Web Analytics, which uses no third-party cookies",
+            "Behaviour on public pages (only if you accept): clicks, scrolling and session recordings, through Microsoft Clarity. It is not used in the classroom, community or admin pages, and it masks what you type into forms and your account name",
           ] },
         { h: "3. Purposes and legal bases",
           p: [],
@@ -872,13 +902,16 @@ export const CONTENT_EN: typeof CONTENT = {
             "To contact you about your learning, scheduling sessions, delivering bonuses (such as the Indicator) or service changes — contract",
             "To keep the service secure, prevent rule-breaking and look after the community — legitimate interests",
             "To send news or marketing promotions — only with your consent, which you can withdraw at any time",
+            "To view aggregated visit statistics and improve the website — legitimate interests",
+            "To analyse clicks and usage on public pages and improve the website — consent, which you can withdraw at any time from the \"Cookie settings\" link in the footer",
           ] },
         { h: "4. Providers we share data with",
           p: ["We use the following outside providers to run the website. They process data only on our instructions and for our purposes."],
           list: [
             "Google — sign-in",
             "Convex — database, back end, and storage for community images/files and lesson files",
-            "Vercel — website hosting",
+            "Vercel — website hosting and aggregated visit statistics",
+            "Microsoft Clarity — analysing clicks and usage on public pages (only if you accept)",
             "Stripe — payments (cards and PromptPay)",
             "Bunny.net — storing and delivering lesson videos",
             "Telegram — notifying the instructor: when a new community post or comment is made, its text and the author's display name are sent to the instructor through Telegram, and when a purchase is made, the buyer's name, email and plan are sent to the instructor through Telegram",
@@ -891,6 +924,7 @@ export const CONTENT_EN: typeof CONTENT = {
             "Account data, learning data and community content: kept while you have an account with us (progress is kept even after a plan expires so you can continue when you renew) and deleted when you ask us to delete your account",
             "Purchase data and payment records: kept for at least as long as accounting and tax law requires (generally 5 years), even if you ask us to delete your account",
             "Deleted posts: removed from the system together with attached images and files",
+            "Session recordings in Microsoft Clarity: kept for 30 days, except recordings marked as favourites or randomly sampled, which are kept for up to 9 months",
           ] },
         { h: "7. Your rights",
           p: ["You have these rights under the PDPA. Send a request to {email} and we will reply within 30 days."],
@@ -904,7 +938,7 @@ export const CONTENT_EN: typeof CONTENT = {
             "Complain to the Personal Data Protection Committee if you believe we have not complied with the law",
           ] },
         { h: "8. Cookies and browser storage",
-          p: ["The website uses browser storage (such as local storage) only as needed to remember your sign-in and the plan you chose while you go to sign in. We currently use no advertising cookies or third-party behaviour-tracking tools. If we add any, we will tell you and ask for consent first."], list: [] },
+          p: ["The website uses browser storage (such as local storage) only as needed to remember your sign-in and the plan you chose while you go to sign in, and to remember your cookie choice. If you accept in the banner, Microsoft Clarity sets cookies to analyse usage on public pages. If you decline, this tool is not loaded. You can change your mind or withdraw consent at any time from the \"Cookie settings\" link in the footer. We use no advertising cookies. If we add any, we will tell you and ask for consent first."], list: [] },
         { h: "9. Data security",
           p: ["We use encrypted connections (HTTPS), check access rights on the server every time before giving access to member content, and limit back-end access to administrators. No system is 100% secure, however. If a data breach that risks your rights occurs, we will notify the Personal Data Protection Committee and you as the law requires."], list: [] },
         { h: "10. Minors",
