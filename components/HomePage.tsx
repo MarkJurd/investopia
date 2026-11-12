@@ -5,7 +5,7 @@ import { ContentProvider, type Content } from "@/components/ContentContext";
 import Effects from "@/components/Effects";
 import HeroVideo from "@/components/HeroVideo";
 import StickyCta from "@/components/StickyCta";
-import ChartFlow from "@/components/ChartFlow";
+import TeachSection from "@/components/TeachSection";
 import Reviews from "@/components/Reviews";
 import CourseCards from "@/components/CourseCards";
 import Pricing from "@/components/Pricing";
@@ -78,8 +78,8 @@ export default function HomePage({ C }: { C: Content }) {
         </div>
       </section>
 
-      {/* สิ่งที่ผู้เรียนจะได้ใต้ Hero */}
-      <ChartFlow />
+      {/* บรรยากาศการเรียนจริง */}
+      <TeachSection />
 
       {/* คอมเมนต์และรีวิว */}
       <Reviews />

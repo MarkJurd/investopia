@@ -12,7 +12,7 @@ import { isAdminUser } from "./admin";
 import { planValidator } from "./plans";
 import { signBunnyEmbedUrl } from "./bunny";
 import type { CourseLesson, CourseModule } from "./course";
-import { findVisibleLesson, findVisibleModule, lessonLinkValidator, loadCourse, NEW_LESSON_DAYS, visibleModules } from "./course";
+import { findVisibleLesson, findVisibleModule, isFreeLesson, lessonLinkValidator, loadCourse, NEW_LESSON_DAYS, visibleModules } from "./course";
 
 const PASS_PERCENT = 70;        // ผ่านแบบทดสอบเมื่อได้ ≥ 70%
 const DAY = 24 * 60 * 60 * 1000;
@@ -127,17 +127,17 @@ export const overview = query({
     const shown = visibleModules((await loadCourse(ctx)).modules);
     const doneSet = new Set(lessons.map((l) => l.lessonId));
     const scores = new Map(lessons.flatMap((p) => (p.total !== undefined ? [[p.lessonId, { correct: p.correct ?? 0, total: p.total }] as const] : [])));
-    const blockedSet = blockedKeys(shown, doneSet, (l) => !(l.indicatorOnly && !canIndicator) && !(preview && !l.free));
+    const blockedSet = blockedKeys(shown, doneSet, (l) => !(l.indicatorOnly && !canIndicator) && !(preview && !isFreeLesson(l)));
     for (const m of shown) {
       const outLessons = [];
       for (const l of m.lessons) {
         const locked = l.indicatorOnly && !canIndicator;
-        const paywalled = !locked && preview && !l.free;
+        const paywalled = !locked && preview && !isFreeLesson(l);
         const blocked = blockedSet.has(l.key);
         const files = [];
         if (!locked && !paywalled && !blocked) for (const f of l.files) files.push({ name: f.name, size: f.size, url: await ctx.storage.getUrl(f.storageId) });
         outLessons.push({
-          id: l.key, title: l.title, notes: locked || paywalled || blocked ? "" : l.notes, minutes: l.minutes, locked, paywalled, free: l.free, gate: l.gate, blocked,
+          id: l.key, title: l.title, notes: locked || paywalled || blocked ? "" : l.notes, minutes: l.minutes, locked, paywalled, free: isFreeLesson(l), gate: l.gate, blocked,
           hasVideo: !locked && videosOn && l.videoId !== "",   // ผู้ทดลองเรียนก็รู้ได้ว่าบทนี้มีคลิปแล้ว (ขึ้น 🔒 แทน "เร็วๆ นี้") — ลิงก์วิดีโอยังเช็กสิทธิ์ใน videoUrl
           isNew: l.newSince !== null && now - l.newSince < NEW_LESSON_DAYS * DAY,
           files,
@@ -170,7 +170,7 @@ async function isBlocked(ctx: QueryCtx, userId: Id<"users">, lessonId: string, n
   const canIndicator = m !== null && (await canSeeIndicator(ctx, userId, m.indicatorBonus));
   const { lessons } = await loadProgress(ctx, userId);
   const mods = visibleModules((await loadCourse(ctx)).modules);
-  return blockedKeys(mods, new Set(lessons.map((l) => l.lessonId)), (l) => !(l.indicatorOnly && !canIndicator) && !(m === null && !l.free)).has(lessonId);
+  return blockedKeys(mods, new Set(lessons.map((l) => l.lessonId)), (l) => !(l.indicatorOnly && !canIndicator) && !(m === null && !isFreeLesson(l))).has(lessonId);
 }
 
 /* ---------- กด "เรียนจบบทนี้" / ยกเลิก ---------- */
@@ -178,7 +178,7 @@ async function isBlocked(ctx: QueryCtx, userId: Id<"users">, lessonId: string, n
 async function lessonUser(ctx: QueryCtx, lesson: CourseLesson, now: number): Promise<Id<"users">> {
   const authed = await getAuthUserId(ctx);
   if (authed === null) throw new ConvexError("NOT_SIGNED_IN");
-  const userId = lesson.free && !lesson.indicatorOnly ? authed : await requireMember(ctx, now);
+  const userId = isFreeLesson(lesson) ? authed : await requireMember(ctx, now);
   if (lesson.indicatorOnly) {
     const m = await getAccess(ctx, userId, now);
     if (!(await canSeeIndicator(ctx, userId, m?.indicatorBonus ?? false))) throw new ConvexError("LOCKED");
@@ -281,7 +281,7 @@ export const videoIdForMember = internalQuery({
     const lesson = await findVisibleLesson(ctx, lessonId);
     if (lesson === null || lesson.videoId === "") return null;
     if (m === null) {
-      if (!(lesson.free && !lesson.indicatorOnly)) return null;   // ผู้ทดลองเรียน: เฉพาะบทฟรี
+      if (!isFreeLesson(lesson)) return null;   // ผู้ทดลองเรียน: เฉพาะบทฟรี
     } else if (lesson.indicatorOnly && !(await canSeeIndicator(ctx, userId, m.indicatorBonus))) return null;
     if (await isBlocked(ctx, userId, lessonId, Date.now())) return null;   // ยังไม่ทำแบบฝึกหัดก่อนหน้า
     return lesson.videoId;

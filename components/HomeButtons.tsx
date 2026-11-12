@@ -1,6 +1,6 @@
 "use client";
 
-/* ปุ่มหน้าแรกที่เปลี่ยนตามสถานะ: คนทั่วไป = ทดลองเรียนฟรี/ดูแพ็กเกจ · นักเรียน = เข้าห้องเรียน/คอมมูนิตี้ */
+/* ปุ่มหน้าแรกที่เปลี่ยนตามสถานะ: คนทั่วไป = คุยทาง LINE/ดูแพ็กเกจ · นักเรียน = เข้าห้องเรียน/คอมมูนิตี้ */
 import Link from "next/link";
 import { useContent } from "@/components/ContentContext";
 import { useStudent } from "@/components/useStudent";
@@ -29,9 +29,8 @@ export function HeroCta() {
   }
   return (
     <div className="hero-cta">
-      <Link href={learnPath(C, H.freeLessonId || undefined)} className="btn btn-free btn-lg">{H.ctaFree}</Link>
+      <a href={C.teach.lineHref} className="btn btn-line btn-lg" target="_blank" rel="noopener noreferrer">{H.ctaLine}</a>
       <a href="#pricing" className="btn btn-ghost btn-lg">{H.ctaPrimary}</a>
-      <span className="free-hint">{H.ctaFreeHint}</span>
     </div>
   );
 }

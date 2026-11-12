@@ -54,9 +54,7 @@ export const CONTENT_EN: typeof CONTENT = {
       "Step by step, from basic chart reading to splitting your entries and exits",
       "Ask the instructor right on the website — no questions lost in a chat"
     ],
-    ctaFree: "Start the free lesson",
-    ctaFreeHint: "Sign in with Google · no card needed · lessons are in Thai",
-    freeLessonId: "l-mvdo923n1c51",
+    ctaLine: "💬 Talk to me on LINE first",
     ctaPrimary: "See all pricing",
     ctaStudent: "Go to classroom",
     photo: "/hero.png",
@@ -84,26 +82,32 @@ export const CONTENT_EN: typeof CONTENT = {
     }
   },
 
-  // Scroll-driven chart animation (components/ChartFlow.tsx) — the instructor's 7-step thinking
-  flow: {
-    eyebrow: "How I teach it",
-    title: "Find your own entries and exits, in this order",
-    forLabel: "Great for",
-    forItems: ["Beginners starting from zero", "People who have studied in many places but still can't do it for real"],
-    stepLabel: "Step",
-    steps: [
-      { title: "Read the trend first", text: "How far has it fallen? Then confirm the trend again with MACD." },
-      { title: "Check every timeframe", text: "Go from large to small to see the big picture before the details." },
-      { title: "Has it fallen to support?", text: "See whether price has come down to touch support." },
-      { title: "Is the bounce real?", text: "See whether there is a real bounce from support, or just a touch before falling on." },
-      { title: "Wait for the reversal to confirm", text: "Has it really made a higher high and a higher low?" },
-      { title: "Only now look for the entry", text: "Enter when the reasons add up, not because you want to be in." },
-      { title: "Read resistance to find the exit", text: "Know where resistance is, and you know where to exit — I teach it one step at a time." }
+  // Real class atmosphere (components/TeachSection.tsx) — keep in sync with content.ts → teach
+  teach: {
+    eyebrow: "Inside a real class",
+    title: "Studied in many places and still stuck?",
+    titleAccent: "Because nobody gave you real practice to try yourself",
+    students: [
+      { initial: "M", name: "Mike", label: "Mike · Student", photo: "" },
+      { initial: "F", name: "Fang", label: "Fang · Student", photo: "/teach/fang.webp" },
+      { initial: "N", name: "Net", label: "Net · Student", photo: "/teach/net.webp" }
     ],
-    timeframes: ["1D", "4H", "1H", "30m", "15m"],
-    labels: { support: "Support", resistance: "Resistance", entry: "Entry", exit: "Exit", hl: "Higher Low", hh: "Higher High", macd: "MACD" },
-    note: "Illustrative chart for education only, not real data, not a trading signal and not investment advice."
+    teacherLabel: "Instructor",
+    steps: [
+      { student: 0, title: "I start by seeing where you are", text: "In the first class I have you read a chart for me, so I know where to start. Then we begin with reading the trend before anything else.", quote: "" },
+      { student: 0, title: "I break hard things down until they're simple", text: "I'm a slow learner. To understand anything I have to break it down as simply as possible, so I teach the way I understand it. My mom, who knew nothing about stocks, learned this way too.", quote: "" },
+      { student: 1, title: "You try it, I tell you straight if it's right", text: "You draw the zones yourself. If it's not right yet, I'll say “OK, that's almost there, but here's how I see it…” and point it out step by step until you see it yourself.", quote: "“Others just had you try it, but no one ever taught whether what you did was right. He does.”" },
+      { student: 2, title: "Understanding it isn't the same as doing it", text: "Many people feel they get it in class, then freeze on a real chart. So you practise on real charts again and again, and set where you're wrong before every entry.", quote: "" },
+      { student: 0, title: "What “doing it yourself” means to me", text: "I open a chart you've never seen and ask: enter now, wait, or take profit? If you can answer with your own reasons, you can do it yourself.", quote: "“Real charts, real practice.”" }
+    ],
+    note: "Images from real tutoring sessions, shown as teaching examples only. Not a recommendation to buy or sell any security.",
+    ctaTitle: "Not sure yet? Talk to me first",
+    ctaText: "Add me on LINE and tell me where you're stuck. I'll tell you straight whether this course is right for you. If it isn't, I'll say so.",
+    ctaLine: "💬 Add LINE @investopia",
+    lineHref: "https://line.me/R/ti/p/@investopia",
+    ctaPricing: "See packages"
   },
+
 
   stickyCta: { pricing: "Pricing" },
 
@@ -117,7 +121,7 @@ export const CONTENT_EN: typeof CONTENT = {
   },
 
   facts: [
-    "🎁 Free trial — no card needed",
+    "💬 Chat with the instructor on LINE before you decide",
     "💬 Ask the instructor on the site",
     "📺 Group Q&A meetings with the instructor",
     "🛡️ 1:1 coaching: 30-day skills guarantee (conditions apply)"
@@ -143,8 +147,6 @@ export const CONTENT_EN: typeof CONTENT = {
     page: {
       chip: "Course",
       back: "← Back to home",
-      legendFree: "Free",
-      legendFreeText: "Sign in and start right away",
       legendMember: "🔒 Members only",
       studentLegend: "You're a student — open any lesson",
       openBadge: "Open",
@@ -154,7 +156,7 @@ export const CONTENT_EN: typeof CONTENT = {
       soonBadge: "Coming soon",
       loading: "Loading...",
       memberNoteTitle: "This lesson is for members",
-      memberNoteText: "Try the lessons marked “Free” first, or choose a plan to unlock every lesson.",
+      memberNoteText: "Choose a plan to unlock every lesson, or ask first on LINE @investopia.",
       seePlans: "See plans",
       cta: "Choose a plan to unlock every lesson"
     }
@@ -304,7 +306,7 @@ export const CONTENT_EN: typeof CONTENT = {
       { q: "If you release a new course, will I get it?",
         a: "The 1:1 coaching plan includes the new courses opened within 30 days after purchase (for example the financial statements course, which is in progress with no opening date). The Easy Self-Paced plan does not include new courses and is a launch-period option that may be withdrawn when more courses are added." },
       { q: "Can I get a refund if I'm not happy?",
-        a: "1:1 coaching plan: there is a 30-day skills guarantee — if you attend all 4 sessions, hand in every weekly assignment and fix it as the instructor marks until it passes, but still do not pass the end-of-course test against the criteria announced in advance, you can ask for a full refund within 7 days of the result (full conditions are in the terms), and you can also be refunded before the first session · Easy Self-Paced plan: no guarantee of results and no refunds, try the free lessons before buying · We guarantee learning skills, not investment profits." },
+        a: "1:1 coaching plan: there is a 30-day skills guarantee — if you attend all 4 sessions, hand in every weekly assignment and fix it as the instructor marks until it passes, but still do not pass the end-of-course test against the criteria announced in advance, you can ask for a full refund within 7 days of the result (full conditions are in the terms), and you can also be refunded before the first session · Easy Self-Paced plan: no guarantee of results and no refunds, ask on LINE before buying · We guarantee learning skills, not investment profits." },
       { q: "What happens in the 1:1 sessions and the assignment reviews?",
         a: "It is learning coaching — for example explaining lessons you don't understand yet, reviewing every assignment, showing exactly where you went wrong and why, and having you fix it until it passes. It is not advice to buy or sell any particular stock, and we do not manage portfolios." },
       { q: "Do I pay monthly? Will I be charged automatically?",
@@ -388,7 +390,7 @@ export const CONTENT_EN: typeof CONTENT = {
     title: "Classroom",
     loading: "Loading...",
     signInTitle: "Sign in to start learning",
-    signInText: "Free lessons need no card, just sign in with Google once. Already bought a plan? Use the same account.",
+    signInText: "Sign in with Google once. Already bought a plan? Use the same account.",
     noMemberTitle: "This classroom is for members",
     noMemberText: "This account has no active plan, or the plan has expired — your progress is all saved. Renew and pick up where you left off.",
     seePlans: "See plans",
@@ -420,11 +422,11 @@ export const CONTENT_EN: typeof CONTENT = {
     passed: "Passed",
     comingSoon: "Coming soon",
     freeBadge: "Free",
-    previewBadge: "Free trial",
-    previewText: "You are on the free trial — only lessons marked “Free” are open. Choose a plan to unlock all the others.",
+    previewBadge: "No plan yet",
+    previewText: "You can see the lesson list, but you need a plan to open lessons. Questions first? Message LINE @investopia.",
     paywallBadge: "Members only",
     paywallTitle: "This lesson is for members",
-    paywallText: "Try the lessons marked “Free” — to open this lesson and all the others, choose a plan with the button below.",
+    paywallText: "This lesson opens once you have a plan. Choose one with the button below, or ask first on LINE @investopia.",
     openLessons: "open:",
     openNow: "Open now",
     rollingNote: "Content is added gradually. Lessons marked “Coming soon” will open when they are ready.",
@@ -991,7 +993,7 @@ export const CONTENT_EN: typeof CONTENT = {
             "1:1 condition 3: you took the end-of-course test and did not meet the criteria announced in advance (finding support and resistance and setting your own entry and exit points on charts you have not seen before, using the method taught in the course)",
             "1:1 condition 4: one refund request per account. We check against your assignments, test result and progress in the system",
             "This guarantee covers learning skills only. It does not take into account the results, profits or losses of your actual investing",
-            "Easy Self-Paced plan: no guarantee of results and no refunds, because it is a purchase of access to digital content and free lessons are available to try before you buy",
+            "Easy Self-Paced plan: no guarantee of results and no refunds, because it is a purchase of access to digital content, and you can ask the instructor on LINE before you buy",
             "All plans: if you are charged twice, or cannot access the course because of a system fault, we will always fix it or refund the relevant amount",
             "1:1 coaching plan: a full refund can be requested before the first session; once the first session has started, a refund is possible only under the skills guarantee conditions above",
             "How to request a refund: email {email} from the email address used to buy, stating the purchase date",

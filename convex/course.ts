@@ -10,6 +10,9 @@ export const MODULE_TAG = "โมดูล";          // ป้ายหน้�
 export const NEW_LESSON_DAYS = 14;          // ป้าย "ใหม่" แสดงกี่วัน
 export const MAX_FILE_MB = 50;              // ขนาดไฟล์แนบสูงสุดต่อไฟล์
 export const MAX_LINKS = 20;                // ลิงก์ใต้คลิปสูงสุดต่อบท
+// ทดลองเรียนฟรี: false = ปิด (เจ้าของสั่ง 2026-11-13) — บทที่ติ๊ก "ฟรี" ใน /admin ก็ต้องซื้อแพ็กเกจก่อน · เปิดกลับ = true
+export const FREE_TRIAL = false;
+export const isFreeLesson = (l: { free: boolean; indicatorOnly: boolean }) => FREE_TRIAL && l.free && !l.indicatorOnly;
 
 export const lessonLinkValidator = v.object({ title: v.string(), url: v.string() });
 export type LessonLink = { title: string; url: string };
@@ -136,7 +139,7 @@ export const publicOutline = query({
     const { modules } = await loadCourse(ctx);
     return visibleModules(modules).map((m) => ({
       id: m.key, tag: m.tag, title: m.title,
-      lessons: m.lessons.filter((l) => !l.indicatorOnly).map((l) => ({ id: l.key, title: l.title, free: l.free, soon: l.videoId === "" })),
+      lessons: m.lessons.filter((l) => !l.indicatorOnly).map((l) => ({ id: l.key, title: l.title, free: isFreeLesson(l), soon: l.videoId === "" })),
     }));
   },
 });

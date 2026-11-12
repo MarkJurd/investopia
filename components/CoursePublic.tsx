@@ -43,7 +43,7 @@ export default function CoursePublic() {
       </div>
       {isStudent
         ? <p className="legend legend-student"><span className="student-chip">{C.auth.student}</span> {P.studentLegend} <Link href={learnPath(C)} className="btn btn-primary btn-sm">{P.goClass}</Link></p>
-        : <p className="legend"><span className="free-pill">{P.legendFree}</span> {P.legendFreeText} · {P.legendMember}</p>}
+        : <p className="legend">{P.legendMember}</p>}
 
       {outline === undefined && <p role="status">{P.loading}</p>}
       {outline?.map((m, i) => (
